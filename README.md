@@ -1,5 +1,7 @@
 # 浮葉農場：素材互動測試 v0.2
 
+[直接開啟互動展示](https://peicheng0413.github.io/robot-farm/)
+
 直接用瀏覽器開啟 `index.html`，不需安裝套件。或在此目錄執行 `python3 -m http.server 8765 --bind 127.0.0.1`，開啟 http://127.0.0.1:8765。
 
 - 點田區，按「採收」：機器人伸手、抬起作物，最後舉到頭頂。
