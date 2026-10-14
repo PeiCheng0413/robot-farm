@@ -1,5 +1,5 @@
 {
-  "version": "0.3",
+  "version": "0.4",
   "status": "art-prototype",
   "width": 1254,
   "height": 1254,
@@ -118,6 +118,35 @@
         "north-back",
         "east-right"
       ]
+    },
+    {
+      "file": "robot-hover-directions-v04.png",
+      "width": 1254,
+      "height": 1254,
+      "columns": 4,
+      "rows": [
+        "south",
+        "west",
+        "north",
+        "east"
+      ],
+      "framesPerDirection": 4,
+      "columnBoundaries": [
+        0,
+        314,
+        627,
+        941,
+        1254
+      ],
+      "rowBoundaries": [
+        0,
+        331,
+        625,
+        910,
+        1254
+      ],
+      "frameDurationMs": 180,
+      "southView": "straight-on-symmetrical"
     }
   ],
   "produce": [

@@ -17,10 +17,13 @@ function drawRobot(el){
   const canvas=el.firstElementChild,ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,384,340);ctx.imageSmoothingEnabled=false;
   const {col,row}=el.robotFrame;
-  if(row===4){
+  if(row===0||row>=4){
     if(!directionSource.complete||!directionSource.naturalWidth)return;
-    const size=directionSource.naturalWidth/2;
-    ctx.drawImage(directionSource,(col%2)*size,Math.floor(col/2)*size,size,size,16,13,313.5,313.5);
+    const direction=row===0?0:row-4;
+    // 逐列透明間隙切格，保留第一列超過名義格線的推進器。
+    const ys=[0,331,625,910,1254],xs=[0,314,627,941,1254];
+    const x=xs[col],y=ys[direction],w=xs[col+1]-x,h=ys[direction+1]-y;
+    ctx.drawImage(directionSource,x,y,w,h,16,13+y-Math.round(direction*313.5),w,h);
     return;
   }
   if(row===3){
@@ -44,7 +47,7 @@ for(const source of [robotSource,harvestSource,directionSource]){
   source.onload=()=>robotViews.forEach(drawRobot);
   source.onerror=()=>{$('#status').textContent='機器人素材載入失敗，請重新整理頁面。';};
 }
-robotSource.src='assets/robot-atlas-v01.png';harvestSource.src='assets/robot-harvest-empty-v02.png';directionSource.src='assets/robot-directions-v03.png';
+robotSource.src='assets/robot-atlas-v01.png';harvestSource.src='assets/robot-harvest-empty-v02.png';directionSource.src='assets/robot-hover-directions-v04.png';
 // 商店與頭頂持物共用來源圖和裁取範圍，僅顯示尺寸不同。
 const itemViews=new Set();
 function drawItem(canvas){
@@ -110,13 +113,13 @@ $('#crop').onchange=e=>{plots[selected].crop=+e.target.value;renderPlots();};
 $('#growth').oninput=e=>{plots[selected].stage=+e.target.value;renderPlots();sync();};
 function pauseLabel(){$('#pause').textContent=paused?'播放動畫':'暫停動畫';$('#pause').setAttribute('aria-pressed',String(paused));}
 $('#pause').onclick=()=>{paused=!paused;pauseLabel();};
-const rows=[['漂浮・4 格',0,'robot'],['播種・4 格',1,'robot'],['澆水・4 格',2,'robot'],['空手採收',3,'robot'],['移動方向',4,'robot'],['土壤狀態',0,'farm'],['胡蘿蔔',1,'farm'],['番茄',2,'farm'],['萵苣',3,'farm']];
-rows.forEach(([label,row,type])=>{const r=document.createElement('div');r.className='catalog-row';const title=document.createElement('strong');title.textContent=label;r.append(title);for(let c=0;c<4;c++){const cell=document.createElement('div');cell.className='sample';const s=document.createElement('div');s.className=`sprite ${type}`;position(s,c,row);cell.append(s,document.createTextNode(type==='robot'?(row===4?['正面・南','左側・西','背面・北','右側・東'][c]:row===3?['伸手','抓取','抬起','舉過頭頂'][c]:`動作 ${c+1}`):row===0?['乾裂','一般','濕潤','積水'][c]:stages[c]));r.append(cell);}$('#catalog').append(r);});
+const rows=[['南向漂浮',0,'robot'],['播種・4 格',1,'robot'],['澆水・4 格',2,'robot'],['空手採收',3,'robot'],['西向漂浮',5,'robot'],['北向漂浮',6,'robot'],['東向漂浮',7,'robot'],['土壤狀態',0,'farm'],['胡蘿蔔',1,'farm'],['番茄',2,'farm'],['萵苣',3,'farm']];
+rows.forEach(([label,row,type])=>{const r=document.createElement('div');r.className='catalog-row';const title=document.createElement('strong');title.textContent=label;r.append(title);for(let c=0;c<4;c++){const cell=document.createElement('div');cell.className='sample';const s=document.createElement('div');s.className=`sprite ${type}`;position(s,c,row);cell.append(s,document.createTextNode(type==='robot'?(row===3?['伸手','抓取','抬起','舉過頭頂'][c]:`動作 ${c+1}`):row===0?['乾裂','一般','濕潤','積水'][c]:stages[c]));r.append(cell);}$('#catalog').append(r);});
 Object.entries(produce).forEach(([id,item])=>{const card=document.createElement('article');card.className='produce-card';card.append(itemCanvas(+id));const title=document.createElement('h3');title.textContent=item.name;const note=document.createElement('p');note.textContent='單個收成・攜帶與商店共用';const link=document.createElement('a');link.href=item.file;link.download='';link.textContent='下載透明素材 ↗';card.append(title,note,link);$('#produce-catalog').append(card);});
 function turn(delta){
   if(movement||harvestTarget){$('#status').textContent='請等目前的移動或採收完成再轉向。';return;}
   heading=(heading+delta+4)%4;directionalPose=true;action=0;frame=0;
-  buttons('#actions',0);position($('#robot'),heading,4);sync();
+  buttons('#actions',0);position($('#robot'),frame,4+heading);sync();
   $('#status').textContent=`已${delta<0?'左':'右'}轉 90°，面向${directions[heading].name}。`;
 }
 $('#turn-left').onclick=()=>turn(-1);$('#turn-right').onclick=()=>turn(1);
@@ -139,7 +142,7 @@ function startStep(){
   if(to===undefined){movement=null;directionalPose=false;position($('#robot'),cargo?3:0,cargo?3:0);sync();$('#status').textContent=`已抵達田區 ${selected+1}${cargo?'，仍攜帶 1 個'+produce[cargo.crop].name:'，恢復正面待命'}。`;return;}
   const from=selected;movement.from=from;movement.to=to;movement.elapsed=0;
   heading=to%3<from%3?1:to%3>from%3?3:to<from?2:0;
-  directionalPose=true;position($('#robot'),heading,4);sync();
+  directionalPose=true;position($('#robot'),frame,4+heading);sync();
   $('#status').textContent=`向${directions[heading].name}移動至田區 ${to+1}${paused?'（已暫停）':''}。`;
 }
 let previousTime=null;
@@ -158,7 +161,9 @@ function animateMovement(time){
 requestAnimationFrame(animateMovement);
 renderPlots();sync();buttons('#actions',0);pauseLabel();position($('#robot'),0,0);
 setInterval(()=>{
-  if(paused||document.hidden||movement||directionalPose||cargo&&!harvestTarget)return;
+  if(paused||document.hidden)return;
+  if(movement||directionalPose){frame=(frame+1)%4;position($('#robot'),frame,4+heading);return;}
+  if(cargo&&!harvestTarget)return;
   if(harvestTarget){
     frame=Math.min(frame+1,3);
     if(frame===2&&!cargo){cargo={...harvestTarget};renderPlots();}
