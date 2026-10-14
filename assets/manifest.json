@@ -1,5 +1,5 @@
 {
-  "version": "0.4",
+  "version": "0.4.1",
   "status": "art-prototype",
   "width": 1254,
   "height": 1254,
@@ -219,6 +219,12 @@
     "stepDurationMs": 650,
     "route": "horizontal-then-vertical",
     "stationaryActions": "front-facing",
-    "carryLayer": "independent"
+    "carryLayer": "independent",
+    "idleUsesOriginalAtlas": true
+  },
+  "idle": {
+    "file": "robot-atlas-v01.png",
+    "row": 0,
+    "frames": 4
   }
 }

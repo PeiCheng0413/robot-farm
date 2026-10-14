@@ -17,9 +17,9 @@ function drawRobot(el){
   const canvas=el.firstElementChild,ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,384,340);ctx.imageSmoothingEnabled=false;
   const {col,row}=el.robotFrame;
-  if(row===0||row>=4){
+  if(row>=4){
     if(!directionSource.complete||!directionSource.naturalWidth)return;
-    const direction=row===0?0:row-4;
+    const direction=row-4;
     // 逐列透明間隙切格，保留第一列超過名義格線的推進器。
     const ys=[0,331,625,910,1254],xs=[0,314,627,941,1254];
     const x=xs[col],y=ys[direction],w=xs[col+1]-x,h=ys[direction+1]-y;
@@ -113,7 +113,7 @@ $('#crop').onchange=e=>{plots[selected].crop=+e.target.value;renderPlots();};
 $('#growth').oninput=e=>{plots[selected].stage=+e.target.value;renderPlots();sync();};
 function pauseLabel(){$('#pause').textContent=paused?'播放動畫':'暫停動畫';$('#pause').setAttribute('aria-pressed',String(paused));}
 $('#pause').onclick=()=>{paused=!paused;pauseLabel();};
-const rows=[['南向漂浮',0,'robot'],['播種・4 格',1,'robot'],['澆水・4 格',2,'robot'],['空手採收',3,'robot'],['西向漂浮',5,'robot'],['北向漂浮',6,'robot'],['東向漂浮',7,'robot'],['土壤狀態',0,'farm'],['胡蘿蔔',1,'farm'],['番茄',2,'farm'],['萵苣',3,'farm']];
+const rows=[['原版待命',0,'robot'],['南向移動',4,'robot'],['播種・4 格',1,'robot'],['澆水・4 格',2,'robot'],['空手採收',3,'robot'],['西向漂浮',5,'robot'],['北向漂浮',6,'robot'],['東向漂浮',7,'robot'],['土壤狀態',0,'farm'],['胡蘿蔔',1,'farm'],['番茄',2,'farm'],['萵苣',3,'farm']];
 rows.forEach(([label,row,type])=>{const r=document.createElement('div');r.className='catalog-row';const title=document.createElement('strong');title.textContent=label;r.append(title);for(let c=0;c<4;c++){const cell=document.createElement('div');cell.className='sample';const s=document.createElement('div');s.className=`sprite ${type}`;position(s,c,row);cell.append(s,document.createTextNode(type==='robot'?(row===3?['伸手','抓取','抬起','舉過頭頂'][c]:`動作 ${c+1}`):row===0?['乾裂','一般','濕潤','積水'][c]:stages[c]));r.append(cell);}$('#catalog').append(r);});
 Object.entries(produce).forEach(([id,item])=>{const card=document.createElement('article');card.className='produce-card';card.append(itemCanvas(+id));const title=document.createElement('h3');title.textContent=item.name;const note=document.createElement('p');note.textContent='單個收成・攜帶與商店共用';const link=document.createElement('a');link.href=item.file;link.download='';link.textContent='下載透明素材 ↗';card.append(title,note,link);$('#produce-catalog').append(card);});
 function turn(delta){
