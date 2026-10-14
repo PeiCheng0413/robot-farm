@@ -1,0 +1,167 @@
+{
+  "version": "0.2",
+  "status": "art-prototype",
+  "width": 1254,
+  "height": 1254,
+  "columns": 4,
+  "rows": 4,
+  "pixelBoundaries": [
+    0,
+    314,
+    627,
+    941,
+    1254
+  ],
+  "frameDurationMs": 180,
+  "atlases": [
+    {
+      "file": "robot-atlas-v01.png",
+      "rows": [
+        "idle",
+        "sow",
+        "water",
+        "deprecated-harvest-with-crop"
+      ],
+      "columnBoundariesByRow": [
+        [
+          0,
+          327,
+          630,
+          936,
+          1254
+        ],
+        [
+          0,
+          329,
+          659,
+          970,
+          1254
+        ],
+        [
+          0,
+          336,
+          660,
+          986,
+          1254
+        ],
+        [
+          0,
+          359,
+          647,
+          949,
+          1254
+        ]
+      ],
+      "renderCanvas": {
+        "width": 384,
+        "height": 340,
+        "offsetX": 16,
+        "offsetY": 13
+      },
+      "sampling": "Use per-row column boundaries, never the uniform pixelBoundaries",
+      "deprecatedRows": [
+        3
+      ]
+    },
+    {
+      "file": "farm-atlas-v01.png",
+      "rows": [
+        "soil",
+        "carrot",
+        "tomato",
+        "lettuce"
+      ],
+      "soilColumns": [
+        "dry",
+        "normal",
+        "moist",
+        "waterlogged"
+      ],
+      "cropColumns": [
+        "seedling",
+        "young",
+        "growing",
+        "mature"
+      ]
+    },
+    {
+      "file": "robot-harvest-empty-v02.png",
+      "width": 1254,
+      "height": 1254,
+      "columns": 2,
+      "rows": 2,
+      "frameSize": 627,
+      "frames": [
+        "reach",
+        "grasp",
+        "lift",
+        "carry-overhead"
+      ],
+      "containsCargo": false,
+      "renderDestination": [
+        16,
+        13,
+        313.5,
+        313.5
+      ]
+    }
+  ],
+  "produce": [
+    {
+      "id": "carrot",
+      "file": "produce-carrot-v01.png",
+      "width": 1254,
+      "height": 1254,
+      "sourceRect": [
+        393,
+        275,
+        632,
+        778
+      ],
+      "uses": [
+        "carry",
+        "shop"
+      ]
+    },
+    {
+      "id": "tomato",
+      "file": "produce-tomato-v01.png",
+      "width": 1254,
+      "height": 1254,
+      "sourceRect": [
+        400,
+        421,
+        454,
+        448
+      ],
+      "uses": [
+        "carry",
+        "shop"
+      ]
+    },
+    {
+      "id": "lettuce",
+      "file": "produce-lettuce-v01.png",
+      "width": 1254,
+      "height": 1254,
+      "sourceRect": [
+        268,
+        355,
+        724,
+        643
+      ],
+      "uses": [
+        "carry",
+        "shop"
+      ]
+    }
+  ],
+  "carry": {
+    "capacity": 1,
+    "pickupFrame": 2,
+    "holdFrame": 3,
+    "loop": false,
+    "separateLayer": true,
+    "dropRestoresSourcePlot": true
+  }
+}
