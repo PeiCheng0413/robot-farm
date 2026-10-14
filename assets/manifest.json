@@ -1,5 +1,5 @@
 {
-  "version": "0.4.1",
+  "version": "0.5",
   "status": "art-prototype",
   "width": 1254,
   "height": 1254,
@@ -226,5 +226,27 @@
     "file": "robot-atlas-v01.png",
     "row": 0,
     "frames": 4
+  },
+  "alignment": {
+    "source": "../alignment.js",
+    "robotCanvas": [
+      416,
+      416
+    ],
+    "bodyCenter": [
+      208,
+      208
+    ],
+    "bodyHeight": 124,
+    "cropCanvas": [
+      320,
+      320
+    ],
+    "cropRoot": [
+      160,
+      285
+    ],
+    "scaling": "uniform-by-shell-height",
+    "scenePosition": "actual-plot-grid"
   }
 }

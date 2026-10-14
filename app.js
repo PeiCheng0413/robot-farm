@@ -15,32 +15,41 @@ let heading=0,directionalPose=false,movement=null;
 const directions=[{name:"南 ↓",dx:0,dy:1},{name:"西 ←",dx:-1,dy:0},{name:"北 ↑",dx:0,dy:-1},{name:"東 →",dx:1,dy:0}];
 function drawRobot(el){
   const canvas=el.firstElementChild,ctx=canvas.getContext('2d');
-  ctx.clearRect(0,0,384,340);ctx.imageSmoothingEnabled=false;
+  ctx.clearRect(0,0,416,416);ctx.imageSmoothingEnabled=false;
   const {col,row}=el.robotFrame;
+  let source,rect,anchor,bob=0;
   if(row>=4){
-    if(!directionSource.complete||!directionSource.naturalWidth)return;
-    const direction=row-4;
-    // 逐列透明間隙切格，保留第一列超過名義格線的推進器。
-    const ys=[0,331,625,910,1254],xs=[0,314,627,941,1254];
-    const x=xs[col],y=ys[direction],w=xs[col+1]-x,h=ys[direction+1]-y;
-    ctx.drawImage(directionSource,x,y,w,h,16,13+y-Math.round(direction*313.5),w,h);
-    return;
+    source=directionSource;const d=row-4,ys=[0,331,625,910,1254],xs=[0,314,627,941,1254];
+    rect=[xs[col],ys[d],xs[col+1]-xs[col],ys[d+1]-ys[d]];anchor=spriteAlignment.hover[d][col];bob=spriteAlignment.bob[col];
+  }else if(row===3){
+    source=harvestSource;rect=[col%2*627,Math.floor(col/2)*627,627,627];anchor=spriteAlignment.harvest[col];
+  }else{
+    source=robotSource;const x=robotCuts[row][col],y=Math.round(row*313.5);
+    rect=[x,y,robotCuts[row][col+1]-x,Math.round((row+1)*313.5)-y];anchor=spriteAlignment.original[row][col];
+    if(row===0)bob=spriteAlignment.bob[col];
   }
-  if(row===3){
-    if(!harvestSource.complete||!harvestSource.naturalWidth)return;
-    const size=harvestSource.naturalWidth/2;
-    // 新圖集只有空手動作；作物絕不畫進機器人的畫布。
-    ctx.drawImage(harvestSource,(col%2)*size,Math.floor(col/2)*size,size,size,16,13,313.5,313.5);
-    return;
-  }
-  if(!robotSource.complete||!robotSource.naturalWidth)return;
-  const x=robotCuts[row][col],right=robotCuts[row][col+1];
-  const y=Math.round(row*313.5),bottom=Math.round((row+1)*313.5);
-  ctx.drawImage(robotSource,x,y,right-x,bottom-y,x-Math.round(col*313.5)+16,13,right-x,bottom-y);
+  if(!source.complete||!source.naturalWidth)return;
+  const [x,y,w,h]=rect,[cx,cy,height]=anchor,scale=spriteAlignment.bodyHeight/height;
+  ctx.drawImage(source,x,y,w,h,208+(x-cx)*scale,208+bob+(y-cy)*scale,w*scale,h*scale);
+  // 同一個漂浮位移同時套到持物層，避免作物與機器人各自晃動。
+  if(el.id==='robot')$('#held-item').style.marginBottom=`${-bob/416*el.clientHeight}px`;
 }
+const farmSource=new Image(),plantViews=new Set();
+function drawPlant(el){
+  const {col,row}=el.plantFrame,canvas=el.firstElementChild,ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,320,320);ctx.imageSmoothingEnabled=false;
+  if(!farmSource.complete||!farmSource.naturalWidth)return;
+  const x=Math.round(col*313.5),y=Math.round(row*313.5),[rx,ry]=spriteAlignment.cropRoots[row-1][col];
+  ctx.drawImage(farmSource,x,y,Math.round((col+1)*313.5)-x,Math.round((row+1)*313.5)-y,160-rx,285-ry,Math.round((col+1)*313.5)-x,Math.round((row+1)*313.5)-y);
+}
+farmSource.onload=()=>plantViews.forEach(drawPlant);farmSource.src='assets/farm-atlas-v01.png?v=05';
 function position(el,col,row){
+  if(el.classList.contains('farm')&&row>0){
+    if(!el.firstElementChild){const canvas=document.createElement('canvas');canvas.width=320;canvas.height=320;el.append(canvas);plantViews.add(el);el.classList.add('aligned-plant');}
+    el.plantFrame={col,row};drawPlant(el);return;
+  }
   if(!el.classList.contains('robot')){el.style.backgroundPosition=`${col*100/3}% ${row*100/3}%`;return;}
-  if(!el.firstElementChild){const canvas=document.createElement('canvas');canvas.width=384;canvas.height=340;canvas.setAttribute('aria-hidden','true');el.append(canvas);robotViews.add(el);}
+  if(!el.firstElementChild){const canvas=document.createElement('canvas');canvas.width=416;canvas.height=416;canvas.setAttribute('aria-hidden','true');el.append(canvas);robotViews.add(el);}
   el.robotFrame={col,row};drawRobot(el);
 }
 for(const source of [robotSource,harvestSource,directionSource]){
@@ -60,6 +69,7 @@ function itemCanvas(crop){const canvas=document.createElement('canvas');canvas.w
 Object.values(produce).forEach(item=>{item.image=new Image();item.image.onload=()=>itemViews.forEach(drawItem);item.image.src=item.file;});
 function buttons(id,value){document.querySelectorAll(`${id} button`).forEach(b=>{b.classList.toggle('active',+b.dataset.value===value);b.setAttribute('aria-pressed',String(+b.dataset.value===value));});}
 function renderPlots(){
+  document.querySelectorAll('#plots .aligned-plant').forEach(el=>plantViews.delete(el));
   $('#plots').innerHTML='';
   plots.forEach((p,i)=>{
     const lifted=cargo&&cargo.plot===i;
@@ -153,11 +163,18 @@ function animateMovement(time){
     movement.elapsed+=dt;const progress=duration?Math.min(movement.elapsed/duration,1):1;
     const from=movement.from,to=movement.to;
     const x=from%3+(to%3-from%3)*progress,y=Math.floor(from/3)+(Math.floor(to/3)-Math.floor(from/3))*progress;
-    $('#bot').style.left=`${8+x*29}%`;$('#bot').style.top=`${88+y*142}px`;
+    placeBot(x,y);
     if(progress===1){selected=to;renderPlots();startStep();}
   }
   requestAnimationFrame(animateMovement);
 }
+function placeBot(x,y){
+  const grid=$('#plots'),bot=$('#bot');
+  // 使用實際田區格寬／格高，窄螢幕和視窗縮放也共用相同定位點。
+  bot.style.left=`${grid.offsetLeft+(x+.5)*grid.clientWidth/3-bot.offsetWidth*.5-28}px`;
+  bot.style.top=`${grid.offsetTop+(y+1)*grid.clientHeight/2-bot.offsetHeight*.72-48}px`;
+}
+new ResizeObserver(()=>{if(!movement)placeBot(selected%3,Math.floor(selected/3));}).observe($('.greenhouse'));
 requestAnimationFrame(animateMovement);
 renderPlots();sync();buttons('#actions',0);pauseLabel();position($('#robot'),0,0);
 setInterval(()=>{

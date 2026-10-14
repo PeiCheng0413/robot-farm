@@ -23,3 +23,11 @@ button:disabled,select:disabled,input:disabled{opacity:.45;cursor:not-allowed}
 .turn-buttons button{padding:9px 4px;background:#e3e9d5;border:1px solid var(--line);font-size:12px}
 #forward{grid-column:1/-1}
 .direction-note{font-size:10px;line-height:1.7;color:#607568}
+
+/* v0.5：正方形畫布避免非等比壓縮；植株根部共用田面基準。 */
+.aligned-plant{background-image:none!important}
+.aligned-plant canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
+.plant{bottom:32px}
+.held-item{left:50%;bottom:75%;width:42%}
+.held-item.lifting{left:50%;bottom:43%}
+@media(max-width:850px){.plant{bottom:28px}}
