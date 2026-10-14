@@ -1,5 +1,5 @@
 {
-  "version": "0.2",
+  "version": "0.3",
   "status": "art-prototype",
   "width": 1254,
   "height": 1254,
@@ -104,6 +104,20 @@
         313.5,
         313.5
       ]
+    },
+    {
+      "file": "robot-directions-v03.png",
+      "width": 1254,
+      "height": 1254,
+      "columns": 2,
+      "rows": 2,
+      "frameSize": 627,
+      "frames": [
+        "south-front",
+        "west-left",
+        "north-back",
+        "east-right"
+      ]
     }
   ],
   "produce": [
@@ -163,5 +177,19 @@
     "loop": false,
     "separateLayer": true,
     "dropRestoresSourcePlot": true
+  },
+  "movement": {
+    "headingOrder": [
+      "south",
+      "west",
+      "north",
+      "east"
+    ],
+    "turnLeft": -1,
+    "turnRight": 1,
+    "stepDurationMs": 650,
+    "route": "horizontal-then-vertical",
+    "stationaryActions": "front-facing",
+    "carryLayer": "independent"
   }
 }
