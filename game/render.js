@@ -279,13 +279,14 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
         for (const [x, y] of plot.cells) ctx.fillRect(...origin(x, y), CELL, CELL);
       }
     }
+    // 名牌先畫，機器人疊在上面，免得機器人在入口格時被名牌蓋住。
+    for (const plot of PLOTS) {
+      const ps = state.plots[plot.id], [gx, gy] = toGrid(plot.id, Math.min(...plot.cells.map(c => c[0])), 0);
+      P.label(ctx, plot.name + (ps.crashed ? '・當機' : ''), gx * CELL + 4, gy * CELL + 4, ps.crashed ? C.crash : 'rgba(38, 63, 60, .82)', 20);
+    }
     for (const { robot, view } of views) {
       const box = P.robotAt(ctx, view, view.pos[0] * CELL + CELL / 2, view.pos[1] * CELL + CELL / 2, CELL);
       if (robot.phase === 'stuck') P.label(ctx, '！當機', box.boxX + box.size * .2, box.boxY - 8, C.crash);
-    }
-    for (const plot of PLOTS) {
-      const ps = state.plots[plot.id], [gx, gy] = toGrid(plot.id, Math.min(...plot.cells.map(c => c[0])), 0);
-      P.label(ctx, plot.name + (ps.crashed ? '・當機' : ''), gx * CELL + 4, gy * CELL + 4, ps.crashed ? C.crash : 'rgba(38, 63, 60, .82)');
     }
     P.floaters(ctx, list, 26);
   }

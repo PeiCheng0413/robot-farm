@@ -243,6 +243,14 @@ async function start() {
   const fitCard = () => document.documentElement.style.setProperty('--console-h', $('.console').offsetHeight + 'px');
   window.addEventListener('resize', fitCard);
   fitCard();
+  // 盤面等比縮放到放得進地板（CSS 的 max-height 對 canvas 在這個版面裡不生效）。
+  const floor = $('.floor'), farm = $('#farm');
+  new ResizeObserver(() => {
+    const pad = parseFloat(getComputedStyle(floor).paddingLeft) * 2;
+    const k = Math.min((floor.clientWidth - pad) / farm.width, (floor.clientHeight - pad) / farm.height);
+    farm.style.width = Math.floor(farm.width * k) + 'px';
+    farm.style.height = Math.floor(farm.height * k) + 'px';
+  }).observe(floor);
   autosave(() => state);
   requestAnimationFrame(frame);
 }
