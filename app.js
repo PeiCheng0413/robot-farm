@@ -10,7 +10,7 @@ let selected=0,action=0,frame=0,paused=matchMedia('(prefers-reduced-motion: redu
 // 僅一個攜帶槽；採收期間先保留槽位，防止快速重按或換田重複拿取。
 let cargo=null,harvestTarget=null;
 const robotCuts=[[0,327,630,936,1254],[0,329,659,970,1254],[0,336,660,986,1254]];
-const robotSource=new Image(),harvestSource=new Image(),directionSource=new Image(),robotViews=new Set();
+const robotSource=new Image(),harvestSource=new Image(),directionSource=new Image(),carrySource=new Image(),robotViews=new Set();
 let heading=0,directionalPose=false,movement=null;
 const directions=[{name:"南 ↓",dx:0,dy:1},{name:"西 ←",dx:-1,dy:0},{name:"北 ↑",dx:0,dy:-1},{name:"東 →",dx:1,dy:0}];
 function drawRobot(el){
@@ -18,7 +18,12 @@ function drawRobot(el){
   ctx.clearRect(0,0,416,416);ctx.imageSmoothingEnabled=false;
   const {col,row}=el.robotFrame;
   let source,rect,anchor,bob=0;
-  if(row>=4){
+  if(row>=8){
+    source=carrySource;const d=row-8,data=spriteAlignment.carry;
+    const xs=data.columnBoundaries,ys=data.rowBoundaries;
+    rect=[xs[col],ys[d],xs[col+1]-xs[col],ys[d+1]-ys[d]];
+    anchor=data.shells[d][col];bob=spriteAlignment.bob[col];
+  }else if(row>=4){
     source=directionSource;const d=row-4,ys=[0,331,625,910,1254],xs=[0,314,627,941,1254];
     rect=[xs[col],ys[d],xs[col+1]-xs[col],ys[d+1]-ys[d]];anchor=spriteAlignment.hover[d][col];bob=spriteAlignment.bob[col];
   }else if(row===3){
@@ -31,8 +36,24 @@ function drawRobot(el){
   if(!source.complete||!source.naturalWidth)return;
   const [x,y,w,h]=rect,[cx,cy,height]=anchor,scale=spriteAlignment.bodyHeight/height;
   ctx.drawImage(source,x,y,w,h,208+(x-cx)*scale,208+bob+(y-cy)*scale,w*scale,h*scale);
+  if(row>=8&&(el.id==='robot'||el.sampleCargo)){
+    const holder=el.id==='robot'?$('#held-item'):el.sampleCargo;
+    const [hx,hy]=spriteAlignment.carry.hands[row-8][col];
+    holder.style.left=((208+(hx-cx)*scale)/416*100)+'%';
+    holder.style.bottom=((416-(208+(hy-cy)*scale)-416*.42*8/96)/416*100)+'%';
+    if(el.sampleCargo)holder.style.marginBottom=(-bob/416*el.clientHeight)+'px';
+  }else if(el.id==='robot'){
+    $('#held-item').style.left='';$('#held-item').style.bottom='';
+  }
   // 同一個漂浮位移同時套到持物層，避免作物與機器人各自晃動。
   if(el.id==='robot')$('#held-item').style.marginBottom=`${-bob/416*el.clientHeight}px`;
+}
+function updateRobot(){
+  let row;
+  if(harvestTarget)row=3;
+  else if(cargo)row=movement||directionalPose?8+heading:12;
+  else row=movement||directionalPose?4+heading:action;
+  position($('#robot'),frame,row);
 }
 const farmSource=new Image(),plantViews=new Set();
 function drawPlant(el){
@@ -52,11 +73,11 @@ function position(el,col,row){
   if(!el.firstElementChild){const canvas=document.createElement('canvas');canvas.width=416;canvas.height=416;canvas.setAttribute('aria-hidden','true');el.append(canvas);robotViews.add(el);}
   el.robotFrame={col,row};drawRobot(el);
 }
-for(const source of [robotSource,harvestSource,directionSource]){
+for(const source of [robotSource,harvestSource,directionSource,carrySource]){
   source.onload=()=>robotViews.forEach(drawRobot);
   source.onerror=()=>{$('#status').textContent='機器人素材載入失敗，請重新整理頁面。';};
 }
-robotSource.src='assets/robot-atlas-v01.png';harvestSource.src='assets/robot-harvest-empty-v02.png';directionSource.src='assets/robot-hover-directions-v04.png';
+robotSource.src='assets/robot-atlas-v01.png';harvestSource.src='assets/robot-harvest-empty-v02.png';directionSource.src='assets/robot-hover-directions-v04.png';carrySource.src='assets/robot-carry-directions-v06.png';
 // 商店與頭頂持物共用來源圖和裁取範圍，僅顯示尺寸不同。
 const itemViews=new Set();
 function drawItem(canvas){
@@ -103,7 +124,7 @@ $('#actions').onclick=e=>{
   if(movement){$('#status').textContent='移動完成後即可切換動作。';return;}
   if(harvestTarget){$('#status').textContent=paused?'採收已暫停，請先播放動畫。':'正在採收，一次只能拿起一個作物。';return;}
   if(cargo){
-    if(next===0){directionalPose=false;position($('#robot'),3,3);}
+    if(next===0){directionalPose=false;action=0;frame=0;buttons('#actions',0);updateRobot();}
     $('#status').textContent=next===0?`正舉著 1 個${produce[cargo.crop].name}，可點田區移動。`:'一次只能拿一個，請先放下頭上的作物。';
     return;
   }
@@ -123,13 +144,17 @@ $('#crop').onchange=e=>{plots[selected].crop=+e.target.value;renderPlots();};
 $('#growth').oninput=e=>{plots[selected].stage=+e.target.value;renderPlots();sync();};
 function pauseLabel(){$('#pause').textContent=paused?'播放動畫':'暫停動畫';$('#pause').setAttribute('aria-pressed',String(paused));}
 $('#pause').onclick=()=>{paused=!paused;pauseLabel();};
-const rows=[['原版待命',0,'robot'],['南向移動',4,'robot'],['播種・4 格',1,'robot'],['澆水・4 格',2,'robot'],['空手採收',3,'robot'],['西向漂浮',5,'robot'],['北向漂浮',6,'robot'],['東向漂浮',7,'robot'],['土壤狀態',0,'farm'],['胡蘿蔔',1,'farm'],['番茄',2,'farm'],['萵苣',3,'farm']];
-rows.forEach(([label,row,type])=>{const r=document.createElement('div');r.className='catalog-row';const title=document.createElement('strong');title.textContent=label;r.append(title);for(let c=0;c<4;c++){const cell=document.createElement('div');cell.className='sample';const s=document.createElement('div');s.className=`sprite ${type}`;position(s,c,row);cell.append(s,document.createTextNode(type==='robot'?(row===3?['伸手','抓取','抬起','舉過頭頂'][c]:`動作 ${c+1}`):row===0?['乾裂','一般','濕潤','積水'][c]:stages[c]));r.append(cell);}$('#catalog').append(r);});
+const rows=[['原版待命',0,'robot'],['南向移動',4,'robot'],['播種・4 格',1,'robot'],['澆水・4 格',2,'robot'],['空手採收',3,'robot'],['西向漂浮',5,'robot'],['北向漂浮',6,'robot'],['東向漂浮',7,'robot'],['持物・南',8,'robot'],['持物・西',9,'robot'],['持物・北',10,'robot'],['持物・東',11,'robot'],['持物・待機',12,'robot'],['土壤狀態',0,'farm'],['胡蘿蔔',1,'farm'],['番茄',2,'farm'],['萵苣',3,'farm']];
+rows.forEach(([label,row,type])=>{const r=document.createElement('div');r.className='catalog-row';const title=document.createElement('strong');title.textContent=label;r.append(title);for(let c=0;c<4;c++){const cell=document.createElement('div');cell.className='sample';const s=document.createElement('div');s.className=`sprite ${type}`;position(s,c,row);if(type==='robot'&&row>=8){
+  const held=document.createElement('div');held.className='sample-cargo';
+  held.append(itemCanvas(c%3+1));s.append(held);s.sampleCargo=held;drawRobot(s);
+}
+cell.append(s,document.createTextNode(type==='robot'?(row===3?['伸手','抓取','抬起','舉過頭頂'][c]:`動作 ${c+1}`):row===0?['乾裂','一般','濕潤','積水'][c]:stages[c]));r.append(cell);}$('#catalog').append(r);});
 Object.entries(produce).forEach(([id,item])=>{const card=document.createElement('article');card.className='produce-card';card.append(itemCanvas(+id));const title=document.createElement('h3');title.textContent=item.name;const note=document.createElement('p');note.textContent='單個收成・攜帶與商店共用';const link=document.createElement('a');link.href=item.file;link.download='';link.textContent='下載透明素材 ↗';card.append(title,note,link);$('#produce-catalog').append(card);});
 function turn(delta){
   if(movement||harvestTarget){$('#status').textContent='請等目前的移動或採收完成再轉向。';return;}
   heading=(heading+delta+4)%4;directionalPose=true;action=0;frame=0;
-  buttons('#actions',0);position($('#robot'),frame,4+heading);sync();
+  buttons('#actions',0);updateRobot();sync();
   $('#status').textContent=`已${delta<0?'左':'右'}轉 90°，面向${directions[heading].name}。`;
 }
 $('#turn-left').onclick=()=>turn(-1);$('#turn-right').onclick=()=>turn(1);
@@ -149,10 +174,10 @@ function moveTo(target){
 }
 function startStep(){
   const to=movement.route.shift();
-  if(to===undefined){movement=null;directionalPose=false;position($('#robot'),cargo?3:0,cargo?3:0);sync();$('#status').textContent=`已抵達田區 ${selected+1}${cargo?'，仍攜帶 1 個'+produce[cargo.crop].name:'，恢復正面待命'}。`;return;}
+  if(to===undefined){movement=null;directionalPose=false;frame=0;updateRobot();sync();$('#status').textContent=`已抵達田區 ${selected+1}${cargo?'，仍攜帶 1 個'+produce[cargo.crop].name:'，恢復正面待命'}。`;return;}
   const from=selected;movement.from=from;movement.to=to;movement.elapsed=0;
   heading=to%3<from%3?1:to%3>from%3?3:to<from?2:0;
-  directionalPose=true;position($('#robot'),frame,4+heading);sync();
+  directionalPose=true;updateRobot();sync();
   $('#status').textContent=`向${directions[heading].name}移動至田區 ${to+1}${paused?'（已暫停）':''}。`;
 }
 let previousTime=null;
@@ -179,13 +204,13 @@ requestAnimationFrame(animateMovement);
 renderPlots();sync();buttons('#actions',0);pauseLabel();position($('#robot'),0,0);
 setInterval(()=>{
   if(paused||document.hidden)return;
-  if(movement||directionalPose){frame=(frame+1)%4;position($('#robot'),frame,4+heading);return;}
-  if(cargo&&!harvestTarget)return;
+  if(movement||directionalPose){frame=(frame+1)%4;updateRobot();return;}
+  if(cargo&&!harvestTarget){frame=(frame+1)%4;updateRobot();return;}
   if(harvestTarget){
     frame=Math.min(frame+1,3);
     if(frame===2&&!cargo){cargo={...harvestTarget};renderPlots();}
     if(frame===3){harvestTarget=null;$('#status').textContent=`已把 1 個${produce[cargo.crop].name}舉到頭上。放下後才能再採收。`;}
     showCargo();sync();
   }else frame=(frame+1)%4;
-  position($('#robot'),frame,action);
+  updateRobot();
 },180);

@@ -31,3 +31,7 @@ button:disabled,select:disabled,input:disabled{opacity:.45;cursor:not-allowed}
 .held-item{left:50%;bottom:75%;width:42%}
 .held-item.lifting{left:50%;bottom:43%}
 @media(max-width:850px){.plant{bottom:28px}}
+
+/* v0.6：持物與角色共用每格手掌座標。 */
+.sample .robot{position:relative;overflow:visible}
+.sample-cargo{position:absolute;width:42%;aspect-ratio:1;transform:translateX(-50%);pointer-events:none}

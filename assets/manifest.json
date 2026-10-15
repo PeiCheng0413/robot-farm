@@ -1,5 +1,5 @@
 {
-  "version": "0.5",
+  "version": "0.6",
   "status": "art-prototype",
   "width": 1254,
   "height": 1254,
@@ -147,6 +147,38 @@
       ],
       "frameDurationMs": 180,
       "southView": "straight-on-symmetrical"
+    },
+    {
+      "file": "robot-carry-directions-v06.png",
+      "width": 1122,
+      "height": 1402,
+      "columns": 4,
+      "rows": [
+        "south",
+        "west",
+        "north",
+        "east",
+        "original-idle"
+      ],
+      "framesPerDirection": 4,
+      "containsCargo": false,
+      "frameDurationMs": 180,
+      "columnBoundaries": [
+        0,
+        281,
+        561,
+        842,
+        1122
+      ],
+      "rowBoundaries": [
+        0,
+        300,
+        572,
+        839,
+        1106,
+        1402
+      ],
+      "alignmentSource": "../alignment.js"
     }
   ],
   "produce": [
@@ -203,9 +235,13 @@
     "capacity": 1,
     "pickupFrame": 2,
     "holdFrame": 3,
-    "loop": false,
+    "loop": true,
     "separateLayer": true,
-    "dropRestoresSourcePlot": true
+    "dropRestoresSourcePlot": true,
+    "stationaryPose": "original-idle-raised-arms",
+    "directionalPose": "raised-arms-all-directions",
+    "cargoAnchor": "per-frame hand position in alignment.js",
+    "harvestLoop": false
   },
   "movement": {
     "headingOrder": [
