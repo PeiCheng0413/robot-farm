@@ -5,8 +5,9 @@
 import {
   START, SAVE_VERSION, TOKENS_PER_MONEY, ACTION_COST, ACTION_MS, TRAVEL_MS, IDLE_MS, ACTION_LIMIT, CALL_DEPTH,
   CAPACITY, capacityCost, MOISTURE_DECAY_MS, GROWTH_RATE_BY_MOISTURE, CROPS,
+  START_PLOTS, SHAPE_PRICE, PLOT_TYPES, SELL_REFUND, START_LAND, landPrice,
 } from './config.js';
-import { PLOTS, plotById, cellKey, stagesOf, defaultLayout, canPlace } from './plots.js';
+import { PLOTS, plotById, cellKey, stagesOf, canPlace, syncPlots, makePlot, placedCells, BOARD } from './plots.js';
 import { createRun, nextAction, evaluate, programBody } from './interpreter.js';
 
 // 朝向順序與左右轉方向和 manifest.movement 一致：右轉 +1、左轉 -1。
@@ -29,11 +30,15 @@ const emit = (state, type, data) => queue(state).push({ type, time: state.time, 
 export const drainEvents = state => queue(state).splice(0);
 
 // ---------- 建立與讀取 ----------
+// state.plots[id]：玩家擁有的田（含倉庫裡的）。shape／type／price 是田的身分，其餘是田的狀態。
+// state.layout[id]：擺在盤面上的位置與旋轉；沒有這一筆就是收在倉庫，不生長、機器人也不去。
+// state.land：已開放（買下）的盤面格子 "x,y"；田只能放在開放的格子上。
 
-function newPlotState(plot) {
+function newPlotState(plot, price) {
   const cells = {};
   for (const [x, y] of plot.cells) cells[cellKey(x, y)] = { crop: null, growth: 0, moisture: 1, dryMs: 0 };
   return {
+    shape: plot.shape, type: plot.type, price,
     crop: plot.defaultCrop, crashed: null, cells, capacityLevel: 0, lastRun: null,
     // 自動選腳本的類型分播種／採收（／澆水）多份，否則只有 main 一份（plots.js stagesOf）。
     // programs 是編譯後的指令樹，workspaces 是 Blockly 存檔。
@@ -43,14 +48,33 @@ function newPlotState(plot) {
 }
 
 function newRobot(id, plot) {
-  return { id, plot: plot.id, x: plot.entry.x, y: plot.entry.y, heading: plot.entry.heading, phase: 'idle', act: null, run: null, freeAt: 0, lastPlot: -1 };
+  return { id, plot: plot?.id || null, x: plot?.entry.x || 0, y: plot?.entry.y || 0, heading: plot?.entry.heading || 'south', phase: 'idle', act: null, run: null, freeAt: 0, lastPlot: -1 };
 }
 
+// 依 state.plots 更新共用的田地登記表（plots.js）。
+const sync = state => syncPlots(Object.entries(state.plots).map(([id, ps]) => ({ id, shape: ps.shape, type: ps.type })));
+export const landSet = state => new Set(state.land);
+export const isPlaced = (state, plotId) => !!state.layout[plotId];
+
 export function createState() {
-  const plots = {};
-  for (const p of PLOTS) plots[p.id] = newPlotState(p);
-  // layout：每塊田擺在盤面哪裡、轉了幾次（排列模式），只影響畫面，不影響模擬。
-  return { version: SAVE_VERSION, tokens: START.tokens, money: START.money, time: 0, plots, layout: defaultLayout(), robots: [newRobot(1, PLOTS[0])] };
+  const state = { version: SAVE_VERSION, tokens: START.tokens, money: START.money, time: 0, plots: {}, layout: {}, land: [], landBought: 0, nextId: 1, robots: [] };
+  for (let y = START_LAND.y; y < START_LAND.y + START_LAND.height; y++) {
+    for (let x = START_LAND.x; x < START_LAND.x + START_LAND.width; x++) state.land.push(cellKey(x, y));
+  }
+  for (const start of START_PLOTS) {
+    const id = addPlot(state, start.shape, start.type, 0);
+    state.layout[id] = { x: start.at[0], y: start.at[1], rot: 0 };
+  }
+  state.robots.push(newRobot(1, PLOTS[0]));
+  return state;
+}
+
+// 新增一塊田到倉庫，回傳 id。
+function addPlot(state, shape, type, price) {
+  const id = `${shape}-${type}-${state.nextId++}`;
+  state.plots[id] = newPlotState(makePlot(id, shape, type), price);
+  sync(state);
+  return id;
 }
 
 // 存檔不保存執行中的腳本進度：讀檔後機器人回到待命，下次從頭跑（與「中斷就從頭」一致）。
@@ -62,14 +86,15 @@ export function serialize(state) {
 export function restore(json) {
   const saved = JSON.parse(json);
   if (saved.version !== SAVE_VERSION) return null;
-  const state = createState();
-  Object.assign(state, { tokens: saved.tokens, money: saved.money, time: saved.time });
-  for (const p of PLOTS) if (saved.plots[p.id]) Object.assign(state.plots[p.id], saved.plots[p.id]);
-  // 存檔的排列有任何一塊放不下（例如新增了田），整份退回預設排列。
-  const layout = { ...defaultLayout(), ...(saved.layout || {}) }, check = {};
-  const ok = PLOTS.every(p => { const fits = canPlace(check, p.id, layout[p.id]); check[p.id] = layout[p.id]; return fits; });
-  state.layout = ok ? layout : defaultLayout();
-  state.robots = saved.robots.map(r => ({ ...r, act: null, run: null, freeAt: saved.time, phase: r.phase === 'stuck' ? 'stuck' : 'idle' }));
+  const state = { ...saved, robots: saved.robots.map(r => ({ ...r, act: null, run: null, freeAt: saved.time, phase: r.phase === 'stuck' ? 'stuck' : 'idle' })) };
+  sync(state);
+  // 存檔的排列有任何一塊放不下，那塊先收回倉庫。
+  const land = landSet(state), check = {};
+  for (const [id, place] of Object.entries(state.layout)) {
+    if (!plotById.has(id) || !canPlace(check, id, place, land)) delete state.layout[id];
+    else check[id] = place;
+  }
+  for (const robot of state.robots) if (!isPlaced(state, robot.plot)) relocate(state, robot);
   return state;
 }
 
@@ -87,6 +112,7 @@ export function update(state, ms) {
 
 function grow(state, ms) {
   for (const plot of PLOTS) {
+    if (!isPlaced(state, plot.id)) continue;   // 倉庫裡的田暫停
     for (const cell of Object.values(state.plots[plot.id].cells)) {
       if (!plot.rules.noDrying) {
         cell.dryMs += ms;
@@ -113,6 +139,7 @@ function advanceRobot(state, robot) {
       complete(state, robot, act);
       continue;
     }
+    if (!robot.plot) { relocate(state, robot); if (!robot.plot) return; }   // 盤面上一塊田都沒有
     if (robot.phase === 'stuck') return;
     if (robot.phase === 'run') stepRun(state, robot);
     else pickNext(state, robot);
@@ -151,7 +178,7 @@ function pickNext(state, robot) {
   for (let k = 1; k <= PLOTS.length; k++) {
     const index = (robot.lastPlot + k) % PLOTS.length;
     const plot = PLOTS[index], ps = state.plots[plot.id];
-    if (ps.crashed) continue;
+    if (ps.crashed || !isPlaced(state, plot.id)) continue;
     if (state.robots.some(o => o !== robot && o.plot === plot.id && o.phase !== 'idle')) continue;
     const choice = chooseProgram(plot, ps);
     if (!choice) continue;
@@ -293,10 +320,81 @@ export function senseLeaf(tokens, robot, ps, leaf) {
 export const capacityOf = (plotId, ps) => plotById.get(plotId).rules.capacity + CAPACITY.step * ps.capacityLevel;
 export const nextCapacityCost = ps => capacityCost(ps.capacityLevel);
 
-// 排列模式：把田移到新位置／轉向。放不下就不動，回傳 false。
+// 排列模式：把田（盤面上或倉庫裡的）移到新位置／轉向。放不下就不動，回傳 false。
+export const canPlacePlot = (state, plotId, place) => canPlace(state.layout, plotId, place, landSet(state));
 export function placePlot(state, plotId, place) {
-  if (!canPlace(state.layout, plotId, place)) return false;
+  if (!canPlacePlot(state, plotId, place)) return false;
   state.layout[plotId] = { x: place.x, y: place.y, rot: place.rot };
+  return true;
+}
+
+// 田離開盤面（收進倉庫或賣掉）時，在那裡工作的機器人中斷這次執行，換到別塊田；當機狀態跟著田走。
+function freeRobots(state, plotId) {
+  for (const robot of state.robots) {
+    if (robot.plot !== plotId && robot.act?.toPlot !== plotId) continue;
+    Object.assign(robot, { phase: 'idle', run: null, act: null, freeAt: state.time });
+    relocate(state, robot);
+  }
+}
+
+// 機器人所在的田不在盤面上了：移到第一塊在盤面上的田的入口；一塊都沒有就先待著（plot 為 null，不畫）。
+function relocate(state, robot) {
+  const plot = PLOTS.find(p => isPlaced(state, p.id));
+  Object.assign(robot, plot ? { plot: plot.id, x: plot.entry.x, y: plot.entry.y, heading: plot.entry.heading } : { plot: null });
+  if (robot.phase === 'stuck' && !state.plots[robot.plot]?.crashed) robot.phase = 'idle';
+}
+
+// 盤面上至少要留一塊田，機器人才有地方工作（收進倉庫與賣掉都要守這條）。
+export const isLastPlaced = (state, plotId) => isPlaced(state, plotId) && PLOTS.filter(p => isPlaced(state, p.id)).length < 2;
+
+export function storePlot(state, plotId) {
+  if (!isPlaced(state, plotId) || isLastPlaced(state, plotId)) return false;
+  delete state.layout[plotId];
+  freeRobots(state, plotId);
+  return true;
+}
+
+// ---------- 商店 ----------
+
+export const plotPrice = (shape, type) => Math.round(SHAPE_PRICE[shape] * PLOT_TYPES[type].price);
+export const refundOf = (state, plotId) => Math.floor(state.plots[plotId].price * SELL_REFUND);
+
+// 買田：扣錢、放進倉庫，回傳新田的 id；錢不夠回傳 null。
+export function buyPlot(state, shape, type) {
+  const price = plotPrice(shape, type);
+  if (state.money < price) return null;
+  state.money -= price;
+  return addPlot(state, shape, type, price);
+}
+
+// 賣田：田、作物、腳本一起消失，退回部分金錢。盤面上至少要留一塊田，否則機器人沒地方工作。
+export function sellPlot(state, plotId) {
+  if (!state.plots[plotId]) return false;
+  if (isLastPlaced(state, plotId)) return false;
+  state.money += refundOf(state, plotId);
+  delete state.layout[plotId];
+  delete state.plots[plotId];
+  sync(state);
+  freeRobots(state, plotId);
+  return true;
+}
+
+// ---------- 擴地 ----------
+
+export const nextLandPrice = state => landPrice(state.landBought);
+// 能買的格子：盤面內、還沒開放、而且上下左右緊鄰已開放的格子。
+export function canBuyLand(state, x, y) {
+  if (x < 0 || y < 0 || x >= BOARD.columns || y >= BOARD.rows) return false;
+  const land = landSet(state);
+  if (land.has(cellKey(x, y))) return false;
+  return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => land.has(cellKey(x + dx, y + dy)));
+}
+export function buyLand(state, x, y) {
+  const price = nextLandPrice(state);
+  if (!canBuyLand(state, x, y) || state.money < price) return false;
+  state.money -= price;
+  state.land.push(cellKey(x, y));
+  state.landBought++;
   return true;
 }
 

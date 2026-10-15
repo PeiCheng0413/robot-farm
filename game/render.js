@@ -294,15 +294,17 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
   canvas.height = BOARD.rows * CELL + TOP;
   const ctx = canvas.getContext('2d');
   // 每格畫面都依 state.layout（排列模式拖曳中則用預覽位置）決定每塊田畫在哪、轉幾次。
-  let layout = Object.fromEntries(PLOTS.map(p => [p.id, { x: p.board[0], y: p.board[1], rot: 0 }]));
+  let layout = {};
   const toGrid = (plotId, x, y) => toBoard(plotById.get(plotId), layout[plotId], x, y);
   const turnOf = plotId => layout[plotId].rot;
   const board = (x, y) => [x * CELL, y * CELL];
 
-  // ghost：{ plotId, place, valid } 拖曳中的田塊，吸附在格子上，可放為綠、放不下為紅。
-  function draw(state, { selected, ghost } = {}) {
+  // ghost：{ plotId, place, valid } 拖曳中的田塊（從盤面或倉庫拿起），吸附在格子上，可放為綠、放不下為紅。
+  // land：{ buyable: [[x, y]…], pending: [x, y] | null, price } 排列模式時標出可以買的格子。
+  function draw(state, { selected, ghost, land } = {}) {
     const time = state.time;
     layout = ghost ? { ...state.layout, [ghost.plotId]: ghost.place } : state.layout;
+    const shownPlots = PLOTS.filter(p => layout[p.id]);
     ctx.imageSmoothingEnabled = false;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -315,10 +317,27 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
       for (let y = 0; y <= BOARD.rows; y++) { ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(canvas.width, y * CELL); ctx.stroke(); }
     }
 
-    const views = state.robots.map(r => ({ robot: r, view: P.robotView(r, r.act, time, toGrid, turnOf) }));
+    // 還沒開放的格子：蓋一層深色，表示要花錢擴地
+    const open = new Set(state.land);
+    ctx.fillStyle = 'rgba(38, 63, 60, .62)';
+    for (let y = 0; y < BOARD.rows; y++) for (let x = 0; x < BOARD.columns; x++) if (!open.has(cellKey(x, y))) ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+    if (land) {
+      ctx.font = `bold 22px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      for (const [x, y] of land.buyable) {
+        const pending = land.pending && land.pending[0] === x && land.pending[1] === y;
+        ctx.strokeStyle = pending ? '#f0cf7e' : 'rgba(240, 207, 126, .55)'; ctx.lineWidth = pending ? 6 : 3;
+        ctx.setLineDash(pending ? [] : [8, 8]); ctx.strokeRect(x * CELL + 6, y * CELL + 6, CELL - 12, CELL - 12); ctx.setLineDash([]);
+        ctx.fillStyle = '#fffaf0';
+        ctx.fillText(pending ? `買 ${land.price}` : '+', x * CELL + CELL / 2, y * CELL + CELL / 2);
+        if (pending) { ctx.font = `bold 16px ${FONT}`; ctx.fillText('再點一下', x * CELL + CELL / 2, y * CELL + CELL * .78); ctx.font = `bold 22px ${FONT}`; }
+      }
+      ctx.textAlign = 'start';
+    }
+
+    const views = state.robots.filter(r => r.plot && layout[r.plot]).map(r => ({ robot: r, view: P.robotView(r, r.act, time, toGrid, turnOf) }));
     const hidden = new Set(views.filter(v => P.hidesPlant(v.view)).map(v => v.robot.plot + '|' + v.view.cell));
 
-    for (const plot of PLOTS) {
+    for (const plot of shownPlots) {
       const ps = state.plots[plot.id], origin = (x, y) => toGrid(plot.id, x, y).map(v => v * CELL);
       // 外框要用盤面上的格子算（旋轉後局部的「上」不一定是畫面的上）
       const cells = placedCells(plot, layout[plot.id]);
@@ -333,13 +352,13 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
       }
     }
     // 拖曳中：原本的位置留一圈虛線，知道田是從哪裡拿起來的
-    if (ghost) {
+    if (ghost && state.layout[ghost.plotId]) {
       const plot = plotById.get(ghost.plotId), from = placedCells(plot, state.layout[ghost.plotId]);
       ctx.setLineDash([12, 10]);
       P.outline(ctx, from, board, CELL, 'rgba(38, 63, 60, .7)', 4);
       ctx.setLineDash([]);
     }
-    for (const plot of PLOTS) {
+    for (const plot of shownPlots) {
       const ps = state.plots[plot.id], origin = (x, y) => toGrid(plot.id, x, y).map(v => v * CELL);
       for (const [x, y] of [...plot.cells].sort((a, b) => a[1] - b[1])) {
         const cell = ps.cells[cellKey(x, y)];
@@ -351,7 +370,7 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
       }
     }
     // 名牌先畫，機器人疊在上面，免得機器人在入口格時被名牌蓋住。
-    for (const plot of PLOTS) {
+    for (const plot of shownPlots) {
       const ps = state.plots[plot.id];
       // 名牌插在田（盤面上）最上排、最左邊那格的上緣
       const cells = placedCells(plot, layout[plot.id]);
@@ -369,6 +388,7 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
   }
 
   function floatAt(plotId, x, y, text, colour) {
+    if (!layout[plotId]) return;
     const [gx, gy] = toGrid(plotId, x, y);
     list.push({ text, colour, x: gx * CELL + 12, y: gy * CELL + CELL * .3, born: performance.now() });
   }
@@ -385,7 +405,7 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
   // 滑鼠座標換成點到的田塊 id。
   function plotAt(clientX, clientY) {
     const { x: bx, y: by } = cellAt(clientX, clientY);
-    const plot = PLOTS.find(p => placedCells(p, layout[p.id]).some(([x, y]) => x === bx && y === by));
+    const plot = PLOTS.find(p => layout[p.id] && placedCells(p, layout[p.id]).some(([x, y]) => x === bx && y === by));
     return plot ? plot.id : null;
   }
 

@@ -14,7 +14,7 @@ import { createEditor, STAGE_LABEL } from './editor.js';
 const $ = s => document.querySelector(s);
 const CROP_NAMES = {};
 
-let state, renderer, selected = PLOTS[0].id, speed = 1;
+let state, renderer, selected = null, speed = 1;
 
 // ---------- 存檔 ----------
 
@@ -87,6 +87,8 @@ function robotStatus(plotId) {
 }
 
 function renderPanel() {
+  if (!plotById.has(selected)) selected = PLOTS[0]?.id || null;   // 選中的田被賣掉了
+  if (!selected) return;
   const plot = plotById.get(selected), ps = state.plots[selected];
   const stages = stagesOf(plot), cap = capacityOf(selected, ps);
   const crops = Object.keys(CROPS).filter(id => canGrow(plot, id));
@@ -154,6 +156,8 @@ function buildControls() {
   const costs = Object.entries({ 前進: 'move', 轉彎: 'turnLeft', 播種: 'sow', 澆水: 'water', 採收: 'harvest' });
   $('#costs').textContent = '動作 Token：' + costs.filter(([, key]) => ACTION_COST[key]).map(([name, key]) => `${name} ${ACTION_COST[key]}`).join('、')
     + '。' + costs.filter(([, key]) => !ACTION_COST[key]).map(([name]) => name).concat(['重複', '如果', '感測']).join('、') + '不扣 Token。';
+  // 開發測試用：直接給錢，方便測試買田與擴地
+  $('#dev-money').onclick = () => { state.money += 1000; log('開發測試：金錢 +1000'); };
   $('#new-game').onclick = () => {
     if (!confirm('確定要清除進度、重新開始嗎？這個動作無法復原。')) return;
     state = newGame(); save(); panelDirty = true; $('#log').innerHTML = '';
@@ -183,6 +187,7 @@ async function start() {
   renderer = createBoardRenderer($('#board'), assets);
   for (const c of assets.manifest.crops) CROP_NAMES[c.id] = c.name;
   state = loadGame();
+  selected = PLOTS[0]?.id || null;
   editor = createEditor({
     assets, getState: () => state,
     onSave(plot, stage, program, workspace) {

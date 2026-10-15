@@ -27,7 +27,7 @@
   </div>
   <nav class="tools" aria-label="農場工具">
     <button id="arrange-toggle" class="console-button" aria-pressed="false">排列田地<small>拖曳移動</small></button>
-    <button class="console-button" disabled>買賣田地<small>即將推出</small></button>
+    <button id="shop-open" class="console-button">買賣田地<small>商店</small></button>
     <button class="console-button" disabled>作物圖鑑<small>即將推出</small></button>
   </nav>
 </header>
@@ -39,12 +39,20 @@
   </div>
   <p id="farm-hint" class="farm-hint">點一塊田，查看狀態、換作物、編寫機器人的腳本。</p>
   <div id="arrange-banner" class="arrange-banner" hidden>
-    <p>排列模式：拖曳田塊換位置，會自動對齊格子。點一下田塊轉 90°（拖曳中也可以按 R）。綠色可以放，紅色放不下。</p>
+    <div class="arrange-text">
+      <p>拖曳田塊換位置，會自動對齊格子；點一下田塊轉 90°（拖曳中也可以按 R）。綠色可以放，紅色放不下。</p>
+      <p>深色格子還沒開放：點有「+」的格子兩下就能擴地。</p>
+    </div>
+    <div class="tray-wrap">
+      <p class="tray-title">倉庫<small>把田拖到盤面；把盤面上的田拖到這裡收起來</small></p>
+      <div id="tray" class="tray"></div>
+    </div>
     <button id="arrange-done" class="console-button">完成排列</button>
   </div>
 </main>
 
 <aside id="card" class="plot-card" hidden aria-labelledby="card-title"></aside>
+<div id="shop" class="shop" hidden role="dialog" aria-modal="true" aria-labelledby="shop-title"></div>
 <div id="toasts" class="toasts" aria-live="assertive"></div>
 
 <script src="vendor/blockly/blockly_compressed.js"></script>

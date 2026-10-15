@@ -1,10 +1,11 @@
 // 主畫面：溫室農場。點田地滑出田地卡片，從卡片進入腳本編輯畫面。
 // 模擬、存檔、編輯畫面都與機制測試畫面（game.html）共用。
 
-import { EXCHANGE_OPTIONS, TOKENS_PER_MONEY, CROPS, PLOT_TYPES } from './config.js';
-import { plotById, stagesOf, canPlace } from './plots.js';
+import { EXCHANGE_OPTIONS, TOKENS_PER_MONEY, CROPS, PLOT_TYPES, SHAPE_PRICE } from './config.js';
+import { PLOTS, plotById, stagesOf, SHAPES, rotation, cellKey } from './plots.js';
 import {
-  update, drainEvents, resetPlot, exchange, upgradeCapacity, setCrop, setProgram, placePlot,
+  update, drainEvents, resetPlot, exchange, upgradeCapacity, setCrop, setProgram, placePlot, canPlacePlot,
+  isPlaced, storePlot, buyPlot, sellPlot, plotPrice, refundOf, canBuyLand, buyLand, nextLandPrice,
   capacityOf, nextCapacityCost, canGrow, CRASH_REASONS,
 } from './sim.js';
 import { loadAssets, createBoardRenderer, createPainter, screenAsset, spriteURL } from './render.js';
@@ -17,7 +18,7 @@ const escape = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt
 const TIER_TYPE = Object.fromEntries([1, 2, 3, 4].map(t => [t, Object.values(PLOT_TYPES).find(r => r.maxTier >= t).name]));
 
 let state, renderer, painter, editor, selected = null, cropNames = {};
-let arranging = false, drag = null;
+let arranging = false, drag = null, pendingLand = null;
 
 // ---------- 主迴圈 ----------
 
@@ -27,10 +28,15 @@ function frame(now) {
   last = now;
   update(state, dt);
   handleEvents();
-  renderer.draw(state, { selected: arranging ? null : selected, ghost: drag?.moved ? drag : null });
+  renderer.draw(state, { selected: arranging ? null : selected, ghost: drag?.moved && drag.overBoard ? drag : null, land: arranging ? landHints() : null });
   setText('#tokens', Math.floor(state.tokens));
   setText('#money', Math.floor(state.money));
-  if (selected && now - lastCard > 400) { refreshCard(); lastCard = now; }
+  if (now - lastCard > 400) {
+    if (selected) refreshCard();
+    // 商店開著時，錢夠不夠買會隨收成變化
+    if (!$('#shop').hidden) $('#shop').querySelectorAll('[data-buy]').forEach(b => { const [shape, type] = b.dataset.buy.split('|'); b.disabled = state.money < plotPrice(shape, type); });
+    lastCard = now;
+  }
   requestAnimationFrame(frame);
 }
 const setText = (sel, v) => { const el = $(sel); if (el.textContent !== String(v)) el.textContent = v; };
@@ -131,6 +137,12 @@ function buildCard() {
         <p id="card-capacity"></p>
         <button id="card-upgrade" class="console-button"></button>
       </div>
+
+      <h3>這塊田</h3>
+      <div class="card-manage">
+        <button id="card-store" class="console-button">收進倉庫</button>
+        <button id="card-sell" class="console-button danger-outline"></button>
+      </div>
     </div>`;
   for (const canvas of $('#card').querySelectorAll('canvas[data-icon]')) {
     const ctx = canvas.getContext('2d');
@@ -141,6 +153,7 @@ function buildCard() {
 }
 
 function refreshCard() {
+  if (!plotById.has(selected)) return closeCard();
   const plot = plotById.get(selected), ps = state.plots[selected], cap = capacityOf(selected, ps);
   const status = $('#card-status');
   if (!status) return;
@@ -162,6 +175,8 @@ function refreshCard() {
   const cost = nextCapacityCost(ps), up = $('#card-upgrade');
   setEl(up, `擴充 +4 塊（${cost} 金錢）`);
   up.disabled = state.money < cost;
+  setEl($('#card-sell'), `賣掉（退回 ${refundOf(state, selected)} 金錢）`);
+  $('#card-sell').disabled = $('#card-store').disabled = PLOTS.filter(p => isPlaced(state, p.id)).length < 2;
 }
 const setEl = (el, text) => { if (el.textContent !== text) el.textContent = text; };
 
@@ -190,8 +205,22 @@ $('#card').addEventListener('click', e => {
   else if (b.id === 'card-upgrade') upgradeCapacity(state, selected);
   else if (b.dataset.crop) setCrop(state, selected, b.dataset.crop);
   else if (b.dataset.edit) editor.open(selected, b.dataset.edit);
+  else if (b.id === 'card-store') { const name = plotById.get(selected).name; storePlot(state, selected); closeCard(); toast(`${name}已收進倉庫。`); return; }
+  else if (b.id === 'card-sell') return confirmSell(selected);
   refreshCard();
 });
+
+// 賣田不能復原：作物和腳本會一起消失，先確認。
+function confirmSell(plotId) {
+  const plot = plotById.get(plotId), refund = refundOf(state, plotId);
+  if (!confirm(`確定要賣掉「${plot.name}」嗎？\n\n這塊田的作物和所有腳本都會消失，無法復原。\n會退回 ${refund} 金錢。`)) return;
+  if (!sellPlot(state, plotId)) return toast('盤面上至少要留一塊田，機器人才有地方工作。');
+  if (selected === plotId) closeCard();
+  saveGame(state);
+  toast(`已賣掉${plot.name}，退回 ${refund} 金錢。`);
+  if (!$('#shop').hidden) buildShop();
+  renderTray();
+}
 
 // ---------- 排列模式 ----------
 // 拖曳田塊：預覽位置吸附在游標所在的格子上（像棋盤），放開時能放就放、放不下就回原位。
@@ -200,7 +229,8 @@ $('#card').addEventListener('click', e => {
 function setArranging(on) {
   arranging = on;
   drag = null;
-  if (on) closeCard();
+  pendingLand = null;
+  if (on) { closeCard(); renderTray(); }
   document.body.classList.toggle('arranging', on);
   $('#arrange-toggle').setAttribute('aria-pressed', String(on));
   $('#arrange-banner').hidden = !on;
@@ -215,28 +245,138 @@ function onPointerDown(e) {
   const plotId = renderer.plotAt(e.clientX, e.clientY);
   if (!plotId) return;
   const cell = renderer.cellAt(e.clientX, e.clientY), place = state.layout[plotId];
-  drag = { plotId, grab: [cell.x - place.x, cell.y - place.y], start: [e.clientX, e.clientY], moved: false, place: { ...place }, valid: true };
-  $('#farm').setPointerCapture(e.pointerId);
+  startDrag(e, plotId, [cell.x - place.x, cell.y - place.y], place, $('#farm'));
+}
+
+// 從盤面或倉庫拿起一塊田。grab：抓住的是田的哪一格（相對旋轉後外框左上角）。
+function startDrag(e, plotId, grab, place, el) {
+  drag = { plotId, grab, start: [e.clientX, e.clientY], moved: false, place: { ...place }, valid: false, overBoard: false, fromTray: !isPlaced(state, plotId) };
+  el.setPointerCapture(e.pointerId);
   e.preventDefault();
 }
+
+const overTray = e => { const r = $('#tray').getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; };
+const overBoard = e => { const r = $('#farm').getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; };
 
 function onPointerMove(e) {
   if (!drag) return;
   if (!drag.moved && Math.hypot(e.clientX - drag.start[0], e.clientY - drag.start[1]) < DRAG_START) return;
   drag.moved = true;
+  drag.overBoard = overBoard(e);
+  $('#tray').classList.toggle('drop', !drag.fromTray && overTray(e));
   const cell = renderer.cellAt(e.clientX, e.clientY);
   drag.place = { x: cell.x - drag.grab[0], y: cell.y - drag.grab[1], rot: drag.place.rot };
-  drag.valid = canPlace(state.layout, drag.plotId, drag.place);
+  drag.valid = drag.overBoard && canPlacePlot(state, drag.plotId, drag.place);
 }
 
-function onPointerUp() {
+function onPointerUp(e) {
   if (!drag) return;
-  const { plotId, moved, place, valid } = drag;
+  const { plotId, moved, place, valid, fromTray } = drag;
   drag = null;
-  if (!moved) return rotatePlot(plotId);
-  if (valid) placePlot(state, plotId, place);
-  else toast('這裡放不下：田不能重疊，也不能超出溫室。');
+  $('#tray').classList.remove('drop');
+  if (!moved) { if (!fromTray) rotatePlot(plotId); return; }
+  if (!fromTray && overTray(e)) {
+    if (PLOTS.filter(p => isPlaced(state, p.id)).length < 2) return toast('盤面上至少要留一塊田，機器人才有地方工作。');
+    storePlot(state, plotId);
+    return renderTray();
+  }
+  if (valid) { placePlot(state, plotId, place); renderTray(); }
+  else if (overBoard(e)) toast('這裡放不下：田不能重疊、不能超出溫室，也只能放在已開放的格子上。');
 }
+
+// ---------- 倉庫 ----------
+
+function renderTray() {
+  const items = PLOTS.filter(p => !isPlaced(state, p.id));
+  $('#tray').innerHTML = items.length ? '' : '<p class="tray-empty">倉庫是空的。到「買賣田地」買新的田。</p>';
+  for (const plot of items) {
+    const el = document.createElement('div');
+    el.className = 'tray-item';
+    el.style.setProperty('--type', plot.rules.colour);
+    el.innerHTML = `${shapePreview(plot.shape)}<span>${escape(plot.name)}</span>`;
+    el.addEventListener('pointerdown', e => {
+      const r = rotation(plot, 0);
+      startDrag(e, plot.id, [Math.floor((r.width - 1) / 2), Math.floor((r.height - 1) / 2)], { x: 0, y: 0, rot: 0 }, el);
+    });
+    el.addEventListener('pointermove', onPointerMove);
+    el.addEventListener('pointerup', onPointerUp);
+    el.addEventListener('pointercancel', () => { drag = null; });
+    $('#tray').append(el);
+  }
+}
+
+// 用小方格畫出形狀（倉庫與商店共用）。
+function shapePreview(shape) {
+  const cells = SHAPES[shape].cells, w = Math.max(...cells.map(c => c[0])) + 1, h = Math.max(...cells.map(c => c[1])) + 1;
+  const on = new Set(cells.map(([x, y]) => cellKey(x, y)));
+  let html = `<span class="shape" style="--w:${w};--h:${h}" aria-hidden="true">`;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) html += `<i class="${on.has(cellKey(x, y)) ? 'on' : ''}"></i>`;
+  return html + '</span>';
+}
+
+// ---------- 擴地 ----------
+
+function landHints() {
+  const buyable = [];
+  for (let y = 0; y < 7; y++) for (let x = 0; x < 12; x++) if (canBuyLand(state, x, y)) buyable.push([x, y]);
+  return { buyable, pending: pendingLand, price: nextLandPrice(state) };
+}
+
+// 點一下可買的格子先標出價格，再點一下同一格才買。
+function onLandClick(e) {
+  const { x, y } = renderer.cellAt(e.clientX, e.clientY);
+  if (!canBuyLand(state, x, y)) { pendingLand = null; return; }
+  if (!pendingLand || pendingLand[0] !== x || pendingLand[1] !== y) { pendingLand = [x, y]; return; }
+  const price = nextLandPrice(state);
+  if (!buyLand(state, x, y)) { toast(`金錢不夠：擴地這一格要 ${price} 金錢。`); return; }
+  pendingLand = null;
+  saveGame(state);
+}
+
+// ---------- 商店 ----------
+
+function buildShop() {
+  const types = Object.entries(PLOT_TYPES), shapes = Object.keys(SHAPE_PRICE);
+  $('#shop').innerHTML = `
+    <div class="shop-panel">
+      <header class="shop-head"><h2 id="shop-title">買賣田地</h2><button class="card-close" data-close aria-label="關閉商店">×</button></header>
+      <div class="shop-body">
+        <p class="shop-note">買下的田會先放進倉庫，再到「排列田地」把它拖到盤面上。越難的類型越貴，但能種越高級的作物。</p>
+        <table class="shop-table">
+          <thead><tr><th scope="col">形狀</th>${types.map(([, r]) => `<th scope="col" style="--type:${r.colour}"><span class="type-chip">${r.name}田</span><small>種到 ${r.maxTier} 級</small></th>`).join('')}</tr></thead>
+          <tbody>${shapes.map(shape => `<tr><th scope="row">${shapePreview(shape)}<span>${SHAPES[shape].name}</span></th>${types.map(([type]) => {
+            const price = plotPrice(shape, type);
+            return `<td><button class="buy" data-buy="${shape}|${type}" ${state.money < price ? 'disabled' : ''}>買 ${price}</button></td>`;
+          }).join('')}</tr>`).join('')}</tbody>
+        </table>
+        <h3>我的田</h3>
+        <ul class="owned">${PLOTS.map(p => `<li style="--type:${p.rules.colour}">
+          <span class="type-chip">${p.rules.name}</span><span class="owned-name">${escape(p.name)}</span>
+          <span class="owned-where">${isPlaced(state, p.id) ? '在盤面上' : '在倉庫'}</span>
+          <button class="console-button danger-outline" data-sell="${p.id}">賣掉 +${refundOf(state, p.id)}</button></li>`).join('')}</ul>
+      </div>
+    </div>`;
+}
+
+function openShop() { closeCard(); buildShop(); $('#shop').hidden = false; $('#shop').querySelector('[data-close]').focus(); }
+function closeShop() { $('#shop').hidden = true; }
+
+$('#shop').addEventListener('click', e => {
+  if (e.target === $('#shop')) return closeShop();   // 點背景關閉
+  const b = e.target.closest('button');
+  if (!b || b.disabled) return;
+  if (b.dataset.close !== undefined) return closeShop();
+  if (b.dataset.buy) {
+    const [shape, type] = b.dataset.buy.split('|'), id = buyPlot(state, shape, type);
+    if (!id) return toast('金錢不夠。');
+    saveGame(state);
+    buildShop();
+    toast(`買了${plotById.get(id).name}，已放進倉庫。`, '去排列', () => { closeShop(); setArranging(true); });
+  }
+  if (b.dataset.sell) confirmSell(b.dataset.sell);
+});
+
+// ---------- 兌換（原有） ----------
 
 // 原地轉 90°；轉了放不下，就試著往四周挪一格。
 function rotatePlot(plotId) {
@@ -250,10 +390,8 @@ function rotatePlot(plotId) {
 function rotateDrag() {
   if (!drag) return;
   drag.place = { ...drag.place, rot: (drag.place.rot + 1) % 4 };
-  drag.valid = canPlace(state.layout, drag.plotId, drag.place);
+  drag.valid = drag.overBoard && canPlacePlot(state, drag.plotId, drag.place);
 }
-
-// ---------- 兌換 ----------
 
 function buildExchange() {
   $('#exchange-menu').innerHTML = EXCHANGE_OPTIONS.map(m => `<button data-money="${m}">${m} 金錢 換 ${m * TOKENS_PER_MONEY} Token</button>`).join('');
@@ -323,7 +461,7 @@ async function start() {
   });
   buildExchange();
   $('#farm').addEventListener('click', e => {
-    if (arranging) return;
+    if (arranging) { if (!renderer.plotAt(e.clientX, e.clientY)) onLandClick(e); return; }
     const id = renderer.plotAt(e.clientX, e.clientY);
     if (id) select(id); else closeCard();
   });
@@ -332,9 +470,11 @@ async function start() {
   $('#farm').addEventListener('pointerup', onPointerUp);
   $('#farm').addEventListener('pointercancel', () => { drag = null; });
   $('#arrange-toggle').onclick = () => setArranging(!arranging);
+  $('#shop-open').onclick = openShop;
   $('#arrange-done').onclick = () => setArranging(false);
   document.addEventListener('keydown', e => {
     if (editor.isOpen()) return;
+    if (e.key === 'Escape' && !$('#shop').hidden) return closeShop();
     if (arranging && (e.key === 'r' || e.key === 'R')) rotateDrag();
     else if (e.key === 'Escape' && arranging) setArranging(false);
     else if (e.key === 'Escape' && selected) closeCard();

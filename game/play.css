@@ -90,8 +90,52 @@ body.arranging #farm:active { cursor: grabbing; }
   background: var(--paper); border: 4px solid var(--ink); box-shadow: 6px 6px 0 rgba(38, 63, 60, .3);
 }
 .arrange-banner[hidden] { display: none; }
-.arrange-banner p { margin: 0; flex: 1 1 auto; font-weight: 700; }
+.arrange-banner { align-items: stretch; width: min(1100px, calc(100% - 32px)); }
+.arrange-text { flex: 1 1 260px; }
+.arrange-text p { margin: 0 0 4px; font-weight: 700; font-size: .95rem; }
+.arrange-text p + p { font-weight: 400; color: var(--muted); }
+.arrange-banner > .console-button { align-self: center; }
+.tray-wrap { flex: 2 1 360px; min-width: 0; }
+.tray-title { margin: 0 0 4px; font-weight: 800; }
+.tray-title small { margin-left: 8px; font-weight: 400; color: var(--muted); }
+.tray { display: flex; gap: 8px; min-height: 76px; padding: 6px; overflow-x: auto; background: #e9dfbf; border: 3px dashed var(--shell-dark); }
+.tray.drop { border-color: var(--panel); background: #dcefe6; }
+.tray-empty { margin: auto; color: var(--muted); }
+.tray-item {
+  flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 8px; cursor: grab; touch-action: none;
+  background: var(--paper); border: 3px solid var(--ink); border-top: 6px solid var(--type); font-size: .85rem; font-weight: 700; user-select: none;
+}
+.tray-item:active { cursor: grabbing; }
 .arrange-banner .console-button { flex: none; background: var(--panel); color: #fff; box-shadow: inset -3px -3px 0 var(--ink); }
+
+/* 形狀預覽：小方格（倉庫、商店共用） */
+.shape { display: inline-grid; grid-template-columns: repeat(var(--w), 12px); grid-template-rows: repeat(var(--h), 12px); gap: 2px; }
+.shape i { display: block; }
+.shape i.on { background: #8a5a3a; box-shadow: inset -2px -2px 0 #5d3b25; }
+
+/* ---------- 商店 ---------- */
+.shop { position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; padding: 16px; background: rgba(29, 47, 44, .55); }
+.shop[hidden] { display: none; }
+.shop-panel { display: flex; flex-direction: column; width: min(860px, 100%); max-height: calc(100dvh - 32px); background: var(--paper); border: 4px solid var(--ink); box-shadow: 10px 10px 0 rgba(38, 63, 60, .35); }
+.shop-head { position: relative; padding: 12px 60px 12px 18px; background: var(--brass); border-bottom: 4px solid var(--ink); }
+.shop-head h2 { margin: 0; font-size: 1.5rem; }
+.shop-body { overflow: auto; padding: 14px 18px 20px; }
+.shop-note { margin: 0 0 12px; color: var(--muted); }
+.shop-table { width: 100%; border-collapse: collapse; }
+.shop-table th, .shop-table td { padding: 8px; border: 2px solid var(--shell-dark); text-align: center; }
+.shop-table thead th { background: #fff; }
+.shop-table thead small { display: block; font-weight: 400; color: var(--muted); }
+.shop-table tbody th { display: flex; align-items: center; gap: 10px; text-align: left; background: #fff; border: 0; border-bottom: 2px solid var(--shell-dark); }
+.type-chip { display: inline-block; padding: 2px 8px; background: var(--type); border: 2px solid var(--ink); font-weight: 800; color: var(--ink); }
+.buy { width: 100%; border-radius: 0; background: var(--panel); color: #fff; box-shadow: inset -3px -3px 0 var(--ink); }
+.buy:disabled { background: #d8cfb4; color: #6f6646; box-shadow: none; }
+.owned { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.owned li { display: flex; align-items: center; gap: 10px; padding: 6px 8px; background: #fff; border: 2px solid var(--shell-dark); border-left: 8px solid var(--type); }
+.owned-name { flex: 1 1 auto; font-weight: 700; }
+.owned-where { color: var(--muted); font-size: .9rem; }
+.danger-outline { background: var(--paper); color: #8d2d1e; border-color: #8d2d1e; box-shadow: none; }
+.danger-outline:hover:not(:disabled) { background: #f8e1dc; }
+.card-manage { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
 /* ---------- 田地卡片 ---------- */
 .plot-card {

@@ -1,6 +1,6 @@
 // 田＝形狀 × 類型。形狀只管格子與入口（走位題目），類型只管輔助規則（config.js 的 PLOT_TYPES）。
 // cells 是形狀內的局部座標；entry 是機器人每次開始執行腳本的位置與朝向（朝向 id 對應 manifest.movement.headingOrder）。
-// board 是田塊左上角在盤面上的位置；v0.4 排列模式上線後改由玩家擺放。
+// 玩家擁有哪些田記在 state.plots（可買賣）；這裡的 PLOTS／plotById 是依存檔同步出來的登記表（syncPlots）。
 
 import { PLOT_TYPES } from './config.js';
 
@@ -13,22 +13,27 @@ export const SHAPES = {
   U:     { name: 'U 形', entry: { x: 0, y: 0, heading: 'south' }, cells: [[0, 0], [0, 1], [1, 1], [2, 1], [2, 0]] },
 };
 
-// v0.3 固定配置：三種新手田練走位，再各放一塊進階、高級、專家田。
-const LAYOUT = [
-  { id: 'line3-novice', shape: 'line3', type: 'novice',   board: [0, 0], crop: 'lettuce' },
-  { id: 'L-novice',     shape: 'L',     type: 'novice',   board: [4, 0], crop: 'lettuce' },
-  { id: 'T-novice',     shape: 'T',     type: 'novice',   board: [7, 0], crop: 'lettuce' },
-  { id: 'L-advanced',   shape: 'L',     type: 'advanced', board: [0, 4], crop: 'carrot' },
-  { id: 'T-high',       shape: 'T',     type: 'high',     board: [3, 4], crop: 'strawberry' },
-  { id: 'U-expert',     shape: 'U',     type: 'expert',   board: [8, 4], crop: 'watermelon' },
-];
+export function makePlot(id, shape, type, number = 1) {
+  const s = SHAPES[shape], rules = PLOT_TYPES[type];
+  const name = `${s.name}・${rules.name}田` + (number > 1 ? ` ${number}` : '');
+  return { id, shape, type, name, cells: s.cells, entry: s.entry, rules, defaultCrop: rules.crop };
+}
 
-export const PLOTS = LAYOUT.map(p => {
-  const shape = SHAPES[p.shape], rules = PLOT_TYPES[p.type];
-  return { ...p, name: `${shape.name}・${rules.name}田`, cells: shape.cells, entry: shape.entry, rules, defaultCrop: p.crop };
-});
-
-export const plotById = new Map(PLOTS.map(p => [p.id, p]));
+// 登記表：所有模組讀同一份。買賣田、讀檔、開新遊戲後由 sim.js 呼叫 syncPlots 更新（原地更新，引用不變）。
+export const PLOTS = [];
+export const plotById = new Map();
+export function syncPlots(defs) {
+  PLOTS.length = 0;
+  plotById.clear();
+  const seen = {};
+  for (const { id, shape, type } of defs) {
+    const kind = shape + type;
+    seen[kind] = (seen[kind] || 0) + 1;
+    const plot = makePlot(id, shape, type, seen[kind]);
+    PLOTS.push(plot);
+    plotById.set(id, plot);
+  }
+}
 export const cellKey = (x, y) => x + ',' + y;
 
 // ---------- 排列：旋轉與擺放 ----------
@@ -60,12 +65,12 @@ export function toBoard(plot, place, x, y) {
   const [rx, ry] = rotation(plot, place.rot).map(x, y);
   return [place.x + rx, place.y + ry];
 }
-export const defaultLayout = () => Object.fromEntries(PLOTS.map(p => [p.id, { x: p.board[0], y: p.board[1], rot: 0 }]));
-
-// 放得下嗎：整塊在盤面內，而且不和其他田重疊。
-export function canPlace(layout, plotId, place) {
+// 放得下嗎：整塊在盤面內、每格都已開放（land 是已開放格子的 Set，不傳就只檢查盤面邊界），而且不和其他田重疊。
+// layout 裡沒有的田是收在倉庫裡，不佔位置。
+export function canPlace(layout, plotId, place, land) {
   const cells = placedCells(plotById.get(plotId), place);
   if (cells.some(([x, y]) => x < 0 || y < 0 || x >= BOARD.columns || y >= BOARD.rows)) return false;
+  if (land && cells.some(([x, y]) => !land.has(cellKey(x, y)))) return false;
   const taken = new Set();
   for (const p of PLOTS) if (p.id !== plotId && layout[p.id]) for (const [x, y] of placedCells(p, layout[p.id])) taken.add(cellKey(x, y));
   return !cells.some(([x, y]) => taken.has(cellKey(x, y)));

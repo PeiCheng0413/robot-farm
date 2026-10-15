@@ -1,7 +1,7 @@
 // 遊戲數值設定表。調整平衡只改這裡，不改程式。時間單位一律毫秒。
 
 export const SAVE_KEY = 'robot-farm-save-v1';
-export const SAVE_VERSION = 2;   // 2：田改成「形狀 × 類型」，舊存檔不相容
+export const SAVE_VERSION = 3;   // 3：田改成玩家擁有、可買賣，盤面可擴地；舊存檔不相容
 
 export const START = { tokens: 120, money: 30 };
 
@@ -48,14 +48,29 @@ export const CROPS = {
 // tokenFree   動作不扣 Token
 // autoScript  分「播種腳本」「採收腳本」兩份，系統依作物狀態自動選；false 則只有一份腳本，全部自己判斷
 // noDrying    土壤不會變乾，不用澆水
-// maxTier     最高能種幾級作物；capacity 起始積木上限
+// maxTier     最高能種幾級作物；capacity 起始積木上限；crop 新買時預設種什麼；price 買田的價格倍數（乘上形狀底價）
 export const PLOT_TYPES = {
-  novice:   { name: '新手', colour: '#d7a44b', tokenFree: true,  autoScript: true,  noDrying: true,  maxTier: 1, capacity: 10,
+  novice:   { name: '新手', colour: '#d7a44b', tokenFree: true,  autoScript: true,  noDrying: true,  maxTier: 1, capacity: 10, crop: 'lettuce', price: 1,
               rule: '不扣 Token、土壤不會乾。系統自動選擇跑「播種腳本」或「採收腳本」，專心想怎麼走完這塊田。' },
-  advanced: { name: '進階', colour: '#75bdd0', tokenFree: false, autoScript: true,  noDrying: true,  maxTier: 2, capacity: 12,
+  advanced: { name: '進階', colour: '#75bdd0', tokenFree: false, autoScript: true,  noDrying: true,  maxTier: 2, capacity: 12, crop: 'carrot', price: 3,
               rule: '開始扣 Token，土壤不會乾。系統仍自動選擇播種或採收腳本，步數越少越省錢。' },
-  high:     { name: '高級', colour: '#8fc7a3', tokenFree: false, autoScript: true,  noDrying: false, maxTier: 3, capacity: 16,
+  high:     { name: '高級', colour: '#8fc7a3', tokenFree: false, autoScript: true,  noDrying: false, maxTier: 3, capacity: 16, crop: 'strawberry', price: 8,
               rule: '扣 Token，土壤會乾。系統仍自動選擇播種或採收腳本，但要自己判斷什麼時候澆水。' },
-  expert:   { name: '專家', colour: '#c65f48', tokenFree: false, autoScript: false, noDrying: false, maxTier: 4, capacity: 24,
+  expert:   { name: '專家', colour: '#c65f48', tokenFree: false, autoScript: false, noDrying: false, maxTier: 4, capacity: 24, crop: 'watermelon', price: 20,
               rule: '一份腳本全部自己來：判斷成熟、空地、乾裂，沒事做要記得離開，不然一直白走扣 Token。' },
 };
+
+// ---------- 田地買賣與擴地 ----------
+
+// 新遊戲送的田（之後改成「完成新手教學」的獎勵，見 docs/BACKLOG.md）。at 是放在盤面的位置。
+// 放在開放區最下排，上面兩排留給第一塊買的田。
+export const START_PLOTS = [{ shape: 'line3', type: 'novice', at: [5, 4] }];
+
+// 形狀底價：格子越多、越難走越貴。實際價格＝形狀底價 × 類型倍數（PLOT_TYPES.price）。
+export const SHAPE_PRICE = { line3: 40, L: 60, T: 70, U: 90 };
+export const SELL_REFUND = 0.5;   // 賣田退回買價的比例
+
+// 盤面：一開始只開放中間一塊，緊鄰已開放格子的格子才能買，越買越貴。
+export const START_LAND = { x: 4, y: 2, width: 5, height: 3 };
+export const LAND_PRICE = { base: 15, growth: 1.07 };
+export const landPrice = bought => Math.round(LAND_PRICE.base * LAND_PRICE.growth ** bought);
