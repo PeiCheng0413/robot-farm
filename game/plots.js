@@ -31,5 +31,45 @@ export const PLOTS = LAYOUT.map(p => {
 export const plotById = new Map(PLOTS.map(p => [p.id, p]));
 export const cellKey = (x, y) => x + ',' + y;
 
+// ---------- 排列：旋轉與擺放 ----------
+// 田塊可以順時針旋轉 rot 次 90°（0～3），不能翻面：腳本用的是相對方向的左右轉，
+// 旋轉後整塊田連入口朝向一起轉，腳本照樣能用；翻面會讓左右對調，所以不做。
+// 模擬層一律用田塊自己的局部座標，旋轉與位置只影響畫在盤面的哪裡（state.layout）。
+
+const HEADING_ORDER = ['south', 'west', 'north', 'east'];   // 與 sim.js 的 HEADINGS 相同，+1 是順時針
+export const rotateHeading = (heading, rot) => HEADING_ORDER[(HEADING_ORDER.indexOf(heading) + rot) % 4];
+
+const rotations = new Map();
+// 回傳 { map(x, y) → 旋轉後座標（左上角平移到 0,0）, cells, width, height }
+export function rotation(plot, rot) {
+  const key = plot.id + '|' + rot;
+  if (rotations.has(key)) return rotations.get(key);
+  const turn = (x, y, n) => { for (let i = 0; i < n; i++) [x, y] = [-y, x]; return [x, y]; };   // 螢幕座標 y 向下，(-y, x) 是順時針
+  const turned = plot.cells.map(([x, y]) => turn(x, y, rot));
+  const minX = Math.min(...turned.map(c => c[0])), minY = Math.min(...turned.map(c => c[1]));
+  const map = (x, y) => { const [rx, ry] = turn(x, y, rot); return [rx - minX, ry - minY]; };
+  const cells = plot.cells.map(([x, y]) => map(x, y));
+  const r = { map, cells, width: Math.max(...cells.map(c => c[0])) + 1, height: Math.max(...cells.map(c => c[1])) + 1 };
+  rotations.set(key, r);
+  return r;
+}
+
+// place：{ x, y, rot }，x／y 是旋轉後外框左上角在盤面上的位置。
+export const placedCells = (plot, place) => rotation(plot, place.rot).cells.map(([x, y]) => [place.x + x, place.y + y]);
+export function toBoard(plot, place, x, y) {
+  const [rx, ry] = rotation(plot, place.rot).map(x, y);
+  return [place.x + rx, place.y + ry];
+}
+export const defaultLayout = () => Object.fromEntries(PLOTS.map(p => [p.id, { x: p.board[0], y: p.board[1], rot: 0 }]));
+
+// 放得下嗎：整塊在盤面內，而且不和其他田重疊。
+export function canPlace(layout, plotId, place) {
+  const cells = placedCells(plotById.get(plotId), place);
+  if (cells.some(([x, y]) => x < 0 || y < 0 || x >= BOARD.columns || y >= BOARD.rows)) return false;
+  const taken = new Set();
+  for (const p of PLOTS) if (p.id !== plotId && layout[p.id]) for (const [x, y] of placedCells(p, layout[p.id])) taken.add(cellKey(x, y));
+  return !cells.some(([x, y]) => taken.has(cellKey(x, y)));
+}
+
 // 這類田有哪幾份腳本。系統自動選擇時的優先順序：採收 > 播種 > 澆水。
 export const stagesOf = plot => !plot.rules.autoScript ? ['main'] : plot.rules.noDrying ? ['sow', 'harvest'] : ['sow', 'harvest', 'water'];

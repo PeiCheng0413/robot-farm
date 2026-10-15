@@ -2,9 +2,9 @@
 // 模擬、存檔、編輯畫面都與機制測試畫面（game.html）共用。
 
 import { EXCHANGE_OPTIONS, TOKENS_PER_MONEY, CROPS, PLOT_TYPES } from './config.js';
-import { plotById, stagesOf } from './plots.js';
+import { plotById, stagesOf, canPlace } from './plots.js';
 import {
-  update, drainEvents, resetPlot, exchange, upgradeCapacity, setCrop, setProgram,
+  update, drainEvents, resetPlot, exchange, upgradeCapacity, setCrop, setProgram, placePlot,
   capacityOf, nextCapacityCost, canGrow, CRASH_REASONS,
 } from './sim.js';
 import { loadAssets, createBoardRenderer, createPainter, screenAsset, spriteURL } from './render.js';
@@ -17,6 +17,7 @@ const escape = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt
 const TIER_TYPE = Object.fromEntries([1, 2, 3, 4].map(t => [t, Object.values(PLOT_TYPES).find(r => r.maxTier >= t).name]));
 
 let state, renderer, painter, editor, selected = null, cropNames = {};
+let arranging = false, drag = null;
 
 // ---------- 主迴圈 ----------
 
@@ -26,7 +27,7 @@ function frame(now) {
   last = now;
   update(state, dt);
   handleEvents();
-  renderer.draw(state, { selected });
+  renderer.draw(state, { selected: arranging ? null : selected, ghost: drag?.moved ? drag : null });
   setText('#tokens', Math.floor(state.tokens));
   setText('#money', Math.floor(state.money));
   if (selected && now - lastCard > 400) { refreshCard(); lastCard = now; }
@@ -192,6 +193,66 @@ $('#card').addEventListener('click', e => {
   refreshCard();
 });
 
+// ---------- 排列模式 ----------
+// 拖曳田塊：預覽位置吸附在游標所在的格子上（像棋盤），放開時能放就放、放不下就回原位。
+// 點一下（沒有拖動）轉 90°；拖曳中按 R 也能轉。機器人照常工作，田的局部座標不變。
+
+function setArranging(on) {
+  arranging = on;
+  drag = null;
+  if (on) closeCard();
+  document.body.classList.toggle('arranging', on);
+  $('#arrange-toggle').setAttribute('aria-pressed', String(on));
+  $('#arrange-banner').hidden = !on;
+  $('#farm-hint').hidden = on || !!selected;
+  if (!on) saveGame(state);
+}
+
+const DRAG_START = 6;   // 移動超過幾個像素才算拖曳，否則算點一下
+
+function onPointerDown(e) {
+  if (!arranging) return;
+  const plotId = renderer.plotAt(e.clientX, e.clientY);
+  if (!plotId) return;
+  const cell = renderer.cellAt(e.clientX, e.clientY), place = state.layout[plotId];
+  drag = { plotId, grab: [cell.x - place.x, cell.y - place.y], start: [e.clientX, e.clientY], moved: false, place: { ...place }, valid: true };
+  $('#farm').setPointerCapture(e.pointerId);
+  e.preventDefault();
+}
+
+function onPointerMove(e) {
+  if (!drag) return;
+  if (!drag.moved && Math.hypot(e.clientX - drag.start[0], e.clientY - drag.start[1]) < DRAG_START) return;
+  drag.moved = true;
+  const cell = renderer.cellAt(e.clientX, e.clientY);
+  drag.place = { x: cell.x - drag.grab[0], y: cell.y - drag.grab[1], rot: drag.place.rot };
+  drag.valid = canPlace(state.layout, drag.plotId, drag.place);
+}
+
+function onPointerUp() {
+  if (!drag) return;
+  const { plotId, moved, place, valid } = drag;
+  drag = null;
+  if (!moved) return rotatePlot(plotId);
+  if (valid) placePlot(state, plotId, place);
+  else toast('這裡放不下：田不能重疊，也不能超出溫室。');
+}
+
+// 原地轉 90°；轉了放不下，就試著往四周挪一格。
+function rotatePlot(plotId) {
+  const now = state.layout[plotId], rot = (now.rot + 1) % 4;
+  for (const [dx, dy] of [[0, 0], [-1, 0], [0, -1], [1, 0], [0, 1], [-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    if (placePlot(state, plotId, { x: now.x + dx, y: now.y + dy, rot })) return;
+  }
+  toast('轉不過去：旁邊空間不夠，先把田拖到空一點的地方再轉。');
+}
+
+function rotateDrag() {
+  if (!drag) return;
+  drag.place = { ...drag.place, rot: (drag.place.rot + 1) % 4 };
+  drag.valid = canPlace(state.layout, drag.plotId, drag.place);
+}
+
 // ---------- 兌換 ----------
 
 function buildExchange() {
@@ -262,10 +323,22 @@ async function start() {
   });
   buildExchange();
   $('#farm').addEventListener('click', e => {
+    if (arranging) return;
     const id = renderer.plotAt(e.clientX, e.clientY);
     if (id) select(id); else closeCard();
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && selected && !editor.isOpen()) closeCard(); });
+  $('#farm').addEventListener('pointerdown', onPointerDown);
+  $('#farm').addEventListener('pointermove', onPointerMove);
+  $('#farm').addEventListener('pointerup', onPointerUp);
+  $('#farm').addEventListener('pointercancel', () => { drag = null; });
+  $('#arrange-toggle').onclick = () => setArranging(!arranging);
+  $('#arrange-done').onclick = () => setArranging(false);
+  document.addEventListener('keydown', e => {
+    if (editor.isOpen()) return;
+    if (arranging && (e.key === 'r' || e.key === 'R')) rotateDrag();
+    else if (e.key === 'Escape' && arranging) setArranging(false);
+    else if (e.key === 'Escape' && selected) closeCard();
+  });
   // 卡片從面板下緣開始：面板高度會因螢幕寬度換行而變，跟著量。
   const fitCard = () => document.documentElement.style.setProperty('--console-h', $('.console').offsetHeight + 'px');
   window.addEventListener('resize', fitCard);

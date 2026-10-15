@@ -329,7 +329,7 @@ export function createEditor({ assets, getState, onSave }) {
     $('#editor-msg').className = '';
     updateCount();
     const canvas = $('#runner-view');
-    view = createPlotView(canvas, plot, assets);
+    view = createPlotView(canvas, plot, assets, getState().layout[plotId]?.rot || 0);
     scenario = DEFAULT_SCENARIO[stage];
     $('#run-scenario').value = scenario;
     resetSandbox();

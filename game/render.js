@@ -6,7 +6,7 @@
 // createBoardRenderer()   農場盤面（遊戲機制測試畫面）
 // createPlotView()        單塊田特寫（腳本編輯畫面）
 
-import { PLOTS, BOARD, plotById, cellKey } from './plots.js';
+import { PLOTS, BOARD, plotById, cellKey, rotation, toBoard, placedCells, rotateHeading } from './plots.js';
 import { VECTORS } from './sim.js';
 
 const C = { floor: '#e7dcb8', slot: '#ddd0a6', outline: '#263f3c', selected: '#8fc7a3', crash: '#c65f48', label: '#fffaf0' };
@@ -224,37 +224,42 @@ export function createPainter({ manifest, align, images }) {
   const lerp = (a, b, t) => a + (b - a) * t;
 
   // 把機器人目前的動作換算成「位置（格座標）＋片段＋片段內經過時間」。toGrid(plotId, x, y) 回傳格座標。
+  // turnOf(plotId) 是那塊田轉了幾次：機器人的朝向是田的局部方向，畫的時候要跟著田一起轉。
   // act.kind 'decide'：判斷條件。前半段播「判斷中」或範圍掃描，act.mid 之後播成立／不成立。
-  function robotView(robot, act, time, toGrid) {
+  function robotView(robot, act, time, toGrid, turnOf = () => 0) {
+    const view = localView(robot, act, time, toGrid, h => rotateHeading(h, turnOf(robot.plot)));
+    return view;
+  }
+  function localView(robot, act, time, toGrid, H) {
     const here = toGrid(robot.plot, robot.x, robot.y);
-    if (!act || act.kind === 'wait' || act.kind === 'pause' || time < act.start) return { pos: here, clip: 'idle', heading: robot.heading, elapsed: time };
+    if (!act || act.kind === 'wait' || act.kind === 'pause' || time < act.start) return { pos: here, clip: 'idle', heading: H(robot.heading), elapsed: time };
     const elapsed = time - act.start, t = Math.min(1, elapsed / (act.end - act.start));
     switch (act.kind) {
       case 'travel': {
         const plot = plotById.get(act.toPlot), a = toGrid(act.fromPlot, act.from.x, act.from.y), b = toGrid(plot.id, plot.entry.x, plot.entry.y);
         const dx = b[0] - a[0], dy = b[1] - a[1];
         const heading = Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? 'east' : 'west') : (dy >= 0 ? 'south' : 'north');
-        return { pos: [lerp(a[0], b[0], t), lerp(a[1], b[1], t)], clip: movingClip, heading: dx || dy ? heading : plot.entry.heading, elapsed };
+        return { pos: [lerp(a[0], b[0], t), lerp(a[1], b[1], t)], clip: movingClip, heading: dx || dy ? heading : H(plot.entry.heading), elapsed };
       }
       case 'move': {
         const a = toGrid(robot.plot, act.from.x, act.from.y), b = toGrid(robot.plot, act.to.x, act.to.y);
         if (act.result === 'bump') {   // 往前衝四分之一格再彈回
-          const [vx, vy] = VECTORS[act.from.heading], push = Math.sin(t * Math.PI) * 0.25;
-          return { pos: [a[0] + vx * push, a[1] + vy * push], clip: movingClip, heading: act.from.heading, elapsed };
+          const [vx, vy] = VECTORS[H(act.from.heading)], push = Math.sin(t * Math.PI) * 0.25;
+          return { pos: [a[0] + vx * push, a[1] + vy * push], clip: movingClip, heading: H(act.from.heading), elapsed };
         }
-        return { pos: [lerp(a[0], b[0], t), lerp(a[1], b[1], t)], clip: movingClip, heading: act.from.heading, elapsed };
+        return { pos: [lerp(a[0], b[0], t), lerp(a[1], b[1], t)], clip: movingClip, heading: H(act.from.heading), elapsed };
       }
       case 'turnLeft': case 'turnRight':
-        return { pos: here, clip: movingClip, heading: t < .5 ? act.from.heading : act.to.heading, elapsed };
+        return { pos: here, clip: movingClip, heading: H(t < .5 ? act.from.heading : act.to.heading), elapsed };
       case 'sow': case 'water':
-        return { pos: here, clip: act.kind, heading: robot.heading, elapsed };
+        return { pos: here, clip: act.kind, heading: H(robot.heading), elapsed };
       case 'harvest':
-        return { pos: here, clip: 'harvest', heading: robot.heading, elapsed, crop: act.result === 'ok' ? act.crop : null, cell: act.cell };
+        return { pos: here, clip: 'harvest', heading: H(robot.heading), elapsed, crop: act.result === 'ok' ? act.crop : null, cell: act.cell };
       case 'decide':
-        if (time < act.mid) return { pos: here, clip: act.scan && clips.scan ? 'scan' : decision.thinking || 'idle', heading: robot.heading, elapsed };
-        return { pos: here, clip: (act.value ? decision.true : decision.false) || 'idle', heading: robot.heading, elapsed: time - act.mid };
+        if (time < act.mid) return { pos: here, clip: act.scan && clips.scan ? 'scan' : decision.thinking || 'idle', heading: H(robot.heading), elapsed };
+        return { pos: here, clip: (act.value ? decision.true : decision.false) || 'idle', heading: H(robot.heading), elapsed: time - act.mid };
       default:
-        return { pos: here, clip: 'idle', heading: robot.heading, elapsed };
+        return { pos: here, clip: 'idle', heading: H(robot.heading), elapsed };
     }
   }
 
@@ -288,10 +293,16 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
   canvas.width = BOARD.columns * CELL;
   canvas.height = BOARD.rows * CELL + TOP;
   const ctx = canvas.getContext('2d');
-  const toGrid = (plotId, x, y) => { const p = plotById.get(plotId); return [p.board[0] + x, p.board[1] + y]; };
+  // 每格畫面都依 state.layout（排列模式拖曳中則用預覽位置）決定每塊田畫在哪、轉幾次。
+  let layout = Object.fromEntries(PLOTS.map(p => [p.id, { x: p.board[0], y: p.board[1], rot: 0 }]));
+  const toGrid = (plotId, x, y) => toBoard(plotById.get(plotId), layout[plotId], x, y);
+  const turnOf = plotId => layout[plotId].rot;
+  const board = (x, y) => [x * CELL, y * CELL];
 
-  function draw(state, { selected } = {}) {
+  // ghost：{ plotId, place, valid } 拖曳中的田塊，吸附在格子上，可放為綠、放不下為紅。
+  function draw(state, { selected, ghost } = {}) {
     const time = state.time;
+    layout = ghost ? { ...state.layout, [ghost.plotId]: ghost.place } : state.layout;
     ctx.imageSmoothingEnabled = false;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -304,15 +315,29 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
       for (let y = 0; y <= BOARD.rows; y++) { ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(canvas.width, y * CELL); ctx.stroke(); }
     }
 
-    const views = state.robots.map(r => ({ robot: r, view: P.robotView(r, r.act, time, toGrid) }));
+    const views = state.robots.map(r => ({ robot: r, view: P.robotView(r, r.act, time, toGrid, turnOf) }));
     const hidden = new Set(views.filter(v => P.hidesPlant(v.view)).map(v => v.robot.plot + '|' + v.view.cell));
 
     for (const plot of PLOTS) {
       const ps = state.plots[plot.id], origin = (x, y) => toGrid(plot.id, x, y).map(v => v * CELL);
+      // 外框要用盤面上的格子算（旋轉後局部的「上」不一定是畫面的上）
+      const cells = placedCells(plot, layout[plot.id]);
       for (const [x, y] of plot.cells) P.soil(ctx, ...origin(x, y), CELL, ps.cells[cellKey(x, y)].moisture);
-      P.outline(ctx, plot.cells, origin, CELL, C.outline, 6);
-      P.outline(ctx, plot.cells, origin, CELL, plot.rules.colour, 3);   // 內框顏色代表田的類型
-      if (selected === plot.id) P.outline(ctx, plot.cells, origin, CELL, C.selected, 5);
+      P.outline(ctx, cells, board, CELL, C.outline, 6);
+      P.outline(ctx, cells, board, CELL, plot.rules.colour, 3);   // 內框顏色代表田的類型
+      if (selected === plot.id) P.outline(ctx, cells, board, CELL, C.selected, 5);
+      if (ghost?.plotId === plot.id) {
+        ctx.fillStyle = ghost.valid ? 'rgba(143, 199, 163, .45)' : 'rgba(198, 95, 72, .55)';
+        for (const [x, y] of cells) ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+        P.outline(ctx, cells, board, CELL, ghost.valid ? '#2f7d4a' : '#9b2c1c', 6);
+      }
+    }
+    // 拖曳中：原本的位置留一圈虛線，知道田是從哪裡拿起來的
+    if (ghost) {
+      const plot = plotById.get(ghost.plotId), from = placedCells(plot, state.layout[ghost.plotId]);
+      ctx.setLineDash([12, 10]);
+      P.outline(ctx, from, board, CELL, 'rgba(38, 63, 60, .7)', 4);
+      ctx.setLineDash([]);
     }
     for (const plot of PLOTS) {
       const ps = state.plots[plot.id], origin = (x, y) => toGrid(plot.id, x, y).map(v => v * CELL);
@@ -328,9 +353,9 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
     // 名牌先畫，機器人疊在上面，免得機器人在入口格時被名牌蓋住。
     for (const plot of PLOTS) {
       const ps = state.plots[plot.id];
-      // 名牌插在田最上排、最左邊那格的上緣
-      const topY = Math.min(...plot.cells.map(c => c[1])), leftX = Math.min(...plot.cells.filter(c => c[1] === topY).map(c => c[0]));
-      const [gx, gy] = toGrid(plot.id, leftX, topY);
+      // 名牌插在田（盤面上）最上排、最左邊那格的上緣
+      const cells = placedCells(plot, layout[plot.id]);
+      const gy = Math.min(...cells.map(c => c[1])), gx = Math.min(...cells.filter(c => c[1] === gy).map(c => c[0]));
       const text = SHAPE_NAME(plot) + (ps.crashed ? '・當機' : '');
       if (!P.sign(ctx, plot.rules.name, text, gx * CELL + CELL * .55, gy * CELL + CELL * .12, SIGN_W, ps.crashed ? '#9b2c1c' : null)) {
         P.label(ctx, plot.name + (ps.crashed ? '・當機' : ''), gx * CELL + 4, gy * CELL + 4, ps.crashed ? C.crash : 'rgba(38, 63, 60, .82)', 20);
@@ -348,32 +373,40 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
     list.push({ text, colour, x: gx * CELL + 12, y: gy * CELL + CELL * .3, born: performance.now() });
   }
 
-  // 把滑鼠座標換成點到的田塊 id。
-  function plotAt(clientX, clientY) {
+  // 滑鼠座標換成盤面格子（可能在盤面外）。
+  function cellAt(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
-    const bx = Math.floor((clientX - rect.left) / rect.width * canvas.width / CELL);
-    const by = Math.floor(((clientY - rect.top) / rect.height * canvas.height - TOP) / CELL);
-    const plot = PLOTS.find(p => p.cells.some(([x, y]) => p.board[0] + x === bx && p.board[1] + y === by));
+    return {
+      x: Math.floor((clientX - rect.left) / rect.width * canvas.width / CELL),
+      y: Math.floor(((clientY - rect.top) / rect.height * canvas.height - TOP) / CELL),
+    };
+  }
+
+  // 滑鼠座標換成點到的田塊 id。
+  function plotAt(clientX, clientY) {
+    const { x: bx, y: by } = cellAt(clientX, clientY);
+    const plot = PLOTS.find(p => placedCells(p, layout[p.id]).some(([x, y]) => x === bx && y === by));
     return plot ? plot.id : null;
   }
 
   // 格子在 canvas 原始像素中的大小與上方留白，給頁面對齊地磚用。
-  return { draw, floatAt, plotAt, manifest: assets.manifest, cell: CELL, top: TOP };
+  return { draw, floatAt, plotAt, cellAt, manifest: assets.manifest, cell: CELL, top: TOP };
 }
 
 // ---------- 單塊田特寫 ----------
 
 // 畫一塊田加上一圈留白（機器人撞牆、想法泡泡會超出田格）。scene：{ ps, robot, act, time, highlight }
-export function createPlotView(canvas, plot, assets) {
+// rot：田在農場上轉了幾次，特寫跟農場上看到的方向一致。
+export function createPlotView(canvas, plot, assets, rot = 0) {
   const P = createPainter(assets), CELL = 128, MARGIN = 1, list = [];
-  const xs = plot.cells.map(c => c[0]), ys = plot.cells.map(c => c[1]);
-  const minX = Math.min(...xs), minY = Math.min(...ys);
-  const cols = Math.max(...xs) - minX + 1 + MARGIN * 2, rows = Math.max(...ys) - minY + 1 + MARGIN * 2;
+  const r = rotation(plot, rot);
+  const cols = r.width + MARGIN * 2, rows = r.height + MARGIN * 2;
   canvas.width = cols * CELL;
   canvas.height = rows * CELL;
   const ctx = canvas.getContext('2d');
-  const toGrid = (_, x, y) => [x - minX + MARGIN, y - minY + MARGIN];
+  const toGrid = (_, x, y) => { const [rx, ry] = r.map(x, y); return [rx + MARGIN, ry + MARGIN]; };
   const origin = (x, y) => toGrid(null, x, y).map(v => v * CELL);
+  const shown = r.cells.map(([x, y]) => [x + MARGIN, y + MARGIN]), grid = (x, y) => [x * CELL, y * CELL];
   const rects = plot.cells.map(([x, y]) => [...origin(x, y), CELL, CELL]);
 
   function draw({ ps, robot, act, time, marks = [] }) {
@@ -383,14 +416,14 @@ export function createPlotView(canvas, plot, assets) {
     for (let x = 0; x <= cols; x++) { ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, canvas.height); ctx.stroke(); }
     for (let y = 0; y <= rows; y++) { ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(canvas.width, y * CELL); ctx.stroke(); }
 
-    const view = P.robotView(robot, act, time, toGrid);
+    const view = P.robotView(robot, act, time, toGrid, () => rot);
     for (const [x, y] of plot.cells) P.soil(ctx, ...origin(x, y), CELL, ps.cells[cellKey(x, y)].moisture);
     // 入口標記：機器人每次從這裡出發
     const [ex, ey] = origin(plot.entry.x, plot.entry.y);
     ctx.strokeStyle = 'rgba(255, 250, 240, .85)'; ctx.lineWidth = 4; ctx.setLineDash([10, 8]);
     ctx.strokeRect(ex + 8, ey + 8, CELL - 16, CELL - 16); ctx.setLineDash([]);
-    P.outline(ctx, plot.cells, origin, CELL, C.outline, 8);
-    P.outline(ctx, plot.cells, origin, CELL, plot.rules.colour, 4);
+    P.outline(ctx, shown, grid, CELL, C.outline, 8);
+    P.outline(ctx, shown, grid, CELL, plot.rules.colour, 4);
     for (const [x, y] of [...plot.cells].sort((a, b) => a[1] - b[1])) {
       const cell = ps.cells[cellKey(x, y)];
       if (cell.crop && !(P.hidesPlant(view) && view.cell === cellKey(x, y))) P.plant(ctx, ...origin(x, y), CELL, cell.crop, P.stageOf(cell.growth));

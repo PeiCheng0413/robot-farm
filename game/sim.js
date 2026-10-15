@@ -6,7 +6,7 @@ import {
   START, SAVE_VERSION, TOKENS_PER_MONEY, ACTION_COST, ACTION_MS, TRAVEL_MS, IDLE_MS, ACTION_LIMIT, CALL_DEPTH,
   CAPACITY, capacityCost, MOISTURE_DECAY_MS, GROWTH_RATE_BY_MOISTURE, CROPS,
 } from './config.js';
-import { PLOTS, plotById, cellKey, stagesOf } from './plots.js';
+import { PLOTS, plotById, cellKey, stagesOf, defaultLayout, canPlace } from './plots.js';
 import { createRun, nextAction, evaluate, programBody } from './interpreter.js';
 
 // 朝向順序與左右轉方向和 manifest.movement 一致：右轉 +1、左轉 -1。
@@ -49,7 +49,8 @@ function newRobot(id, plot) {
 export function createState() {
   const plots = {};
   for (const p of PLOTS) plots[p.id] = newPlotState(p);
-  return { version: SAVE_VERSION, tokens: START.tokens, money: START.money, time: 0, plots, robots: [newRobot(1, PLOTS[0])] };
+  // layout：每塊田擺在盤面哪裡、轉了幾次（排列模式），只影響畫面，不影響模擬。
+  return { version: SAVE_VERSION, tokens: START.tokens, money: START.money, time: 0, plots, layout: defaultLayout(), robots: [newRobot(1, PLOTS[0])] };
 }
 
 // 存檔不保存執行中的腳本進度：讀檔後機器人回到待命，下次從頭跑（與「中斷就從頭」一致）。
@@ -64,6 +65,10 @@ export function restore(json) {
   const state = createState();
   Object.assign(state, { tokens: saved.tokens, money: saved.money, time: saved.time });
   for (const p of PLOTS) if (saved.plots[p.id]) Object.assign(state.plots[p.id], saved.plots[p.id]);
+  // 存檔的排列有任何一塊放不下（例如新增了田），整份退回預設排列。
+  const layout = { ...defaultLayout(), ...(saved.layout || {}) }, check = {};
+  const ok = PLOTS.every(p => { const fits = canPlace(check, p.id, layout[p.id]); check[p.id] = layout[p.id]; return fits; });
+  state.layout = ok ? layout : defaultLayout();
   state.robots = saved.robots.map(r => ({ ...r, act: null, run: null, freeAt: saved.time, phase: r.phase === 'stuck' ? 'stuck' : 'idle' }));
   return state;
 }
@@ -287,6 +292,13 @@ export function senseLeaf(tokens, robot, ps, leaf) {
 
 export const capacityOf = (plotId, ps) => plotById.get(plotId).rules.capacity + CAPACITY.step * ps.capacityLevel;
 export const nextCapacityCost = ps => capacityCost(ps.capacityLevel);
+
+// 排列模式：把田移到新位置／轉向。放不下就不動，回傳 false。
+export function placePlot(state, plotId, place) {
+  if (!canPlace(state.layout, plotId, place)) return false;
+  state.layout[plotId] = { x: place.x, y: place.y, rot: place.rot };
+  return true;
+}
 
 export function resetPlot(state, plotId) {
   const ps = state.plots[plotId];

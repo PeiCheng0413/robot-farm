@@ -26,7 +26,7 @@
     </div>
   </div>
   <nav class="tools" aria-label="農場工具">
-    <button class="console-button" disabled>排列田地<small>即將推出</small></button>
+    <button id="arrange-toggle" class="console-button" aria-pressed="false">排列田地<small>拖曳移動</small></button>
     <button class="console-button" disabled>買賣田地<small>即將推出</small></button>
     <button class="console-button" disabled>作物圖鑑<small>即將推出</small></button>
   </nav>
@@ -38,6 +38,10 @@
     <canvas id="farm" aria-label="農場。點一塊田查看狀態與編寫腳本"></canvas>
   </div>
   <p id="farm-hint" class="farm-hint">點一塊田，查看狀態、換作物、編寫機器人的腳本。</p>
+  <div id="arrange-banner" class="arrange-banner" hidden>
+    <p>排列模式：拖曳田塊換位置，會自動對齊格子。點一下田塊轉 90°（拖曳中也可以按 R）。綠色可以放，紅色放不下。</p>
+    <button id="arrange-done" class="console-button">完成排列</button>
+  </div>
 </main>
 
 <aside id="card" class="plot-card" hidden aria-labelledby="card-title"></aside>
