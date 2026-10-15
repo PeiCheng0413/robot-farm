@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>浮葉農場</title>
+<link rel="stylesheet" href="game/game.css">
+</head>
+<body>
+<header class="hud">
+  <div class="brand">浮葉農場 <small>遊戲 v0.3</small></div>
+  <div class="resources" aria-live="polite">
+    <span class="resource token">Token <b id="tokens">0</b></span>
+    <span class="resource money">金錢 <b id="money">0</b></span>
+  </div>
+  <div class="hud-group"><span class="hud-label">兌換</span><div id="exchange" class="buttons"></div></div>
+  <div class="hud-group"><span class="hud-label">速度</span><div id="speed" class="buttons"></div></div>
+</header>
+
+<main class="layout">
+  <section class="board-wrap">
+    <canvas id="board" aria-label="農場盤面，點田塊可選取"></canvas>
+    <p id="hint" class="hint">點一塊田查看狀態、編寫腳本。<span id="costs"></span></p>
+  </section>
+  <aside id="panel" class="panel"></aside>
+</main>
+
+<section class="log-wrap">
+  <h2>工作紀錄</h2>
+  <ol id="log" class="log"></ol>
+  <p class="footer"><a href="index.html">素材試驗室</a><button id="new-game" class="quiet">清除進度、重新開始</button></p>
+</section>
+
+<div id="editor" class="editor" hidden>
+  <div class="editor-bar">
+    <h2 id="editor-title"></h2>
+    <span id="block-count" class="count"></span>
+    <button id="editor-save" class="primary">儲存腳本</button>
+    <button id="editor-close">取消</button>
+  </div>
+  <p id="editor-msg" role="status"></p>
+  <div id="blockly"></div>
+</div>
+
+<script src="vendor/blockly/blockly_compressed.js"></script>
+<script src="vendor/blockly/msg/zh-hant.js"></script>
+<script src="alignment.js"></script>
+<script type="module" src="game/main.js"></script>
+</body>
+</html>
