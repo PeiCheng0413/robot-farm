@@ -53,3 +53,6 @@ button:disabled,select:disabled,input:disabled{opacity:.45;cursor:not-allowed}
 .soil-unit{width:100%;height:100%;background-position:var(--soil-x) 0}
 .tile-arrangement figcaption{font-size:12px;margin-top:14px;text-align:center}
 @media(max-width:700px){.tile-arrangements{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tile-arrangement{padding:12px}}
+
+/* 機器人在選取田格與植株上方顯示。 */
+.bot{z-index:2}
