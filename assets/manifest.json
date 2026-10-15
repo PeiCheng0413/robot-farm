@@ -1,5 +1,5 @@
 {
-  "version": "0.12",
+  "version": "0.13",
   "status": "art-prototype",
   "width": 1254,
   "height": 1254,
@@ -296,6 +296,14 @@
       "columns": 2,
       "rows": 2,
       "sampling": "Use explicit per-frame sourceRect and shell alignment. Top row: red/green, green/red; bottom row: green/green, red/red. Eye sides are viewer-relative."
+    },
+    {
+      "file": "robot-thought-bubbles-v01.png",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "sampling": "Use thoughtBubbles.frames sourceRect; generated bubbles extend beyond nominal columns."
     }
   ],
   "produce": [
@@ -3603,5 +3611,212 @@
       "sampling": "sourceRect in atlas pixels. Center each frame at anchor within fieldBounds; sizeRatio is width/height relative to fieldBounds. frameIndexByStep and opacityByStep follow the owning animation clip playback steps, not sprite indices. Clip to union of actual field cell rectangles for irregular fields. Null frame is hidden.",
       "reducedMotion": "Respect the shared paused/reduced-motion playback setting; do not run an independent effect timer."
     }
+  },
+  "thoughtBubbles": {
+    "atlas": "robot-thought-bubbles-v01.png",
+    "canvas": [
+      400,
+      340
+    ],
+    "frames": [
+      {
+        "sourceRect": [
+          53,
+          93,
+          396,
+          334
+        ],
+        "destinationRect": [
+          2.0,
+          3.0,
+          396,
+          334
+        ],
+        "label": "思考・左點跳動"
+      },
+      {
+        "sourceRect": [
+          473,
+          93,
+          398,
+          334
+        ],
+        "destinationRect": [
+          1.0,
+          3.0,
+          398,
+          334
+        ],
+        "label": "思考・中點跳動"
+      },
+      {
+        "sourceRect": [
+          903,
+          93,
+          396,
+          334
+        ],
+        "destinationRect": [
+          2.0,
+          3.0,
+          396,
+          334
+        ],
+        "label": "思考・右點跳動"
+      },
+      {
+        "sourceRect": [
+          1342,
+          93,
+          397,
+          334
+        ],
+        "destinationRect": [
+          1.5,
+          3.0,
+          397,
+          334
+        ],
+        "label": "思考・三點停留"
+      },
+      {
+        "sourceRect": [
+          53,
+          498,
+          397,
+          334
+        ],
+        "destinationRect": [
+          1.5,
+          3.0,
+          397,
+          334
+        ],
+        "label": "成立・勾"
+      },
+      {
+        "sourceRect": [
+          473,
+          498,
+          398,
+          334
+        ],
+        "destinationRect": [
+          1.0,
+          3.0,
+          398,
+          334
+        ],
+        "label": "不成立・叉"
+      },
+      {
+        "sourceRect": [
+          903,
+          498,
+          396,
+          334
+        ],
+        "destinationRect": [
+          2.0,
+          3.0,
+          396,
+          334
+        ],
+        "label": "澆水壺"
+      },
+      {
+        "sourceRect": [
+          1342,
+          498,
+          398,
+          334
+        ],
+        "destinationRect": [
+          1.0,
+          3.0,
+          398,
+          334
+        ],
+        "label": "種子"
+      }
+    ],
+    "animations": {
+      "thinking": {
+        "frameOrder": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "frameDurationsMs": [
+          180,
+          180,
+          180,
+          180
+        ],
+        "loop": true
+      },
+      "true": {
+        "frameOrder": [
+          4
+        ],
+        "frameDurationsMs": [
+          1000
+        ],
+        "loop": false
+      },
+      "false": {
+        "frameOrder": [
+          5
+        ],
+        "frameDurationsMs": [
+          1000
+        ],
+        "loop": false
+      },
+      "watering": {
+        "frameOrder": [
+          6
+        ],
+        "frameDurationsMs": [
+          720
+        ],
+        "loop": true
+      },
+      "sowing": {
+        "frameOrder": [
+          7
+        ],
+        "frameDurationsMs": [
+          720
+        ],
+        "loop": true
+      }
+    },
+    "byClip": {
+      "decisionThinking": "thinking",
+      "decisionTrue": "true",
+      "decisionFalse": "false",
+      "water": "watering",
+      "sow": "sowing"
+    },
+    "placement": {
+      "relativeTo": "robotCanvas",
+      "leftRatio": 0.57,
+      "bottomRatio": 0.79,
+      "widthRatio": 0.44,
+      "layerZ": 4,
+      "followPoseBob": true,
+      "description": "Bottom-left of the bubble canvas anchored to these normalized robot-canvas coordinates. Height follows canvas aspect. Draw above robot and cargo; do not change existing rendering.layerOrder."
+    },
+    "clock": {
+      "mode": "elapsed-since-clip-entry",
+      "resetOnClipEntry": true,
+      "restartOnReplay": true,
+      "pauseWithRobot": true,
+      "onAnimationComplete": "hold-last-until-clip-exit",
+      "unmappedClip": "hidden"
+    },
+    "note": "Bubble animation has its own elapsed-time cursor within the shared render clock; do not use the eye/shell frame index for dot phases. Source art includes the cream cloud, thought puffs and pictogram. Result selection comes from external game logic. Scan, carry, harvest, movement and idle have no bubble mapping."
   }
 }

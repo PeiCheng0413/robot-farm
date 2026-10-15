@@ -1,10 +1,12 @@
 
 (async function(){
-  const response=await fetch('assets/manifest.json?v=12');
+  const response=await fetch('assets/manifest.json?v=13');
   if(!response.ok)throw new Error('素材數據讀取失敗：'+response.status);
   const manifest=await response.json(),rendering=manifest.rendering,clips=manifest.animationClips;
   const $=s=>document.querySelector(s),alignment=spriteAlignment;
   const robotViews=new Set(),plantViews=new Set(),itemViews=new Set(),soilViews=new Set(),effectViews=new Map(),images=new Map();
+  const thoughts=manifest.thoughtBubbles,thoughtViews=new Map();
+  const thoughtState={clip:null,elapsedMs:0,frame:null};
   const lookup=path=>path.reduce((value,key)=>value[key],alignment);
   const firstFrame=name=>clips[name].frameOrder[0];
   const idleAction=manifest.playback.actionClips.indexOf(manifest.playback.restClips.empty);
@@ -24,7 +26,7 @@
   function imageSource(file){
     if(images.has(file))return images.get(file);
     const image=new Image();images.set(file,image);
-    image.onload=()=>{robotViews.forEach(drawRobot);plantViews.forEach(drawPlant);itemViews.forEach(drawItem);soilViews.forEach(drawSoil);effectViews.forEach((view,canvas)=>drawEffect(canvas,view));updateEffects();};
+    image.onload=()=>{robotViews.forEach(drawRobot);plantViews.forEach(drawPlant);itemViews.forEach(drawItem);soilViews.forEach(drawSoil);effectViews.forEach((view,canvas)=>drawEffect(canvas,view));updateEffects();thoughtViews.forEach((index,canvas)=>drawThought(canvas,index));updateThought(true);};
     image.onerror=()=>{$('#status').textContent='素材載入失敗，請重新整理頁面。';};
     image.src='assets/'+file+'?v='+encodeURIComponent(manifest.version);
     return image;
@@ -42,7 +44,7 @@
   function objectState(clip=clips[clipName()],index=frameCursor){
     return Object.fromEntries(Object.entries(clip.objects).map(([key,values])=>[key,values[index]]));
   }
-  function resetFrame(){frameCursor=0;frame=firstFrame(clipName());if(animationTimer!==null)scheduleAnimation();}
+  function resetFrame(){thoughtState.elapsedMs=0;thoughtState.frame=null;frameCursor=0;frame=firstFrame(clipName());if(animationTimer!==null)scheduleAnimation();}
   function drawRobot(el){
     const canvas=el.firstElementChild,ctx=canvas.getContext('2d'),size=alignment.canvas;
     ctx.clearRect(0,0,size,size);ctx.imageSmoothingEnabled=false;
@@ -147,9 +149,44 @@
       const caption=document.createElement('figcaption');caption.textContent='波紋 '+(index+1);card.append(sample,caption);$('#scan-wave-samples').append(card);
     });
   });
+  const thoughtCanvas=document.createElement('canvas');[thoughtCanvas.width,thoughtCanvas.height]=thoughts.canvas;
+  thoughtCanvas.className='thought-bubble';thoughtCanvas.hidden=true;thoughtCanvas.setAttribute('role','img');$('#bot').append(thoughtCanvas);
+  function drawThought(canvas,index){
+    const ctx=canvas.getContext('2d'),sample=thoughts.frames[index],source=imageSource(thoughts.atlas);
+    ctx.clearRect(0,0,...thoughts.canvas);ctx.imageSmoothingEnabled=false;
+    if(source.complete&&source.naturalWidth)ctx.drawImage(source,...sample.sourceRect,...sample.destinationRect);
+  }
+  function thoughtFrame(name,elapsedMs){
+    const animation=thoughts.animations[name],total=animation.frameDurationsMs.reduce((sum,ms)=>sum+ms,0);
+    let time=animation.loop?elapsedMs%total:Math.min(elapsedMs,total);
+    for(let i=0;i<animation.frameOrder.length;i++){
+      if(time<animation.frameDurationsMs[i])return animation.frameOrder[i];time-=animation.frameDurationsMs[i];
+    }
+    return animation.frameOrder[animation.frameOrder.length-1];
+  }
+  function updateThought(force=false){
+    const current=clipName();
+    if(thoughtState.clip!==current){thoughtState.clip=current;thoughtState.elapsedMs=0;thoughtState.frame=null;}
+    const name=thoughts.byClip[current];thoughtCanvas.hidden=!name;
+    if(!name)return;
+    const p=thoughts.placement,pose=$('#robot').robotFrame,sample=rendering.robotPoses[pose.row].frames[pose.col];
+    thoughtCanvas.style.left=(p.leftRatio*100)+'%';thoughtCanvas.style.bottom=(p.bottomRatio*100)+'%';
+    thoughtCanvas.style.width=(p.widthRatio*100)+'%';thoughtCanvas.style.zIndex=p.layerZ;
+    const bob=p.followPoseBob&&sample.bobIndex!==null?alignment.bob[sample.bobIndex]:0;
+    thoughtCanvas.style.marginBottom=(-bob/alignment.canvas*$('#robot').clientHeight)+'px';
+    thoughtCanvas.setAttribute('aria-label',actions[manifest.playback.actionClips.indexOf(current)]+'的想法泡泡');
+    const index=thoughtFrame(name,thoughtState.elapsedMs);
+    if(force||thoughtState.frame!==index){drawThought(thoughtCanvas,index);thoughtState.frame=index;}
+  }
+  thoughts.frames.forEach((sample,index)=>{
+    const card=document.createElement('figure'),canvas=document.createElement('canvas');[canvas.width,canvas.height]=thoughts.canvas;
+    canvas.setAttribute('role','img');canvas.setAttribute('aria-label',sample.label);canvas.className='thought-sample';
+    thoughtViews.set(canvas,index);drawThought(canvas,index);
+    const caption=document.createElement('figcaption');caption.textContent=sample.label;card.append(canvas,caption);$('#thought-samples').append(card);
+  });
   function updateRobot(){
     const clip=clips[clipName()],row=clip.poseRows[clip.poseRows.length>1?heading:0];
-    position($('#robot'),frame,row);updateEffects();
+    position($('#robot'),frame,row);updateEffects();updateThought();
   }
   function drawItem(canvas){
     const item=produce[canvas.crop],ctx=canvas.getContext('2d'),data=rendering.produce,[cw,ch]=data.canvas;
@@ -315,6 +352,7 @@
   let previousTime=null;
   function animateMovement(time){
     const dt=previousTime===null?0:Math.min(time-previousTime,50);previousTime=time;
+    if(!paused&&!document.hidden){thoughtState.elapsedMs+=dt;updateThought();}
     if(movement&&!paused&&!document.hidden){
       const duration=matchMedia('(prefers-reduced-motion: reduce)').matches?manifest.movement.reducedMotionStepDurationMs:manifest.movement.stepDurationMs;
       movement.elapsed+=dt;const progress=duration?Math.min(movement.elapsed/duration,1):1,from=movement.from,to=movement.to;

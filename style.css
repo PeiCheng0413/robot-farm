@@ -67,3 +67,6 @@ button:disabled,select:disabled,input:disabled{opacity:.45;cursor:not-allowed}
 
 /* v0.11：八格頭頂雷達動作以兩列呈現。 */
 .catalog-row.expanded-catalog{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.catalog-row.expanded-catalog>strong{grid-column:1/-1}.expanded-catalog .sample{min-width:0}
+
+/* v0.13：想法泡泡的位置與播放規則來自 manifest.thoughtBubbles。 */
+.thought-bubble{position:absolute;height:auto;pointer-events:none;image-rendering:pixelated}.thought-bubble[hidden]{display:none}.thought-library{margin:48px 0}.thought-library>p{font-size:14px;line-height:1.8;color:var(--teal)}#thought-samples{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}#thought-samples figure{margin:0;text-align:center;padding:12px;background:#35665b;border-radius:12px;color:var(--cream);font-size:12px}.thought-sample{display:block;width:100%;height:auto;max-width:150px;margin:auto;image-rendering:pixelated}@media(max-width:600px){#thought-samples{grid-template-columns:repeat(2,minmax(0,1fr))}}

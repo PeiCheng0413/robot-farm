@@ -202,3 +202,14 @@ scan 的 12 步 frameOrder 為 0/1/2/3/4/5/4/5/6/2/1/7；frameDurationsMs 為 12
 playback.decisionClips 指定 thinking、true、false 三種 clip，供 Claude 依外部判斷結果選用。animationClips.decisionThinking 的 frameOrder=0/1，每步 300 ms、loop=true，持續左右交換紅綠直到外部切換。decisionTrue 使用圖格 2、decisionFalse 使用圖格 3，均穩定亮燈 1000 ms、loop=false、onComplete=idle。objects 提供逐步 eyeLeft、eyeRight 與 decisionResult，null 表示尚無結果，true/false 表示外部已提供的狀態；不是在素材程式內計算條件。每步的 cargoVisible、sourcePlantVisible、cargoPose 也明列。三種 clip 不啟動掃描波紋，與雷達掃描獨立。
 
 素材試驗室動作按鈕由 playback.actionClips/actionLabels 建立，新增「判斷中／判斷成立／判斷不成立」，手動選擇結果而不自動抽取或判讀田地。暫停與減少動態設定沿用共用播放器。角色圖集為正面空手姿勢，遊戲若需持物時判斷，不能直接用空手 clip 隱藏既有 cargo；可另外設計持物眼燈疊加。感測條件、成立與否、觸發時機均由 Claude 的遊戲邏輯負責；game.html、game/、vendor/ 未修改。內建 image_gen 完整提示詞保存於 prompts-v12.json。
+
+
+## v0.13 機器人頭頂想法泡泡
+
+新增 robot-thought-bubbles-v01.png（1774 × 887 RGBA），四欄二列。首列是三個方點依序跳動與停留的四格思考動畫；第二列依序為綠勾、紅叉、澆水壺、三顆種子。奶油白雲狀泡泡加兩個往左下方延伸的小圓泡，採深青綠輪廓、左上光源、硬邊像素；沒有尖角對話框尾巴，也沒有把角色畫入圖集。內建 image_gen 完整提示詞與原始來源保存於 prompts-v13.json。
+
+manifest.thoughtBubbles 完整提供 atlas、400 × 340 共用畫布、每格 sourceRect／destinationRect、動畫 frameOrder／frameDurationsMs／loop、byClip 動作對應、placement 比例定位與 layerZ。思考四格各 180 ms、720 ms 循環；勾叉各 1000 ms 不循環，維持最後一格直到角色 clip 結束；水壺與種子為單格循環。byClip 將 decisionThinking/decisionTrue/decisionFalse/water/sow 分別對應 thinking/true/false/watering/sowing，其餘狀態隱藏泡泡。判斷眼燈每 300 ms 交替的舊規則保留，泡泡三點以獨立 elapsed-time cursor 在同一 render clock 中更新，不可拿眼燈或角色圖格編號直接當泡泡動畫索引。
+
+placement.relativeTo=robotCanvas：泡泡畫布左下角固定在角色畫布 leftRatio/bottomRatio 指定位置，寬度為 widthRatio，依原畫布比例決定高度；layerZ=4 在角色與貨物上方，followPoseBob=true 跟隨當格 bob。泡泡放在頭頂偏右上方，不遮臉；目前持物與雷達 clip 沒有泡泡對應，避免和頭頂貨物／雷達重疊。保留原有 rendering.layerOrder 與全部舊素材／alignment 資料。
+
+clock 明列每次進入或重播動作歸零、與角色一起暫停、非循環到尾格後維持、無對應 clip 隱藏。離開判斷結果回到 idle 時泡泡立即隱藏，切換為澆水或播種時立即更換內容。素材試驗室提供八格樣本與隨動作顯示的泡泡；沒有條件判斷、生長、資源、商店或存檔邏輯。Claude 只需讀 manifest 與 alignment，即可接入遊戲；本次未修改 game.html、game/、vendor/。
