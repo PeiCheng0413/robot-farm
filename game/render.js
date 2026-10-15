@@ -281,7 +281,7 @@ export function createPainter({ manifest, align, images }) {
 // 名牌顏色已經表示類型，牌面只寫形狀，例如「T 形田」。
 const SHAPE_NAME = plot => plot.name.split('・')[0] + '田';
 
-// background:false 時不畫地板，只畫淡淡的格位線，讓頁面自己的溫室地板透出來（主畫面）。
+// background:false 時不畫地板與格位線，讓頁面自己的溫室地磚透出來當格位（主畫面，地磚由 play.js 對齊格子）。
 export function createBoardRenderer(canvas, assets, { background = true } = {}) {
   // TOP：盤面上方留白，第一排田的名牌與機器人的頭才不會被切掉。
   const P = createPainter(assets), CELL = 96, TOP = CELL * 1.35, SIGN_W = CELL * 1.6, list = [];
@@ -298,9 +298,11 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
     if (background) { ctx.fillStyle = C.floor; ctx.fillRect(0, 0, canvas.width, canvas.height); }
     ctx.translate(0, TOP);
     const boardH = BOARD.rows * CELL;
-    ctx.strokeStyle = background ? C.slot : 'rgba(38, 63, 60, .12)'; ctx.lineWidth = 2;
-    for (let x = 0; x <= BOARD.columns; x++) { ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, boardH); ctx.stroke(); }
-    for (let y = 0; y <= BOARD.rows; y++) { ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(canvas.width, y * CELL); ctx.stroke(); }
+    if (background) {
+      ctx.strokeStyle = C.slot; ctx.lineWidth = 2;
+      for (let x = 0; x <= BOARD.columns; x++) { ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, boardH); ctx.stroke(); }
+      for (let y = 0; y <= BOARD.rows; y++) { ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(canvas.width, y * CELL); ctx.stroke(); }
+    }
 
     const views = state.robots.map(r => ({ robot: r, view: P.robotView(r, r.act, time, toGrid) }));
     const hidden = new Set(views.filter(v => P.hidesPlant(v.view)).map(v => v.robot.plot + '|' + v.view.cell));
@@ -355,7 +357,8 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
     return plot ? plot.id : null;
   }
 
-  return { draw, floatAt, plotAt, manifest: assets.manifest };
+  // 格子在 canvas 原始像素中的大小與上方留白，給頁面對齊地磚用。
+  return { draw, floatAt, plotAt, manifest: assets.manifest, cell: CELL, top: TOP };
 }
 
 // ---------- 單塊田特寫 ----------

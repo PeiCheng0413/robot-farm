@@ -277,6 +277,12 @@ async function start() {
     const k = Math.min((floor.clientWidth - pad) / farm.width, (floor.clientHeight - pad) / farm.height);
     farm.style.width = Math.floor(farm.width * k) + 'px';
     farm.style.height = Math.floor(farm.height * k) + 'px';
+    // 地磚大小與位置對齊盤面格子：每塊石板就是一個格位
+    if (floor.classList.contains('has-art')) {
+      const cell = renderer.cell * k, left = (floor.clientWidth - farm.width * k) / 2, top = (floor.clientHeight - farm.height * k) / 2 + renderer.top * k;
+      floor.style.backgroundSize = `${cell}px ${cell}px`;
+      floor.style.backgroundPosition = `${left}px ${top}px`;
+    }
   }).observe(floor);
   autosave(() => state);
   // play.html#plot=T-high 直接打開該塊田的卡片
