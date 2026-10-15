@@ -61,9 +61,11 @@ function drawPlant(el){
   ctx.clearRect(0,0,320,320);ctx.imageSmoothingEnabled=false;
   if(!farmSource.complete||!farmSource.naturalWidth)return;
   const x=Math.round(col*313.5),y=Math.round(row*313.5),[rx,ry]=spriteAlignment.cropRoots[row-1][col];
-  ctx.drawImage(farmSource,x,y,Math.round((col+1)*313.5)-x,Math.round((row+1)*313.5)-y,160-rx,285-ry,Math.round((col+1)*313.5)-x,Math.round((row+1)*313.5)-y);
+  // 生成土壤延伸至 y=317；作物取樣略過該列，不影響植株基準點。
+  const trim=row===1?4:0,w=Math.round((col+1)*313.5)-x,h=Math.round((row+1)*313.5)-y;
+  ctx.drawImage(farmSource,x,y+trim,w,h-trim,160-rx,285-ry+trim,w,h-trim);
 }
-farmSource.onload=()=>plantViews.forEach(drawPlant);farmSource.src='assets/farm-atlas-v01.png?v=05';
+farmSource.onload=()=>plantViews.forEach(drawPlant);farmSource.src='assets/farm-atlas-v01.png?v=07';
 function position(el,col,row){
   if(el.classList.contains('farm')&&row>0){
     if(!el.firstElementChild){const canvas=document.createElement('canvas');canvas.width=320;canvas.height=320;el.append(canvas);plantViews.add(el);el.classList.add('aligned-plant');}
@@ -214,3 +216,12 @@ setInterval(()=>{
   }else frame=(frame+1)%4;
   updateRobot();
 },180);
+
+
+// 方格農田標本：只切換素材外觀，預設形狀是靜態美術排列。
+$('#tile-soils').onclick=e=>{
+  if(!e.target.matches('button'))return;
+  const soil=+e.target.dataset.value;
+  $('#tile-preview').style.setProperty('--soil-x',(soil*100/3)+'%');
+  buttons('#tile-soils',soil);
+};
