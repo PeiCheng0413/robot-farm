@@ -1,0 +1,25 @@
+{
+  "method": "內建 image_gen",
+  "status": "Generated previously; copied unchanged after filename approval.",
+  "growth": "Use case: stylized-concept. Transparent pixel-art crop growth atlas for Floating Leaf Farm. Reference farm-atlas-v01.png for exact pixel medium, leaf palette, outlines, and slightly top-down orthographic perspective. Exactly 4 columns x 3 rows, twelve complete isolated plants, true alpha, no soil or text, fixed root per cell at x=50%, y=85%, progressively larger stages. Row 1 strawberry: two-leaf seedling, serrated trifoliate young plant, white flowers with yellow centers and small green berries, mature red pointed strawberries with cream seed dots. Row 2 watermelon: oval seedling, lobed-leaf vine, yellow flowers with small green melon, mature low vine with one whole striped green watermelon. Row 3 cantaloupe: oval seedling, broad-leaf young vine, yellow flowers and small greenish melon, mature vine with one whole golden tan cream-netted cantaloupe. Chunky hard pixels, dark #263f3c outlines, leaves #35665b #69965b #8fc7a3, three-tone upper-left lighting, warm desaturated game palette. No pots, tiles, soil, ground shadows, detached produce, robot, grid, labels, blur or gradients.",
+  "strawberry": "One independent harvested produce icon for robot carrying and art catalog. Use produce-tomato-v01.png as pixel scale, outline and upper-left light reference only. One complete whole fruit, actual transparent alpha, centered with generous margins. Chunky hard square pixels, coarse pixel density, three-tone shading, dark teal #263f3c outline, warm low-saturation palette. No plant, robot, hands, basket, ground, text, frame, slice, gradient, blur or photographic texture. One red heart/conical strawberry, pointed bottom, cream seed dots, small green star-shaped calyx and short stem.",
+  "watermelon": "One independent harvested produce icon for robot carrying and art catalog. Use produce-tomato-v01.png as pixel scale, outline and upper-left light reference only. One complete whole fruit, actual transparent alpha, centered with generous margins. Chunky hard square pixels, coarse pixel density, three-tone shading, dark teal #263f3c outline, warm low-saturation palette. No plant, robot, hands, basket, ground, text, frame, slice, gradient, blur or photographic texture. One whole round deep-green watermelon with wide irregular olive/mint vertical stripes, short curved stem; no exposed red flesh.",
+  "cantaloupe": "One independent harvested produce icon for robot carrying and art catalog. Use produce-tomato-v01.png as pixel scale, outline and upper-left light reference only. One complete whole fruit, actual transparent alpha, centered with generous margins. Chunky hard square pixels, coarse pixel density, three-tone shading, dark teal #263f3c outline, warm low-saturation palette. No plant, robot, hands, basket, ground, text, frame, slice, gradient, blur or photographic texture. One whole round warm tan/golden cantaloupe #c6a376 #d7a44b with coarse cream netted rind pixel clusters and short green-brown stem; no deep pumpkin ribs or exposed orange flesh.",
+  "files": [
+    "fruit-growth-v01.png",
+    "produce-strawberry-v01.png",
+    "produce-watermelon-v01.png",
+    "produce-cantaloupe-v01.png"
+  ],
+  "references": [
+    "assets/farm-atlas-v01.png",
+    "assets/produce-tomato-v01.png"
+  ],
+  "note": "Prompt specifications recorded from the prior generation request; source output filenames retained below.",
+  "generatedSources": {
+    "fruit-growth-v01.png": "exec-7411ee75-249c-4586-bd6c-871fcea34dc7.png",
+    "produce-strawberry-v01.png": "exec-4301308c-26f9-4447-b8d0-ebbc66bfe036.png",
+    "produce-watermelon-v01.png": "exec-bb898af0-8982-4172-88c6-55588ab3bdc4.png",
+    "produce-cantaloupe-v01.png": "exec-705141c9-65ad-4544-a122-b65e5109ea76.png"
+  }
+}

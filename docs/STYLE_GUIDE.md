@@ -147,3 +147,16 @@ assets/robot-carry-directions-v06.png 為 1122 × 1402 透明 PNG，4 欄 × 5 �
 場景田區改用等寬高單格，純美術展示區提供四種靜態拼接排列及土壤外觀切換。沒有實作擺放、碰撞、解鎖或其他遊戲規則。manifest.json 與 alignment.js 均未修改。使用內建 image_gen，原始紋理及圖集合成提示詞保存於 docs/prompts.json 的 squareSoilTexture 與 squareSoilAtlasComposition。
 
 取樣注意：本次生成的土壤內容延伸至 y=317。第一列作物由 y=318 起取樣，略過上方四像素並保留原畫布偏移，避免帶入土壤細線；此修正在 app.js 的 drawPlant，植株根部參數不變。
+
+
+## v0.8 草莓、西瓜、哈密瓜與共用素材數據
+
+新增 fruit-growth-v01.png（1448 × 1086，四欄三列），由上至下是草莓、西瓜、哈密瓜，各有幼苗、幼株、成長、成熟四種外觀。以白花／尖形紅果、綠色條紋整顆瓜、金黃色網紋整顆瓜區別三種作物；沿用硬邊像素、深青綠輪廓與左上光源。
+
+獨立透明收成圖沿用 produce-作物名-v01.png 命名：strawberry、watermelon、cantaloupe 各一張。機器人圖集不含作物，持物時照舊疊加獨立收成圖。舊素材、舊作物編號及 alignment.js 完整保留。
+
+manifest.json 新增 crops、animationClips、playback、rendering；只新增欄位，不刪除、改名或改變既有欄位意義。crops[].frames 列出每格 sourceRect、局部 root、scale，對齊 rendering.plantRoot。藤蔓超出名義等分格界，必須使用逐格 sourceRect，不能直接四等分。新作物各階段共用固定比例，保留自然大小差異。produce[].sourceRect 提供各收成圖內容範圍。
+
+animationClips 以 frameDurationsMs 明列每個播放步驟的時長（frameDurationMs 保留為預設值），frameOrder 可重複同一圖格；另定義、loop、物件逐格顯示狀態及完成後 clip。playback 指定工作、轉向、空手與持物待機的 clip。rendering.robotPoses 指定來源框與 alignmentPath，持物格另有 cargoAnchorPath；路徑相對於 spriteAlignment。rendering 定義畫布、植株根部、收成圖基準、持物尺寸與圖層順序。movement 保留轉向順序／步進時長，新增方向向量與減少動態時長。rendering.scene 是素材試驗室位置示例，遊戲可使用自己的田格位置配合相同 sprite 基準點。
+
+這些都是美術播放與定位數據；四階段作物外觀由素材試驗室手動切換，沒有加入生長時間、成熟度判定、經濟、庫存或存檔規則。app.js 讀取共用數據顯示；Claude 可只讀 manifest.json 與 alignment.js，不需讀 app.js。game.html、game/、vendor/ 完整保留。提示詞規格與生成來源記錄於 docs/prompts-v08.json。
