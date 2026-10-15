@@ -1,5 +1,5 @@
 {
-  "version": "0.8",
+  "version": "0.9",
   "status": "art-prototype",
   "width": 1254,
   "height": 1254,
@@ -226,6 +226,32 @@
         1086
       ],
       "sampling": "Use crops[].frames[].sourceRect and root; nominal uniform columns clip spreading vines."
+    },
+    {
+      "file": "soil-decorations-v01.png",
+      "width": 1086,
+      "height": 1448,
+      "columns": 3,
+      "rows": [
+        "dry",
+        "normal",
+        "moist",
+        "waterlogged"
+      ],
+      "columnBoundaries": [
+        0,
+        362,
+        724,
+        1086
+      ],
+      "rowBoundaries": [
+        0,
+        362,
+        724,
+        1086,
+        1448
+      ],
+      "sampling": "Use soilVariants.states[].variants[].layers sourceRect and destinationRect; decorations only, no soil base."
     }
   ],
   "produce": [
@@ -2155,6 +2181,796 @@
         "watermelon",
         "cantaloupe",
         "carrot"
+      ]
+    }
+  },
+  "soilVariants": {
+    "canvas": [
+      320,
+      320
+    ],
+    "defaultVariant": "plain",
+    "presets": [
+      {
+        "id": "plain",
+        "label": "原版"
+      },
+      {
+        "id": "flowers",
+        "label": "小花"
+      },
+      {
+        "id": "stones",
+        "label": "碎石"
+      },
+      {
+        "id": "mixed",
+        "label": "花與碎石"
+      }
+    ],
+    "composition": "Draw layers in ascending z onto one soil canvas, below the existing plant layer. destinationRect uses canvas pixels; sourceRect uses atlas pixels. Never mutate the base atlas.",
+    "selection": "Persist the chosen variant ID per tile; do not choose a new variant during animation or redraw.",
+    "states": [
+      {
+        "soilIndex": 0,
+        "label": "乾裂",
+        "variants": [
+          {
+            "id": "plain",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  0,
+                  0,
+                  314,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              }
+            ]
+          },
+          {
+            "id": "flowers",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  0,
+                  0,
+                  314,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  71,
+                  60,
+                  91,
+                  99
+                ],
+                "destinationRect": [
+                  45.616,
+                  44.0,
+                  36.768,
+                  40.0
+                ],
+                "z": 1
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  234,
+                  233,
+                  84,
+                  94
+                ],
+                "destinationRect": [
+                  238.128,
+                  236.0,
+                  35.745,
+                  40.0
+                ],
+                "z": 2
+              }
+            ]
+          },
+          {
+            "id": "stones",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  0,
+                  0,
+                  314,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  576,
+                  89,
+                  91,
+                  74
+                ],
+                "destinationRect": [
+                  233.5,
+                  45.703,
+                  45.0,
+                  36.593
+                ],
+                "z": 1
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  430,
+                  254,
+                  88,
+                  63
+                ],
+                "destinationRect": [
+                  41.5,
+                  239.892,
+                  45.0,
+                  32.216
+                ],
+                "z": 2
+              }
+            ]
+          },
+          {
+            "id": "mixed",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  0,
+                  0,
+                  314,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  763,
+                  85,
+                  85,
+                  94
+                ],
+                "destinationRect": [
+                  45.915,
+                  44.0,
+                  36.17,
+                  40.0
+                ],
+                "z": 1
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  924,
+                  253,
+                  98,
+                  79
+                ],
+                "destinationRect": [
+                  233.5,
+                  237.862,
+                  45.0,
+                  36.276
+                ],
+                "z": 2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "soilIndex": 1,
+        "label": "一般",
+        "variants": [
+          {
+            "id": "plain",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  314,
+                  0,
+                  313,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              }
+            ]
+          },
+          {
+            "id": "flowers",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  314,
+                  0,
+                  313,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  65,
+                  413,
+                  103,
+                  102
+                ],
+                "destinationRect": [
+                  44.0,
+                  44.194,
+                  40.0,
+                  39.612
+                ],
+                "z": 1
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  241,
+                  591,
+                  84,
+                  85
+                ],
+                "destinationRect": [
+                  236.235,
+                  236.0,
+                  39.529,
+                  40.0
+                ],
+                "z": 2
+              }
+            ]
+          },
+          {
+            "id": "stones",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  314,
+                  0,
+                  313,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  587,
+                  431,
+                  79,
+                  70
+                ],
+                "destinationRect": [
+                  233.5,
+                  44.063,
+                  45.0,
+                  39.873
+                ],
+                "z": 1
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  421,
+                  600,
+                  105,
+                  72
+                ],
+                "destinationRect": [
+                  41.5,
+                  240.571,
+                  45.0,
+                  30.857
+                ],
+                "z": 2
+              }
+            ]
+          },
+          {
+            "id": "mixed",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  314,
+                  0,
+                  313,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  760,
+                  419,
+                  95,
+                  101
+                ],
+                "destinationRect": [
+                  45.188,
+                  44.0,
+                  37.624,
+                  40.0
+                ],
+                "z": 1
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  926,
+                  592,
+                  100,
+                  78
+                ],
+                "destinationRect": [
+                  233.5,
+                  238.45,
+                  45.0,
+                  35.1
+                ],
+                "z": 2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "soilIndex": 2,
+        "label": "濕潤",
+        "variants": [
+          {
+            "id": "plain",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  627,
+                  0,
+                  314,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              }
+            ]
+          },
+          {
+            "id": "flowers",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  627,
+                  0,
+                  314,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  68,
+                  760,
+                  94,
+                  105
+                ],
+                "destinationRect": [
+                  46.095,
+                  44.0,
+                  35.81,
+                  40.0
+                ],
+                "z": 1
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  227,
+                  935,
+                  94,
+                  95
+                ],
+                "destinationRect": [
+                  236.211,
+                  236.0,
+                  39.579,
+                  40.0
+                ],
+                "z": 2
+              }
+            ]
+          },
+          {
+            "id": "stones",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  627,
+                  0,
+                  314,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  576,
+                  780,
+                  95,
+                  81
+                ],
+                "destinationRect": [
+                  233.5,
+                  44.816,
+                  45.0,
+                  38.368
+                ],
+                "z": 1
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  422,
+                  952,
+                  103,
+                  69
+                ],
+                "destinationRect": [
+                  41.5,
+                  240.927,
+                  45.0,
+                  30.146
+                ],
+                "z": 2
+              }
+            ]
+          },
+          {
+            "id": "mixed",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  627,
+                  0,
+                  314,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  760,
+                  765,
+                  90,
+                  100
+                ],
+                "destinationRect": [
+                  46.0,
+                  44.0,
+                  36.0,
+                  40.0
+                ],
+                "z": 1
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  918,
+                  950,
+                  106,
+                  81
+                ],
+                "destinationRect": [
+                  233.5,
+                  238.807,
+                  45.0,
+                  34.387
+                ],
+                "z": 2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "soilIndex": 3,
+        "label": "積水",
+        "variants": [
+          {
+            "id": "plain",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  941,
+                  0,
+                  313,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              }
+            ]
+          },
+          {
+            "id": "flowers",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  941,
+                  0,
+                  313,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  65,
+                  1104,
+                  98,
+                  103
+                ],
+                "destinationRect": [
+                  44.971,
+                  44.0,
+                  38.058,
+                  40.0
+                ],
+                "z": 1
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  230,
+                  1282,
+                  94,
+                  102
+                ],
+                "destinationRect": [
+                  237.569,
+                  236.0,
+                  36.863,
+                  40.0
+                ],
+                "z": 2
+              }
+            ]
+          },
+          {
+            "id": "stones",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  941,
+                  0,
+                  313,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  574,
+                  1127,
+                  101,
+                  76
+                ],
+                "destinationRect": [
+                  233.5,
+                  47.069,
+                  45.0,
+                  33.861
+                ],
+                "z": 1
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  419,
+                  1296,
+                  102,
+                  65
+                ],
+                "destinationRect": [
+                  41.5,
+                  241.662,
+                  45.0,
+                  28.676
+                ],
+                "z": 2
+              }
+            ]
+          },
+          {
+            "id": "mixed",
+            "layers": [
+              {
+                "atlas": "farm-atlas-v01.png",
+                "sourceRect": [
+                  941,
+                  0,
+                  313,
+                  314
+                ],
+                "destinationRect": [
+                  0,
+                  0,
+                  320,
+                  320
+                ],
+                "z": 0
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  757,
+                  1111,
+                  98,
+                  109
+                ],
+                "destinationRect": [
+                  46.018,
+                  44.0,
+                  35.963,
+                  40.0
+                ],
+                "z": 1
+              },
+              {
+                "atlas": "soil-decorations-v01.png",
+                "sourceRect": [
+                  918,
+                  1283,
+                  108,
+                  102
+                ],
+                "destinationRect": [
+                  233.5,
+                  234.75,
+                  45.0,
+                  42.5
+                ],
+                "z": 2
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "lab": {
+      "sampleVariants": [
+        "flowers",
+        "stones",
+        "mixed",
+        "plain",
+        "flowers",
+        "mixed"
+      ],
+      "previewSoil": 1,
+      "previewVariants": [
+        "flowers",
+        "stones",
+        "mixed",
+        "plain"
       ]
     }
   }

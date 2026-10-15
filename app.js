@@ -1,10 +1,10 @@
 
 (async function(){
-  const response=await fetch('assets/manifest.json?v=08');
+  const response=await fetch('assets/manifest.json?v=09');
   if(!response.ok)throw new Error('素材數據讀取失敗：'+response.status);
   const manifest=await response.json(),rendering=manifest.rendering,clips=manifest.animationClips;
   const $=s=>document.querySelector(s),alignment=spriteAlignment;
-  const robotViews=new Set(),plantViews=new Set(),itemViews=new Set(),images=new Map();
+  const robotViews=new Set(),plantViews=new Set(),itemViews=new Set(),soilViews=new Set(),images=new Map();
   const lookup=path=>path.reduce((value,key)=>value[key],alignment);
   const firstFrame=name=>clips[name].frameOrder[0];
   const idleAction=manifest.playback.actionClips.indexOf(manifest.playback.restClips.empty);
@@ -14,8 +14,8 @@
   const produceById=new Map(manifest.produce.map(p=>[p.id,p]));
   const actions=manifest.playback.actionLabels,stages=manifest.crops[0].stageLabels;
   const scene=rendering.scene,directions=manifest.movement.headingOrder.map(id=>manifest.movement.directionVectors.find(d=>d.id===id));
-  const soilLabels=rendering.soil.labels;
-  const plots=rendering.lab.sampleCrops.map(id=>({crop:cropById.get(id).labValue,stage:rendering.lab.initialStage,soil:rendering.lab.initialSoil}));
+  const soilLabels=rendering.soil.labels,soilData=manifest.soilVariants;
+  const plots=rendering.lab.sampleCrops.map((id,i)=>({crop:cropById.get(id).labValue,stage:rendering.lab.initialStage,soil:rendering.lab.initialSoil,variant:soilData.lab.sampleVariants[i%soilData.lab.sampleVariants.length]}));
   let selected=0,action=idleAction,frame=firstFrame(manifest.playback.restClips.empty);
   let frameCursor=0;
   let paused=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -24,7 +24,7 @@
   function imageSource(file){
     if(images.has(file))return images.get(file);
     const image=new Image();images.set(file,image);
-    image.onload=()=>{robotViews.forEach(drawRobot);plantViews.forEach(drawPlant);itemViews.forEach(drawItem);};
+    image.onload=()=>{robotViews.forEach(drawRobot);plantViews.forEach(drawPlant);itemViews.forEach(drawItem);soilViews.forEach(drawSoil);};
     image.onerror=()=>{$('#status').textContent='素材載入失敗，請重新整理頁面。';};
     image.src='assets/'+file+'?v='+encodeURIComponent(manifest.version);
     return image;
@@ -77,7 +77,17 @@
     const [x,y,w,h]=sample.sourceRect,[rx,ry]=sample.root,[tx,ty]=rendering.plantRoot,s=sample.scale;
     ctx.drawImage(source,x,y,w,h,tx-rx*s,ty-ry*s,w*s,h*s);
   }
-  function position(el,col,row){
+  function drawSoil(el){
+    const {soil,variant}=el.soilFrame,canvas=el.firstElementChild,ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,...soilData.canvas);ctx.imageSmoothingEnabled=false;
+    const state=soilData.states.find(s=>s.soilIndex===soil);
+    const preset=state.variants.find(v=>v.id===variant);
+    for(const layer of [...preset.layers].sort((a,b)=>a.z-b.z)){
+      const source=imageSource(layer.atlas);
+      if(source.complete&&source.naturalWidth)ctx.drawImage(source,...layer.sourceRect,...layer.destinationRect);
+    }
+  }
+  function position(el,col,row,variant=soilData.defaultVariant){
     if(el.classList.contains('farm')&&row>0){
       if(!el.firstElementChild){
         const canvas=document.createElement('canvas');[canvas.width,canvas.height]=rendering.plantCanvas;
@@ -86,7 +96,11 @@
       el.plantFrame={col,row};drawPlant(el);return;
     }
     if(!el.classList.contains('robot')){
-      el.style.backgroundPosition=(col*100/(rendering.soil.columns-1))+'% 0%';return;
+      if(!el.firstElementChild){
+        const canvas=document.createElement('canvas');[canvas.width,canvas.height]=soilData.canvas;
+        canvas.setAttribute('aria-hidden','true');el.append(canvas);soilViews.add(el);el.classList.add('aligned-soil');
+      }
+      el.soilFrame={soil:col,variant};drawSoil(el);return;
     }
     if(!el.firstElementChild){
       const canvas=document.createElement('canvas');canvas.width=alignment.canvas;canvas.height=alignment.canvas;
@@ -117,6 +131,7 @@
     });
   }
   function renderPlots(){
+    document.querySelectorAll('#plots .aligned-soil').forEach(el=>soilViews.delete(el));
     document.querySelectorAll('#plots .aligned-plant').forEach(el=>plantViews.delete(el));$('#plots').innerHTML='';
     plots.forEach((p,i)=>{
       const lifted=cargo&&cargo.plot===i&&!objectState().sourcePlantVisible;
@@ -125,14 +140,14 @@
       b.setAttribute('aria-pressed',String(selected===i));
       b.innerHTML='<div class="sprite farm soil"></div><div class="sprite farm plant"></div>';
       b.children[0].style.zIndex=rendering.layerZ.soil;b.children[1].style.zIndex=rendering.layerZ.plant;
-      position(b.children[0],p.soil,0);position(b.children[1],p.stage,p.crop);b.children[1].hidden=!!lifted;
+      position(b.children[0],p.soil,0,p.variant);position(b.children[1],p.stage,p.crop);b.children[1].hidden=!!lifted;
       b.onclick=()=>{if(harvestTarget){$('#status').textContent='正在拿起作物，完成後即可移動。';return;}moveTo(i);};
       $('#plots').append(b);
     });
   }
   function sync(){
     const p=plots[selected],locked=!!harvestTarget||!!(cargo&&cargo.plot===selected);
-    $('#crop').value=p.crop;$('#growth').value=p.stage;$('#stage-name').textContent=stages[p.stage];buttons('#soils',p.soil);
+    $('#soil-variant').value=p.variant;$('#crop').value=p.crop;$('#growth').value=p.stage;$('#stage-name').textContent=stages[p.stage];buttons('#soils',p.soil);
     $('#crop').disabled=locked;$('#growth').disabled=locked;
     $('#drop').disabled=!cargo||!!harvestTarget||!!movement;
     $('#heading').textContent='移動朝向：'+directions[heading].name;
@@ -166,6 +181,23 @@
     $('#status').textContent='已放下'+name+'，原田區恢復展示，可再次採收。';
   };
   $('#soils').onclick=e=>{if(!e.target.matches('button'))return;plots[selected].soil=+e.target.dataset.value;renderPlots();sync();};
+  soilData.presets.forEach(p=>{
+    const option=document.createElement('option');option.value=p.id;option.textContent=p.label;$('#soil-variant').append(option);
+  });
+  $('#soil-variant').onchange=e=>{plots[selected].variant=e.target.value;renderPlots();sync();};
+  soilData.states.forEach(state=>{
+    const row=document.createElement('div');row.className='soil-variation-row';
+    const title=document.createElement('h3');title.textContent=state.label;row.append(title);
+    soilData.presets.forEach(preset=>{
+      const card=document.createElement('button');card.className='soil-variant-card';
+      card.setAttribute('aria-label',state.label+'・'+preset.label+'，套用至選取田區');
+      const tile=document.createElement('div');tile.className='sprite farm variant-tile';position(tile,state.soilIndex,0,preset.id);
+      const label=document.createElement('span');label.textContent=preset.label;card.append(tile,label);
+      card.onclick=()=>{plots[selected].soil=state.soilIndex;plots[selected].variant=preset.id;renderPlots();sync();};
+      row.append(card);
+    });
+    $('#soil-variants').append(row);
+  });
   $('#crop').replaceChildren();
   manifest.crops.forEach(c=>{const option=document.createElement('option');option.value=c.labValue;option.textContent=c.name;$('#crop').append(option);});
   $('#crop').onchange=e=>{plots[selected].crop=+e.target.value;renderPlots();sync();};
@@ -271,9 +303,11 @@
     const clip=clips[clipName()];
     setTimeout(()=>{if(!paused&&!document.hidden)advanceAnimation();scheduleAnimation();},clip.frameDurationsMs?clip.frameDurationsMs[frameCursor]:clip.frameDurationMs);
   }
+  const mosaicTiles=[...document.querySelectorAll('.soil-unit')];
+  mosaicTiles.forEach((el,i)=>position(el,soilData.lab.previewSoil,0,soilData.lab.previewVariants[i%soilData.lab.previewVariants.length]));
   $('#tile-soils').onclick=e=>{
     if(!e.target.matches('button'))return;const soil=+e.target.dataset.value;
-    $('#tile-preview').style.setProperty('--soil-x',(soil*100/(rendering.soil.columns-1))+'%');buttons('#tile-soils',soil);
+    mosaicTiles.forEach(el=>position(el,soil,0,el.soilFrame.variant));buttons('#tile-soils',soil);
   };
   $('#bot').style.zIndex=rendering.layerZ.robot;$('#held-item').style.zIndex=rendering.layerZ.cargo;
   new ResizeObserver(()=>{if(!movement)placeBot(selected%scene.columns,Math.floor(selected/scene.columns));}).observe($('.greenhouse'));

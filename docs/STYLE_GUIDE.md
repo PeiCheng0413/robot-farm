@@ -160,3 +160,12 @@ manifest.json 新增 crops、animationClips、playback、rendering；只新增�
 animationClips 以 frameDurationsMs 明列每個播放步驟的時長（frameDurationMs 保留為預設值），frameOrder 可重複同一圖格；另定義、loop、物件逐格顯示狀態及完成後 clip。playback 指定工作、轉向、空手與持物待機的 clip。rendering.robotPoses 指定來源框與 alignmentPath，持物格另有 cargoAnchorPath；路徑相對於 spriteAlignment。rendering 定義畫布、植株根部、收成圖基準、持物尺寸與圖層順序。movement 保留轉向順序／步進時長，新增方向向量與減少動態時長。rendering.scene 是素材試驗室位置示例，遊戲可使用自己的田格位置配合相同 sprite 基準點。
 
 這些都是美術播放與定位數據；四階段作物外觀由素材試驗室手動切換，沒有加入生長時間、成熟度判定、經濟、庫存或存檔規則。app.js 讀取共用數據顯示；Claude 可只讀 manifest.json 與 alignment.js，不需讀 app.js。game.html、game/、vendor/ 完整保留。提示詞規格與生成來源記錄於 docs/prompts-v08.json。
+
+
+## v0.9 田地角落裝飾
+
+新增 soil-decorations-v01.png，1086 × 1448 RGBA，三欄（小花、碎石、混合）、四列（乾裂、一般、濕潤、積水）。保留所有原素材。原版加三種裝飾組合，共 16 種田地外觀。裝飾為透明獨立圖，花叢與石塊逐個取樣，再以最大 40／45 像素繪入 320 方形土壤畫布；保留中央 30–70% 與邊緣空間。
+
+manifest.soilVariants 完整提供畫布、預設、狀態、variant ID、每個圖層的 atlas、sourceRect、destinationRect、z。按 z 升序合成同一 soil 畫布，再沿用既有 soil → plant → robot → cargo 圖層。sourceRect 是來源圖像素，destinationRect 是合成畫布像素。每田格保存 variant ID，不隨動畫或重繪抽樣；原版 ID 為 plain。Claude 可只讀這份數據實作遊戲顯示。既有欄位形狀與意義不變，alignment.js 與遊戲檔案未改。
+
+素材試驗室提供每狀態四種樣本、選取田區細節選單，以及固定裝飾分布的 I/L/T/O 拼接預覽。本次用內建 image_gen 生成，提示詞與來源保存於 prompts-v09.json。

@@ -56,3 +56,8 @@ button:disabled,select:disabled,input:disabled{opacity:.45;cursor:not-allowed}
 
 /* 機器人在選取田格與植株上方顯示。 */
 .bot{z-index:2}
+
+/* v0.9：土壤與角落裝飾依 manifest 合成，保持作物圖層獨立。 */
+.aligned-soil{background-image:none!important}.aligned-soil canvas{display:block;width:100%;height:100%;image-rendering:pixelated;pointer-events:none}
+.soil-variation-library{margin:48px 0}.soil-variation-library>p{color:var(--muted)}.soil-variation-row{display:grid;grid-template-columns:64px repeat(4,minmax(0,1fr));gap:12px;align-items:center;margin:18px 0}.soil-variation-row h3{font-size:14px}.soil-variant-card{padding:10px;background:#233c36;border:1px solid #486359;border-radius:12px;color:#f0e4bb;cursor:pointer}.soil-variant-card:hover,.soil-variant-card:focus-visible{outline:2px solid #d7a44b;outline-offset:2px}.variant-tile{position:relative!important;width:100%;height:auto;aspect-ratio:1;max-width:160px;margin:0 auto 8px}.soil-variant-card span{font-size:13px}
+@media(max-width:600px){.soil-variation-row{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.soil-variation-row h3{grid-column:1/-1;margin:0}.soil-variant-card{padding:5px}.soil-variant-card span{font-size:11px}}

@@ -1,0 +1,8 @@
+{
+  "method": "內建 image_gen",
+  "file": "assets/soil-decorations-v01.png",
+  "reference": "assets/farm-atlas-v01.png",
+  "generatedSource": "exec-dec71871-2cc2-44d5-93eb-ee87753d80f1.png",
+  "prompt": "Use case: stylized-concept. Transparent pixel-art TERRAIN DECORATION OVERLAY atlas for Floating Leaf Farm. Exactly 3 columns x 4 rows, equal square logical cells. Columns: flowers only, stones only, mixed flower and pebble cluster. Rows: dry cream/gold olive, normal white/yellow green, moist pale pink dark green and darker stones, waterlogged lavender/cream cool stones with tiny muted cyan highlights. Two sparse corner clusters per cell; central x=30-70%, y=30-70% transparent and all edges clear. No soil, background, rectangle, borders, labels, gridlines, crops, robots, water surfaces, gradients or blur. Match farm-atlas-v01.png cozy low-saturation chunky hard pixel art, dark teal #263f3c outlines, three-tone upper-left lighting, leaves #35665b #69965b #8fc7a3, cream #f0e4bb, brass #d7a44b, earthy stones #77513b #a67950 #c6a376. Genuine alpha transparent background.",
+  "note": "Condensed generation specification. Generated clusters are sampled separately and rendered smaller through manifest.soilVariants; original PNG copied unchanged."
+}
