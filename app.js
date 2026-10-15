@@ -1,6 +1,6 @@
 
 (async function(){
-  const response=await fetch('assets/manifest.json?v=15');
+  const response=await fetch('assets/manifest.json?v=16');
   if(!response.ok)throw new Error('素材數據讀取失敗：'+response.status);
   const manifest=await response.json(),rendering=manifest.rendering,clips=manifest.animationClips;
   const $=s=>document.querySelector(s),alignment=spriteAlignment;
@@ -385,6 +385,14 @@
       }
     }
     const sprites=[],u=valley.uprightSprites,kind=valley.depthOrder.kindOrder;
+    for(const prop of valley.preview.props||[]){
+      const asset=valley.assets[prop.asset],[gx,gy]=prop.groundPosition;
+      sprites.push({groundX:gx,groundY:gy,kindOrder:kind[asset.sortKind],draw:()=>{
+        const [sw,sh]=asset.sourceRect.slice(2),[aw,ah]=asset.groundAnchor;
+        const scale=Math.min(asset.recommendedDisplaySize[0]/sw,asset.recommendedDisplaySize[1]/sh);
+        blit(asset.file,asset.sourceRect,[gx-aw*scale,gy-ah*scale,sw*scale,sh*scale]);
+      }});
+    }
     cells.forEach((cell,i)=>{
       const crop=cropById.get(valley.preview.cropCycle[i%valley.preview.cropCycle.length]),sample=crop.frames[valley.preview.stage];
       const gx=ox+(cell.x+u.plantGroundAnchor[0])*tw,gy=oy+(cell.y+u.plantGroundAnchor[1])*th;

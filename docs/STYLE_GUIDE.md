@@ -243,3 +243,11 @@ manifest 僅新增 valleyFarm，保留原始 version 與所有舊欄位。assets
 terrain.frontNeighbor=[0,1]，所有田區佔用格子的聯集內只要正南方有鄰格，就不畫該格土面前緣；跨田區邊界同樣檢查。田面沿同一格線接續，不加每格空隙或圓角。uprightSprites 提供植株、機器人與名牌尺寸及落地錨點；它們維持原圖比例。機器人整組包含貨物與想法泡泡，不可單獨再壓縮。depthOrder 依 projected groundY、groundX、kindOrder 全域排序，不按田區分組排序，讓前排植物能遮住後排角色。
 
 主要預覽提供 L/T/O 田形、六種作物、兩個靜態機器人與名牌，以及俯角／原俯視、四種含水外觀切換。角色動作工作台、舊溫室與通用素材放入展開區塊，全部功能保留。此預覽沒有生長或其他遊戲機制；遊戲投影、拖曳、點擊反算、移動呈現及最終遮擋接線由 Claude 負責，本次未改遊戲檔。
+
+## v0.16 科技農舍
+
+新增 assets/farmhouse-tech-v01.png：奶油白牆、深青綠斜屋頂、木門、青藍太陽能板與黃銅感測天線，沿用左上光源、硬邊像素與暖色山居風格。使用內建 image_gen 生成並原樣保留 RGBA，提示詞與選定來源保存於 prompts-v16.json。保留原始生成色階，不宣稱已量化為嚴格三色索引圖。
+
+manifest 僅新增 valleyFarm.assets.farmhouse、depthOrder.kindOrder.building、preview.props／propPositionSpace。sourceRect 為全圖來源框，groundAnchor 是相對來源框左上角的入口落地點，recommendedDisplaySize 為 contain 等比顯示盒。農舍與其他直立素材共用 groundY／groundX／kindOrder 排序，不隨俯視切換壓扁。preview.props 的落地位置以 960×600 示範畫布像素表示，遊戲可自行選擇位置後沿用來源框與錨點。
+
+農舍為單張靜態素材，animated=false，沒有新增門、燈、面板動畫或遊戲機制。遊戲本體與 alignment.js 未修改；Claude 由 manifest 接入。

@@ -4253,6 +4253,38 @@
           }
         ],
         "sourceSpace": "Full image pixels; sample only the solid bands, excluding margins and stray generation specks."
+      },
+      "farmhouse": {
+        "file": "farmhouse-tech-v01.png",
+        "label": "科技農舍",
+        "imageSize": [
+          1536,
+          1024
+        ],
+        "sourceRect": [
+          140,
+          78,
+          1340,
+          856
+        ],
+        "groundAnchor": [
+          665,
+          850
+        ],
+        "anchorSpace": "Pixels relative to sourceRect top-left; bottom of entrance/foundation.",
+        "recommendedDisplaySize": [
+          224,
+          144
+        ],
+        "preserveAspect": true,
+        "animated": false,
+        "layer": "upright",
+        "sortKind": "building",
+        "repeat": {
+          "x": false,
+          "y": false
+        },
+        "note": "Static artwork only. Solar panels and antenna are painted details; no light, door or production animation. Keep original aspect in both ground views."
       }
     },
     "environment": {
@@ -4383,7 +4415,8 @@
       "kindOrder": {
         "plant": 1,
         "robot": 2,
-        "sign": 3
+        "sign": 3,
+        "building": 4
       },
       "rule": "Sort all upright sprites globally by their projected ground anchor, across plot boundaries. Draw increasing groundY; nearer plants may occlude robots farther back. Cargo/thought bubbles belong to the same robot draw group. Front soil walls are terrain, not upright sprites."
     },
@@ -4500,7 +4533,17 @@
         1.1
       ],
       "note": "Static composition preview; no game mechanics or independent animation timer.",
-      "signAnchorRule": "Use [minimum field cell x, maximum field cell y] + signOffset, then project to screen; signs stand beside the lower-left outer edge."
+      "signAnchorRule": "Use [minimum field cell x, maximum field cell y] + signOffset, then project to screen; signs stand beside the lower-left outer edge.",
+      "props": [
+        {
+          "asset": "farmhouse",
+          "groundPosition": [
+            144,
+            350
+          ]
+        }
+      ],
+      "propPositionSpace": "Preview canvas logical pixels; groundPosition is the projected ground anchor. Game chooses placement independently."
     },
     "note": "Additive data; previous manifest fields, asset paths and alignment shape unchanged. Game projection, picking, dragging, movement rendering and final occlusion integration remain Claude responsibilities."
   }
