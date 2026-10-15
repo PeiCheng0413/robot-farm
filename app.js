@@ -77,7 +77,7 @@ for(const source of [robotSource,harvestSource,directionSource,carrySource]){
   source.onload=()=>robotViews.forEach(drawRobot);
   source.onerror=()=>{$('#status').textContent='機器人素材載入失敗，請重新整理頁面。';};
 }
-robotSource.src='assets/robot-atlas-v01.png';harvestSource.src='assets/robot-harvest-empty-v02.png';directionSource.src='assets/robot-hover-directions-v04.png';carrySource.src='assets/robot-carry-directions-v06.png';
+robotSource.src='assets/robot-atlas-v01.png';harvestSource.src='assets/robot-harvest-empty-v02.png';directionSource.src='assets/robot-hover-directions-v04.png';carrySource.src='assets/robot-carry-directions-v06.png?v=061';
 // 商店與頭頂持物共用來源圖和裁取範圍，僅顯示尺寸不同。
 const itemViews=new Set();
 function drawItem(canvas){

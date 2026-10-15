@@ -132,3 +132,7 @@ assets/robot-carry-directions-v06.png 為 1122 × 1402 透明 PNG，4 欄 × 5 �
 作物仍共用既有三張收成透明圖，一次一個；每格以 alignment.js 的 carry.shells 校準機身尺寸與中心、carry.hands 定位手掌之間的作物底部。機身與作物共用 0,-4,-8,-4 的漂浮位移。切格依實際尺寸與透明間隙檢查，不能假設生成尺寸符合提示詞。新素材仍是概念美術，尚未逐像素清稿。
 
 使用內建 image_gen，初始提示詞與側面手臂修正提示詞保存在 prompts-v06.json。
+
+## v0.6.1 東、西向持物手臂
+
+東、西側視圖的肩關節固定在可見側殼中央。近側手臂從側肩向上彎曲，遠側手臂受機身遮擋，兩臂在側視投影中重疊；不可把雙手畫在機身前後兩端。保留頭頂單個獨立作物，手掌座標與機身定位沿用既有 carry.hands、carry.shells 的資料形狀，只校準數值。既有素材檔名、路徑、圖集尺寸與切格不變，manifest.json 不變。內建 image_gen 修正提示詞保存在 prompts-v06.json 的 sideProfileCorrection。
