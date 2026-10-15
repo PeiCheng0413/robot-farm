@@ -1,6 +1,6 @@
 // 逐步直譯器：只認編譯後的指令樹（見 blocks.js 的 compile），完全不碰 Blockly。
 //
-// 指令：{op:'move'|'turnLeft'|'turnRight'|'sow'|'water'|'harvest'|'leave'}
+// 指令：{op:'move'|'turnLeft'|'turnRight'|'sow'|'water'|'harvest'|'leave'}  {op:'call', name}
 //       {op:'repeat', times, body}  {op:'while', cond, body}  {op:'if', cond, then, else}
 // 條件：{sense:'cell', what:'mature'|'empty'|'dry'}  {sense:'front'}
 //       {sense:'plot', what:'mature'|'empty'|'dry'}  {sense:'tokenLess', value}
@@ -8,10 +8,13 @@
 //
 // nextAction 一路執行控制積木，直到遇到下一個動作積木才回傳，所以控制積木不花時間也不扣 Token。
 
-import { CONTROL_LIMIT } from './config.js';
+import { CONTROL_LIMIT, CALL_DEPTH } from './config.js';
+
+// 程式可以是指令陣列（舊格式），或 { body, functions }（含函式）。
+export const programBody = program => Array.isArray(program) ? program : program.body;
 
 export function createRun(program) {
-  return { stack: [{ body: program, i: 0 }] };
+  return { stack: [{ body: programBody(program), i: 0 }], functions: Array.isArray(program) ? {} : program.functions, depth: 0 };
 }
 
 // sense(cond) 由模擬層提供，回傳 true/false。
@@ -24,11 +27,20 @@ export function nextAction(run, sense) {
     if (frame.i >= frame.body.length) {
       if (frame.loop === 'repeat' && --frame.left > 0) { frame.i = 0; continue; }
       if (frame.loop === 'while' && sense(frame.cond)) { frame.i = 0; continue; }
+      if (frame.call) run.depth--;
       run.stack.pop();
       continue;
     }
     const s = frame.body[frame.i++];
     switch (s.op) {
+      case 'call': {
+        // 呼叫函式不扣 Token；層數過深（通常是函式呼叫自己停不下來）就當機。
+        const fn = run.functions[s.name];
+        if (!fn) return { error: 'missing' };
+        if (run.depth >= CALL_DEPTH) return { error: 'deep' };
+        if (fn.length) { run.depth++; run.stack.push({ body: fn, i: 0, call: true }); }
+        break;
+      }
       case 'repeat':
         if (s.times > 0 && s.body.length) run.stack.push({ body: s.body, i: 0, loop: 'repeat', left: s.times });
         break;

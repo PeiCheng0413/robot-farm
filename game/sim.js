@@ -3,11 +3,11 @@
 // 畫面層只讀 state 與 drainEvents()，格式見 docs/GAME_EVENTS.md。
 
 import {
-  START, SAVE_VERSION, TOKENS_PER_MONEY, ACTION_COST, ACTION_MS, TRAVEL_MS, IDLE_MS, ACTION_LIMIT,
+  START, SAVE_VERSION, TOKENS_PER_MONEY, ACTION_COST, ACTION_MS, TRAVEL_MS, IDLE_MS, ACTION_LIMIT, CALL_DEPTH,
   CAPACITY, capacityCost, MOISTURE_DECAY_MS, GROWTH_RATE_BY_MOISTURE, CROPS, TUTORIAL_CROPS,
 } from './config.js';
 import { PLOTS, plotById, cellKey } from './plots.js';
-import { createRun, nextAction, evaluate } from './interpreter.js';
+import { createRun, nextAction, evaluate, programBody } from './interpreter.js';
 
 // 朝向順序與左右轉方向和 manifest.movement 一致：右轉 +1、左轉 -1。
 export const HEADINGS = ['south', 'west', 'north', 'east'];
@@ -18,6 +18,8 @@ export const CRASH_REASONS = {
   token: 'Token 不足，腳本執行到一半停住了',
   runaway: '迴圈裡沒有任何動作，機器人原地打轉',
   tooLong: `一次執行超過 ${ACTION_LIMIT} 個動作，腳本可能停不下來`,
+  deep: `函式一層叫一層超過 ${CALL_DEPTH} 層，可能是函式呼叫了自己`,
+  missing: '腳本呼叫了不存在的函式',
 };
 
 // 事件佇列跟著各自的 state，不進存檔。
@@ -122,11 +124,11 @@ function startAct(state, robot, act) {
 // ---------- 排程 ----------
 
 function chooseProgram(plot, ps) {
-  if (!plot.tutorial) return ps.program.length ? { program: ps.program, stage: 'main' } : null;
+  if (!plot.tutorial) return programBody(ps.program).length ? { program: ps.program, stage: 'main' } : null;
   // 新手田：系統依作物狀態決定跑哪一份。有成熟就採收，否則有空地就播種，都沒有就跳過。
   const cells = Object.values(ps.cells);
-  if (cells.some(c => c.crop && c.growth >= 1) && ps.programs.harvest.length) return { program: ps.programs.harvest, stage: 'harvest' };
-  if (cells.some(c => !c.crop) && ps.programs.sow.length) return { program: ps.programs.sow, stage: 'sow' };
+  if (cells.some(c => c.crop && c.growth >= 1) && programBody(ps.programs.harvest).length) return { program: ps.programs.harvest, stage: 'harvest' };
+  if (cells.some(c => !c.crop) && programBody(ps.programs.sow).length) return { program: ps.programs.sow, stage: 'sow' };
   return null;
 }
 

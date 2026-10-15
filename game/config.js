@@ -21,6 +21,7 @@ export const IDLE_MS = 1500;     // 沒有田可做時原地待命多久再找�
 // 防呆：一次執行內，連續多少個控制積木沒有夾任何動作就判定當機；最多執行幾個動作。
 export const CONTROL_LIMIT = 500;
 export const ACTION_LIMIT = 300;
+export const CALL_DEPTH = 20;    // 函式最多巢狀呼叫幾層
 
 // 每塊田腳本的積木數上限（不含「開始」積木），可花錢擴充。
 export const CAPACITY = { start: 10, step: 4, baseCost: 30, costGrowth: 1.6 };

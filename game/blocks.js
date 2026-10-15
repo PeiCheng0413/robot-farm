@@ -4,7 +4,7 @@
 const Blockly = window.Blockly;
 
 // 色系取自 docs/STYLE_GUIDE.md 色票，提高明度讓白字清楚。
-const COLOURS = { move: '#3f7f70', farm: '#b0702f', flow: '#5b6fa8', sense: '#7a5a9c', start: '#35665b' };
+const COLOURS = { move: '#3f7f70', farm: '#b0702f', flow: '#5b6fa8', sense: '#7a5a9c', start: '#35665b', func: '#9c4f6b' };
 
 const action = (type, text, colour, tooltip) => ({
   type, message0: text, previousStatement: null, nextStatement: null, colour, tooltip,
@@ -56,6 +56,30 @@ const BLOCKS = [
 
 export function defineBlocks() {
   Blockly.common.defineBlocksWithJsonArray(BLOCKS.map(({ hat, ...b }) => b));
+  // 函式用 Blockly 內建的 procedures_defnoreturn／procedures_callnoreturn（blocks_compressed.js）。
+  // 第一版不支援參數，所以拿掉定義積木上的齒輪（參數編輯器）。
+  Object.assign(Blockly.Msg, {
+    PROCEDURES_DEFNORETURN_TITLE: '定義函式', PROCEDURES_DEFNORETURN_PROCEDURE: '我的函式',
+    PROCEDURES_DEFNORETURN_TOOLTIP: '把一串步驟包成函式，之後用一塊積木就能執行整串',
+    PROCEDURES_CALLNORETURN_TOOLTIP: '執行函式「%1」裡的所有步驟',
+  });
+  const def = Blockly.Blocks.procedures_defnoreturn, init = def.init;
+  def.init = function () {
+    init.call(this);
+    const mutator = Blockly.icons?.MutatorIcon?.TYPE;
+    if (mutator && this.hasIcon?.(mutator)) this.removeIcon(mutator);
+  };
+}
+
+// 「函式」分類的內容依目前編輯區裡定義了哪些函式動態產生。
+export function registerFunctionCategory(workspace) {
+  workspace.registerToolboxCategoryCallback('RF_FUNCTIONS', ws => {
+    const items = [{ kind: 'block', type: 'procedures_defnoreturn' }];
+    for (const [name] of Blockly.Procedures.allProcedures(ws)[0]) {
+      items.push({ kind: 'block', type: 'procedures_callnoreturn', extraState: { name } });
+    }
+    return items;
+  });
 }
 
 const blocks = types => types.map(type => ({ kind: 'block', type }));
@@ -66,6 +90,7 @@ export const TOOLBOX = {
     { kind: 'category', name: '農務', colour: COLOURS.farm, contents: blocks(['rf_sow', 'rf_water', 'rf_harvest']) },
     { kind: 'category', name: '流程', colour: COLOURS.flow, contents: blocks(['rf_repeat', 'rf_while', 'rf_if', 'rf_if_else', 'rf_leave']) },
     { kind: 'category', name: '感測', colour: COLOURS.sense, contents: blocks(['rf_cell', 'rf_front', 'rf_plot', 'rf_token_less', 'rf_not', 'rf_and', 'rf_or']) },
+    { kind: 'category', name: '函式', colour: COLOURS.func, custom: 'RF_FUNCTIONS' },
   ],
 };
 
@@ -76,6 +101,7 @@ export function createTheme() {
       workspaceBackgroundColour: '#f7f0d8', toolboxBackgroundColour: '#263f3c', toolboxForegroundColour: '#fffaf0',
       flyoutBackgroundColour: '#e9dfbf', flyoutOpacity: 1, scrollbarColour: '#8a7d56', insertionMarkerColour: '#263f3c',
     },
+    blockStyles: { procedure_blocks: { colourPrimary: COLOURS.func, colourSecondary: '#c98aa0', colourTertiary: '#6e3249' } },
     fontStyle: { family: '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif', size: 15, weight: 'bold' },
   });
 }
@@ -102,16 +128,36 @@ export function findStart(workspace) {
   return workspace.getTopBlocks(false).find(b => b.type === 'rf_start') || null;
 }
 
-// 只算接在「開始」下面、會被執行的積木。
+const functionDefs = workspace => workspace.getTopBlocks(false).filter(b => b.type === 'procedures_defnoreturn');
+
+// 算會被執行的積木：接在「開始」下面的，加上每個函式定義（定義積木本身也算 1 塊）。
 export function countBlocks(workspace) {
   const start = findStart(workspace);
-  return start ? start.getDescendants(false).length - 1 : 0;
+  const body = start ? start.getDescendants(false).length - 1 : 0;
+  return functionDefs(workspace).reduce((n, def) => n + def.getDescendants(false).length, body);
 }
 
+// 編譯結果：{ body: 主程式, functions: { 函式名稱: 指令陣列 } }
 export function compile(workspace) {
   const start = findStart(workspace);
   if (!start) throw new CompileError('找不到「開始」積木');
-  return compileStatements(start.getNextBlock());
+  const functions = {};
+  for (const def of functionDefs(workspace)) {
+    const [name, params] = def.getProcedureDef();
+    if (params.length) throw new CompileError(`函式「${name}」有參數，目前還不支援參數`);
+    functions[name] = compileStatements(def.getInputTargetBlock('STACK'));
+  }
+  const body = compileStatements(start.getNextBlock());
+  checkCalls(body, functions);
+  for (const fn of Object.values(functions)) checkCalls(fn, functions);
+  return { body, functions };
+}
+
+function checkCalls(list, functions) {
+  for (const s of list) {
+    if (s.op === 'call' && !(s.name in functions)) throw new CompileError(`找不到函式「${s.name}」的定義`);
+    for (const key of ['body', 'then', 'else']) if (s[key]) checkCalls(s[key], functions);
+  }
 }
 
 function compileStatements(block) {
@@ -134,6 +180,7 @@ function compileStatement(b) {
     case 'rf_while': return { op: 'while', cond: compileCondition(b, 'COND'), body: inner('DO') };
     case 'rf_if': return { op: 'if', cond: compileCondition(b, 'COND'), then: inner('DO'), else: [] };
     case 'rf_if_else': return { op: 'if', cond: compileCondition(b, 'COND'), then: inner('DO'), else: inner('ELSE') };
+    case 'procedures_callnoreturn': return { op: 'call', name: b.getProcedureCall() };
     default: throw new CompileError('不認得的積木：' + b.type);
   }
 }

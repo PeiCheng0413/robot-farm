@@ -7,7 +7,7 @@ import {
   capacityOf, nextCapacityCost, CRASH_REASONS,
 } from './sim.js';
 import { createRenderer } from './render.js';
-import { defineBlocks, TOOLBOX, createTheme, DEFAULT_WORKSPACES, compile, countBlocks, CompileError } from './blocks.js';
+import { defineBlocks, registerFunctionCategory, TOOLBOX, createTheme, DEFAULT_WORKSPACES, compile, countBlocks, CompileError } from './blocks.js';
 
 const Blockly = window.Blockly;
 const $ = s => document.querySelector(s);
@@ -148,8 +148,10 @@ function blockCountOf(stage) {
   const ps = state.plots[selected];
   const json = stage === 'main' ? ps.workspace : ps.workspaces[stage];
   const count = blocks => blocks.reduce((n, b) => n + 1 + Object.values(b.inputs || {}).reduce((m, i) => m + (i.block ? count([i.block]) : 0), 0) + (b.next ? count([b.next.block]) : 0), 0);
-  const start = json?.blocks?.blocks?.find(b => b.type === 'rf_start');
-  return start ? count([start]) - 1 : 0;
+  // 與 blocks.js 的 countBlocks 相同：開始下面的積木＋每個函式定義。
+  const tops = json?.blocks?.blocks || [];
+  const start = tops.find(b => b.type === 'rf_start');
+  return (start ? count([start]) - 1 : 0) + count(tops.filter(b => b.type === 'procedures_defnoreturn'));
 }
 
 $('#panel').addEventListener('click', e => {
@@ -198,6 +200,7 @@ function ensureWorkspace() {
     trashcan: true, sounds: false, maxInstances: { rf_start: 1 },
     zoom: { controls: true, wheel: false, startScale: 0.95 }, move: { scrollbars: true, drag: true, wheel: true },
   });
+  registerFunctionCategory(workspace);
   workspace.addChangeListener(Blockly.Events.disableOrphans);
   workspace.addChangeListener(e => {
     if (e.isUiEvent || !editing) return;
