@@ -3818,5 +3818,341 @@
       "unmappedClip": "hidden"
     },
     "note": "Bubble animation has its own elapsed-time cursor within the shared render clock; do not use the eye/shell frame index for dot phases. Source art includes the cream cloud, thought puffs and pictogram. Result selection comes from external game logic. Scan, carry, harvest, movement and idle have no bubble mapping."
+  },
+  "mainScreenAssets": {
+    "version": "v01",
+    "coordinateRules": {
+      "file": "Relative to assets/; existing paths unchanged.",
+      "sourceRect": "[x,y,width,height] in full PNG source pixels.",
+      "textRect": "[x,y,width,height] relative to sourceRect top-left, in unscaled source pixels. Apply the same scale/translation as the sign image.",
+      "groundAnchor": "[x,y] relative to sourceRect top-left in source pixels; stake tip insertion reference.",
+      "repeat": "unitSize and step are SOURCE pixel dimensions. Repeat sourceRect without its surrounding atlas padding; use recommendedDisplaySize for logical display tile dimensions. Never repeat the entire PNG for greenhouse or floor.",
+      "recommendedDisplaySize": "[width,height] logical CSS/game pixels at 1x. Icons use contain; signs preserve source aspect when fitting this box.",
+      "alpha": "RGBA originals; transparent exterior and tile grout. Do not flatten over a background when exporting."
+    },
+    "items": [
+      {
+        "id": "greenhouseWindow",
+        "name": "溫室窗框玻璃",
+        "file": "greenhouse-strip-v01.png",
+        "imageSize": [
+          2172,
+          724
+        ],
+        "sourceRect": [
+          768,
+          112,
+          640,
+          500
+        ],
+        "repeat": {
+          "x": true,
+          "y": false,
+          "unitSize": [
+            640,
+            500
+          ],
+          "step": [
+            640,
+            500
+          ],
+          "join": "mid-mullion",
+          "edgeMeanDifferenceRGBA": 0.71,
+          "verification": "Visually continuous mid-mullion join; generated pixel colors retain minor sub-level variation, not a byte-identical periodic texture."
+        },
+        "recommendedDisplaySize": [
+          160,
+          125
+        ],
+        "previewCanvas": [
+          640,
+          125
+        ],
+        "layer": "environment-window",
+        "animated": false
+      },
+      {
+        "id": "stoneFloor",
+        "name": "石板地磚",
+        "file": "stone-floor-tile-v01.png",
+        "imageSize": [
+          1254,
+          1254
+        ],
+        "sourceRect": [
+          112,
+          120,
+          1030,
+          1030
+        ],
+        "repeat": {
+          "x": true,
+          "y": true,
+          "unitSize": [
+            1030,
+            1030
+          ],
+          "step": [
+            1030,
+            1030
+          ],
+          "join": "transparent-grout",
+          "verification": "All four source-unit edge alpha values are zero. Repeat over a chosen grout/floor color; retain transparent grout gaps."
+        },
+        "recommendedDisplaySize": [
+          64,
+          64
+        ],
+        "previewCanvas": [
+          384,
+          256
+        ],
+        "layer": "environment-floor",
+        "animated": false
+      },
+      {
+        "id": "plotSign-beginner",
+        "name": "新手田地名牌",
+        "typeId": "beginner",
+        "label": "新手",
+        "typeColor": "#d7a44b",
+        "file": "plot-signs-v01.png",
+        "imageSize": [
+          1254,
+          1254
+        ],
+        "sourceRect": [
+          51,
+          87,
+          576,
+          503
+        ],
+        "repeat": {
+          "x": false,
+          "y": false,
+          "unitSize": null
+        },
+        "textRect": [
+          99,
+          163,
+          380,
+          110
+        ],
+        "textStyle": {
+          "color": "#263f3c",
+          "align": "center",
+          "verticalAlign": "middle",
+          "maxFontSize": 72,
+          "fontSizeSpace": "sourceRect-local-pixels"
+        },
+        "groundAnchor": [
+          288.0,
+          495
+        ],
+        "recommendedDisplaySize": [
+          160,
+          140
+        ],
+        "layer": "plot-label",
+        "animated": false
+      },
+      {
+        "id": "plotSign-intermediate",
+        "name": "進階田地名牌",
+        "typeId": "intermediate",
+        "label": "進階",
+        "typeColor": "#75bdd0",
+        "file": "plot-signs-v01.png",
+        "imageSize": [
+          1254,
+          1254
+        ],
+        "sourceRect": [
+          625,
+          87,
+          579,
+          503
+        ],
+        "repeat": {
+          "x": false,
+          "y": false,
+          "unitSize": null
+        },
+        "textRect": [
+          99,
+          163,
+          380,
+          110
+        ],
+        "textStyle": {
+          "color": "#263f3c",
+          "align": "center",
+          "verticalAlign": "middle",
+          "maxFontSize": 72,
+          "fontSizeSpace": "sourceRect-local-pixels"
+        },
+        "groundAnchor": [
+          289.5,
+          495
+        ],
+        "recommendedDisplaySize": [
+          160,
+          140
+        ],
+        "layer": "plot-label",
+        "animated": false
+      },
+      {
+        "id": "plotSign-advanced",
+        "name": "高級田地名牌",
+        "typeId": "advanced",
+        "label": "高級",
+        "typeColor": "#8fc7a3",
+        "file": "plot-signs-v01.png",
+        "imageSize": [
+          1254,
+          1254
+        ],
+        "sourceRect": [
+          51,
+          674,
+          578,
+          503
+        ],
+        "repeat": {
+          "x": false,
+          "y": false,
+          "unitSize": null
+        },
+        "textRect": [
+          99,
+          163,
+          380,
+          110
+        ],
+        "textStyle": {
+          "color": "#263f3c",
+          "align": "center",
+          "verticalAlign": "middle",
+          "maxFontSize": 72,
+          "fontSizeSpace": "sourceRect-local-pixels"
+        },
+        "groundAnchor": [
+          289.0,
+          495
+        ],
+        "recommendedDisplaySize": [
+          160,
+          140
+        ],
+        "layer": "plot-label",
+        "animated": false
+      },
+      {
+        "id": "plotSign-expert",
+        "name": "專家田地名牌",
+        "typeId": "expert",
+        "label": "專家",
+        "typeColor": "#c65f48",
+        "file": "plot-signs-v01.png",
+        "imageSize": [
+          1254,
+          1254
+        ],
+        "sourceRect": [
+          625,
+          674,
+          579,
+          503
+        ],
+        "repeat": {
+          "x": false,
+          "y": false,
+          "unitSize": null
+        },
+        "textRect": [
+          99,
+          163,
+          380,
+          110
+        ],
+        "textStyle": {
+          "color": "#263f3c",
+          "align": "center",
+          "verticalAlign": "middle",
+          "maxFontSize": 72,
+          "fontSizeSpace": "sourceRect-local-pixels"
+        },
+        "groundAnchor": [
+          289.5,
+          495
+        ],
+        "recommendedDisplaySize": [
+          160,
+          140
+        ],
+        "layer": "plot-label",
+        "animated": false
+      },
+      {
+        "id": "token",
+        "name": "Token 圖示",
+        "file": "token-icon-v01.png",
+        "imageSize": [
+          1254,
+          1254
+        ],
+        "sourceRect": [
+          258,
+          264,
+          738,
+          746
+        ],
+        "repeat": {
+          "x": false,
+          "y": false,
+          "unitSize": null
+        },
+        "recommendedDisplaySize": [
+          32,
+          32
+        ],
+        "fit": "contain",
+        "layer": "hud-icon",
+        "animated": false
+      },
+      {
+        "id": "money",
+        "name": "金錢圖示",
+        "file": "money-icon-v01.png",
+        "imageSize": [
+          1254,
+          1254
+        ],
+        "sourceRect": [
+          218,
+          223,
+          818,
+          798
+        ],
+        "repeat": {
+          "x": false,
+          "y": false,
+          "unitSize": null
+        },
+        "recommendedDisplaySize": [
+          32,
+          32
+        ],
+        "fit": "contain",
+        "layer": "hud-icon",
+        "animated": false
+      }
+    ],
+    "lab": {
+      "signTextPreviewDefault": false,
+      "groutColor": "#35665b"
+    },
+    "note": "Static art only; no new animation, growth, sensing, economic, token-cost or currency logic. Existing manifest fields including root version remain unchanged."
   }
 }

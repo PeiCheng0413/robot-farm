@@ -1,12 +1,13 @@
 
 (async function(){
-  const response=await fetch('assets/manifest.json?v=13');
+  const response=await fetch('assets/manifest.json?v=14');
   if(!response.ok)throw new Error('素材數據讀取失敗：'+response.status);
   const manifest=await response.json(),rendering=manifest.rendering,clips=manifest.animationClips;
   const $=s=>document.querySelector(s),alignment=spriteAlignment;
   const robotViews=new Set(),plantViews=new Set(),itemViews=new Set(),soilViews=new Set(),effectViews=new Map(),images=new Map();
   const thoughts=manifest.thoughtBubbles,thoughtViews=new Map();
   const thoughtState={clip:null,elapsedMs:0,frame:null};
+  const mainAssets=manifest.mainScreenAssets,mainAssetViews=new Map();
   const lookup=path=>path.reduce((value,key)=>value[key],alignment);
   const firstFrame=name=>clips[name].frameOrder[0];
   const idleAction=manifest.playback.actionClips.indexOf(manifest.playback.restClips.empty);
@@ -26,7 +27,7 @@
   function imageSource(file){
     if(images.has(file))return images.get(file);
     const image=new Image();images.set(file,image);
-    image.onload=()=>{robotViews.forEach(drawRobot);plantViews.forEach(drawPlant);itemViews.forEach(drawItem);soilViews.forEach(drawSoil);effectViews.forEach((view,canvas)=>drawEffect(canvas,view));updateEffects();thoughtViews.forEach((index,canvas)=>drawThought(canvas,index));updateThought(true);};
+    image.onload=()=>{robotViews.forEach(drawRobot);plantViews.forEach(drawPlant);itemViews.forEach(drawItem);soilViews.forEach(drawSoil);effectViews.forEach((view,canvas)=>drawEffect(canvas,view));updateEffects();thoughtViews.forEach((index,canvas)=>drawThought(canvas,index));updateThought(true);mainAssetViews.forEach((item,canvas)=>drawMainAsset(canvas,item));};
     image.onerror=()=>{$('#status').textContent='素材載入失敗，請重新整理頁面。';};
     image.src='assets/'+file+'?v='+encodeURIComponent(manifest.version);
     return image;
@@ -314,6 +315,41 @@
     const note=document.createElement('p');note.textContent='單個收成・攜帶與展示共用';
     const link=document.createElement('a');link.href=item.file;link.download='';link.textContent='下載透明素材 ↗';
     card.append(title,note,link);$('#produce-catalog').append(card);
+  });
+  function drawMainAsset(canvas,item){
+    const ctx=canvas.getContext('2d'),source=imageSource(item.file),[sx,sy,sw,sh]=item.sourceRect;
+    ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;
+    if(!source.complete||!source.naturalWidth)return;
+    if(item.repeat.x||item.repeat.y){
+      const [dw,dh]=item.recommendedDisplaySize;
+      for(let y=0;y<canvas.height;y+=item.repeat.y?dh:canvas.height){
+        for(let x=0;x<canvas.width;x+=item.repeat.x?dw:canvas.width)ctx.drawImage(source,sx,sy,sw,sh,x,y,dw,dh);
+      }
+      return;
+    }
+    const scale=Math.min(canvas.width/sw,canvas.height/sh),dx=(canvas.width-sw*scale)/2,dy=(canvas.height-sh*scale)/2;
+    ctx.drawImage(source,sx,sy,sw,sh,dx,dy,sw*scale,sh*scale);
+    if(item.textRect&&$('#main-sign-text').checked){
+      const [x,y,w,h]=item.textRect,[tx,ty,tw,th]=[dx+x*scale,dy+y*scale,w*scale,h*scale];
+      ctx.save();ctx.strokeStyle=item.typeColor;ctx.lineWidth=4*scale;ctx.setLineDash([8*scale,6*scale]);ctx.strokeRect(tx,ty,tw,th);
+      ctx.beginPath();ctx.rect(tx,ty,tw,th);ctx.clip();ctx.fillStyle=item.textStyle.color;
+      ctx.font=(Math.min(item.textStyle.maxFontSize,h)*scale)+'px "PingFang TC",sans-serif';ctx.textAlign=item.textStyle.align;ctx.textBaseline=item.textStyle.verticalAlign;
+      ctx.fillText(item.label,tx+tw/2,ty+th/2,tw);ctx.restore();
+    }
+  }
+  $('#main-sign-text').checked=mainAssets.lab.signTextPreviewDefault;
+  $('#main-sign-text').onchange=()=>mainAssetViews.forEach((item,canvas)=>{if(item.textRect)drawMainAsset(canvas,item);});
+  mainAssets.items.forEach(item=>{
+    const card=document.createElement('article');card.className='main-asset-card'+(item.previewCanvas?' main-asset-tile':'')+(item.textRect?' main-asset-sign':'');
+    const title=document.createElement('h3');title.textContent=item.name;
+    const canvas=document.createElement('canvas');
+    [canvas.width,canvas.height]=item.previewCanvas||(item.textRect?item.sourceRect.slice(2):item.recommendedDisplaySize);
+    canvas.className='main-asset-image';canvas.setAttribute('role','img');canvas.setAttribute('aria-label',item.name+(item.previewCanvas?'・重複鋪排預覽':''));
+    if(item.id==='stoneFloor')canvas.style.backgroundColor=mainAssets.lab.groutColor;
+    mainAssetViews.set(canvas,item);drawMainAsset(canvas,item);
+    const note=document.createElement('p');note.textContent=item.previewCanvas?'單元 '+item.repeat.unitSize.join(' × ')+' 原圖像素 ／ 顯示 '+item.recommendedDisplaySize.join(' × '):item.textRect?'牌面留白，可勾選疊字示意':'建議顯示 '+item.recommendedDisplaySize.join(' × ')+' 像素';
+    const link=document.createElement('a');link.href='assets/'+item.file;link.textContent='查看透明原圖 ↗';
+    card.append(title,canvas,note,link);$('#main-asset-samples').append(card);
   });
   function turn(delta){
     if(movement||harvestTarget){$('#status').textContent='請等目前的移動或採收完成再轉向。';return;}

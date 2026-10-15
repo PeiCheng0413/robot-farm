@@ -213,3 +213,20 @@ manifest.thoughtBubbles 完整提供 atlas、400 × 340 共用畫布、每格 so
 placement.relativeTo=robotCanvas：泡泡畫布左下角固定在角色畫布 leftRatio/bottomRatio 指定位置，寬度為 widthRatio，依原畫布比例決定高度；layerZ=4 在角色與貨物上方，followPoseBob=true 跟隨當格 bob。泡泡放在頭頂偏右上方，不遮臉；目前持物與雷達 clip 沒有泡泡對應，避免和頭頂貨物／雷達重疊。保留原有 rendering.layerOrder 與全部舊素材／alignment 資料。
 
 clock 明列每次進入或重播動作歸零、與角色一起暫停、非循環到尾格後維持、無對應 clip 隱藏。離開判斷結果回到 idle 時泡泡立即隱藏，切換為澆水或播種時立即更換內容。素材試驗室提供八格樣本與隨動作顯示的泡泡；沒有條件判斷、生長、資源、商店或存檔邏輯。Claude 只需讀 manifest 與 alignment，即可接入遊戲；本次未修改 game.html、game/、vendor/。
+
+
+## 主畫面靜態素材 v01（試驗室 v0.14）
+
+新增 greenhouse-strip-v01.png、stone-floor-tile-v01.png、plot-signs-v01.png、token-icon-v01.png、money-icon-v01.png，均由內建 image_gen 生成，保留 RGBA 透明背景、深青綠輪廓、硬邊像素造型與左上光源。完整提示詞及石板缺口修正記錄於 prompts-v14.json。生成圖仍有少量色階變化，未宣稱為嚴格三色索引圖。五張新圖保存原始生成輸出，全部舊圖未覆蓋。
+
+本次 manifest 僅新增 mainScreenAssets 根欄位，既有欄位與根 version=0.13 完全保留。新欄位 items 收錄八個可用項目（窗框、石板、四種木牌、兩圖示），每項都有 file、imageSize、sourceRect、repeat、recommendedDisplaySize、layer、animated=false。沒有新增動畫或遊戲規則。
+
+窗框原圖 2172 × 724，來源單元 [768,112,640,500] 從窗柱中央取樣，repeat.x=true/y=false，單元與步進均 640 × 500 原圖像素；建議顯示 160 × 125。只能重複 sourceRect，不可把整張 PNG 含外圍透明留白直接鋪排。接縫兩列像素平均通道差約 0.71/255，為視覺連續接合，非逐位元完全相同的週期貼圖。
+
+石板原圖 1254 × 1254，來源單元 [112,120,1030,1030]；repeat.x/y 都為 true，單元與步進 1030 × 1030，建議顯示 64 × 64。四條邊 alpha 全為 0，保留極窄透明留縫；下層可用 mainScreenAssets.lab.groutColor 或遊戲自己的地面底色。石面內部完整，未使用第一版有缺口的生成圖。
+
+木牌圖集 1254 × 1254，四種 sourceRect 分別校準，閱讀順序為新手／進階／高級／專家。typeColor 分別精確記錄 #d7a44b、#75bdd0、#8fc7a3、#c65f48，作為類型色與遊戲 UI 配色；原 PNG 保留生成的三階明暗色差。textRect=[99,163,380,110] 是相對各 sourceRect 左上角的原圖像素，不是全圖絕對座標，也不是顯示像素。疊字時與圖片套用同一縮放和平移；textStyle 指定置中、垂直置中與字級上限。groundAnchor 是相對來源框的木樁插入點。建議在 160 × 140 顯示盒中等比例 contain。名牌圖內完全無字，試驗室勾選框僅在 canvas 上疊字與框線示例。
+
+Token 為薄荷／青綠多邊形閃電代幣，金錢為黃銅色圓幣，皆單獨透明 PNG，sourceRect 去掉外圍多餘留白。建議 32 × 32 邏輯像素、contain 等比例顯示。圖內沒有字母、數字或貨幣字號；顏色與輪廓皆可區分兩種資源。這批只提供視覺素材，不加入 Token 成本或經濟計算。
+
+素材試驗室新增窗框四格連續預覽、石板六欄四列鋪排、四種名牌與可切換 textRect 疊字、兩個 32px 圖示。遊戲頁面與 game/、vendor/、alignment.js 未修改；Claude 可直接讀 mainScreenAssets 數據接入主畫面。
