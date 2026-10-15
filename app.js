@@ -1,10 +1,10 @@
 
 (async function(){
-  const response=await fetch('assets/manifest.json?v=09');
+  const response=await fetch('assets/manifest.json?v=10');
   if(!response.ok)throw new Error('素材數據讀取失敗：'+response.status);
   const manifest=await response.json(),rendering=manifest.rendering,clips=manifest.animationClips;
   const $=s=>document.querySelector(s),alignment=spriteAlignment;
-  const robotViews=new Set(),plantViews=new Set(),itemViews=new Set(),soilViews=new Set(),images=new Map();
+  const robotViews=new Set(),plantViews=new Set(),itemViews=new Set(),soilViews=new Set(),effectViews=new Map(),images=new Map();
   const lookup=path=>path.reduce((value,key)=>value[key],alignment);
   const firstFrame=name=>clips[name].frameOrder[0];
   const idleAction=manifest.playback.actionClips.indexOf(manifest.playback.restClips.empty);
@@ -17,14 +17,14 @@
   const soilLabels=rendering.soil.labels,soilData=manifest.soilVariants;
   const plots=rendering.lab.sampleCrops.map((id,i)=>({crop:cropById.get(id).labValue,stage:rendering.lab.initialStage,soil:rendering.lab.initialSoil,variant:soilData.lab.sampleVariants[i%soilData.lab.sampleVariants.length]}));
   let selected=0,action=idleAction,frame=firstFrame(manifest.playback.restClips.empty);
-  let frameCursor=0;
+  let frameCursor=0,animationTimer=null;
   let paused=matchMedia('(prefers-reduced-motion: reduce)').matches;
   let cargo=null,harvestTarget=null,heading=0,directionalPose=false,movement=null;
 
   function imageSource(file){
     if(images.has(file))return images.get(file);
     const image=new Image();images.set(file,image);
-    image.onload=()=>{robotViews.forEach(drawRobot);plantViews.forEach(drawPlant);itemViews.forEach(drawItem);soilViews.forEach(drawSoil);};
+    image.onload=()=>{robotViews.forEach(drawRobot);plantViews.forEach(drawPlant);itemViews.forEach(drawItem);soilViews.forEach(drawSoil);effectViews.forEach((view,canvas)=>drawEffect(canvas,view));updateEffects();};
     image.onerror=()=>{$('#status').textContent='素材載入失敗，請重新整理頁面。';};
     image.src='assets/'+file+'?v='+encodeURIComponent(manifest.version);
     return image;
@@ -42,7 +42,7 @@
   function objectState(clip=clips[clipName()],index=frameCursor){
     return Object.fromEntries(Object.entries(clip.objects).map(([key,values])=>[key,values[index]]));
   }
-  function resetFrame(){frameCursor=0;frame=firstFrame(clipName());}
+  function resetFrame(){frameCursor=0;frame=firstFrame(clipName());if(animationTimer!==null)scheduleAnimation();}
   function drawRobot(el){
     const canvas=el.firstElementChild,ctx=canvas.getContext('2d'),size=alignment.canvas;
     ctx.clearRect(0,0,size,size);ctx.imageSmoothingEnabled=false;
@@ -108,9 +108,48 @@
     }
     el.robotFrame={col,row};drawRobot(el);
   }
+  const fieldEffects=new Map();
+  function drawEffect(canvas,{id,step}){
+    const effect=manifest.effectClips[id],ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+    ctx.clearRect(0,0,w,h);
+    const index=effect.frameIndexByStep[step];
+    if(index===null||index===undefined)return;
+    const source=imageSource(effect.atlas),sample=effect.frames[index];
+    if(!source.complete||!source.naturalWidth)return;
+    ctx.save();ctx.imageSmoothingEnabled=false;
+    ctx.globalAlpha=effect.opacityByStep[step];ctx.globalCompositeOperation=effect.blendMode;
+    if(effect.clipToFieldCells){
+      ctx.beginPath();
+      plots.forEach((p,i)=>ctx.rect(i%scene.columns*w/scene.columns,Math.floor(i/scene.columns)*h/scene.rows,w/scene.columns,h/scene.rows));
+      ctx.clip();
+    }
+    const [rx,ry]=effect.anchor,[sw,sh]=sample.sizeRatio;
+    ctx.drawImage(source,...sample.sourceRect,w*(rx-sw/2),h*(ry-sh/2),w*sw,h*sh);ctx.restore();
+  }
+  function updateEffects(){
+    const active=clips[clipName()].effects||[],grid=$('#plots');
+    fieldEffects.forEach((canvas,id)=>{
+      canvas.width=Math.max(1,grid.clientWidth);canvas.height=Math.max(1,grid.clientHeight);
+      canvas.style.left=grid.offsetLeft+'px';canvas.style.top=grid.offsetTop+'px';
+      canvas.style.width=grid.clientWidth+'px';canvas.style.height=grid.clientHeight+'px';
+      canvas.hidden=!active.includes(id);
+      if(!canvas.hidden)drawEffect(canvas,{id,step:frameCursor});
+    });
+  }
+  Object.entries(manifest.effectClips).forEach(([id,effect])=>{
+    const canvas=document.createElement('canvas');canvas.className='field-effect';canvas.style.zIndex=effect.layerZ;
+    canvas.setAttribute('aria-hidden','true');$('.greenhouse').append(canvas);fieldEffects.set(id,canvas);
+    effect.frameIndexByStep.forEach((index,step)=>{
+      if(index===null)return;
+      const card=document.createElement('figure'),sample=document.createElement('canvas');sample.width=320;sample.height=200;
+      sample.className='scan-wave-sample';sample.setAttribute('role','img');sample.setAttribute('aria-label','掃描波紋 '+(index+1));
+      const view={id,step};effectViews.set(sample,view);drawEffect(sample,view);
+      const caption=document.createElement('figcaption');caption.textContent='波紋 '+(index+1);card.append(sample,caption);$('#scan-wave-samples').append(card);
+    });
+  });
   function updateRobot(){
     const clip=clips[clipName()],row=clip.poseRows[clip.poseRows.length>1?heading:0];
-    position($('#robot'),frame,row);
+    position($('#robot'),frame,row);updateEffects();
   }
   function drawItem(canvas){
     const item=produce[canvas.crop],ctx=canvas.getContext('2d'),data=rendering.produce,[cw,ch]=data.canvas;
@@ -161,6 +200,10 @@
     }
     const state=objectState();holder.hidden=!state.cargoVisible;holder.classList.toggle('lifting',state.cargoPose==='lifting');
   }
+  $('#actions').replaceChildren();
+  manifest.playback.actionClips.forEach((name,i)=>{
+    const button=document.createElement('button');button.dataset.value=i;button.textContent=actions[i];$('#actions').append(button);
+  });
   $('#actions').onclick=e=>{
     if(!e.target.matches('button'))return;const next=+e.target.dataset.value;
     if(movement){$('#status').textContent='移動完成後即可切換動作。';return;}
@@ -171,7 +214,7 @@
     }
     directionalPose=false;action=next;
     if(action===harvestAction){harvestTarget={plot:selected,crop:plots[selected].crop};$('#status').textContent=paused?'採收已就緒，按「播放動畫」開始。':'正在拿起'+produce[harvestTarget.crop].name+'…';}
-    else $('#status').textContent='小機器人正在'+actions[action]+(action!==idleAction?'（動作循環預覽）':'');
+    else $('#status').textContent='小機器人正在'+actions[action]+(action===idleAction?'':clips[clipName()].loop?'（動作循環預覽）':'（播放一次）');
     resetFrame();buttons('#actions',action);updateRobot();sync();
   };
   $('#drop').onclick=()=>{
@@ -206,7 +249,7 @@
   $('#pause').onclick=()=>{paused=!paused;pauseLabel();};
 
   const catalog=[];
-  [['idle','原版待命'],['sow','播種'],['water','澆水'],['harvest','空手採收']].forEach(([key,label])=>{
+  [['idle','原版待命'],['sow','播種'],['water','澆水'],['harvest','空手採收'],['scan','範圍掃描']].forEach(([key,label])=>{
     catalog.push({label,type:'robot',row:clips[key].poseRows[0]});
   });
   clips[manifest.playback.directionalClips.empty].poseRows.forEach((row,i)=>catalog.push({label:directions[i].name+'向漂浮',type:'robot',row}));
@@ -296,12 +339,17 @@
       if(clip.onComplete){frameCursor=0;frame=firstFrame(clip.onComplete);}
       if(cargo)$('#status').textContent='已把 1 個'+produce[cargo.crop].name+'舉到頭上。放下後才能再採收。';
     }
+    if(!harvestTarget&&!cargo&&!clip.loop&&next>=clip.frameOrder.length&&clip.onComplete){
+      const label=actions[action];action=manifest.playback.actionClips.indexOf(clip.onComplete);resetFrame();buttons('#actions',action);
+      $('#status').textContent=label+'展示完成，已回到待機。';
+    }
     if(redrawPlants||before.sourcePlantVisible!==objectState().sourcePlantVisible)renderPlots();
     showCargo();sync();updateRobot();
   }
   function scheduleAnimation(){
     const clip=clips[clipName()];
-    setTimeout(()=>{if(!paused&&!document.hidden)advanceAnimation();scheduleAnimation();},clip.frameDurationsMs?clip.frameDurationsMs[frameCursor]:clip.frameDurationMs);
+    if(animationTimer!==null)clearTimeout(animationTimer);
+    animationTimer=setTimeout(()=>{if(!paused&&!document.hidden)advanceAnimation();scheduleAnimation();},clip.frameDurationsMs?clip.frameDurationsMs[frameCursor]:clip.frameDurationMs);
   }
   const mosaicTiles=[...document.querySelectorAll('.soil-unit')];
   mosaicTiles.forEach((el,i)=>position(el,soilData.lab.previewSoil,0,soilData.lab.previewVariants[i%soilData.lab.previewVariants.length]));
@@ -310,7 +358,7 @@
     mosaicTiles.forEach(el=>position(el,soil,0,el.soilFrame.variant));buttons('#tile-soils',soil);
   };
   $('#bot').style.zIndex=rendering.layerZ.robot;$('#held-item').style.zIndex=rendering.layerZ.cargo;
-  new ResizeObserver(()=>{if(!movement)placeBot(selected%scene.columns,Math.floor(selected/scene.columns));}).observe($('.greenhouse'));
+  new ResizeObserver(()=>{if(!movement)placeBot(selected%scene.columns,Math.floor(selected/scene.columns));updateEffects();}).observe($('.greenhouse'));
   renderPlots();sync();buttons('#actions',idleAction);pauseLabel();updateRobot();
   requestAnimationFrame(animateMovement);scheduleAnimation();
 })().catch(error=>{

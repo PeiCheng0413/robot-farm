@@ -169,3 +169,16 @@ animationClips 以 frameDurationsMs 明列每個播放步驟的時長（frameDur
 manifest.soilVariants 完整提供畫布、預設、狀態、variant ID、每個圖層的 atlas、sourceRect、destinationRect、z。按 z 升序合成同一 soil 畫布，再沿用既有 soil → plant → robot → cargo 圖層。sourceRect 是來源圖像素，destinationRect 是合成畫布像素。每田格保存 variant ID，不隨動畫或重繪抽樣；原版 ID 為 plain。Claude 可只讀這份數據實作遊戲顯示。既有欄位形狀與意義不變，alignment.js 與遊戲檔案未改。
 
 素材試驗室提供每狀態四種樣本、選取田區細節選單，以及固定裝飾分布的 I/L/T/O 拼接預覽。本次用內建 image_gen 生成，提示詞與來源保存於 prompts-v09.json。
+
+
+## v0.10 整塊田範圍掃描
+
+新增 robot-area-scan-v01.png 與 scan-wave-v01.png，皆為 1254 × 1254 RGBA。角色為準備、抬起側邊感測器、伸手掃描、收回四格；波紋為小、中、大、分段消散四格。保留原奶油白機殼、深青綠面板、雙方眼、黃銅天線、薄荷推進器與左上光源。兩份圖集分開，不含田地與作物。使用內建 image_gen；完整提示詞在 prompts-v10.json。
+
+manifest.animationClips.scan 使用八個播放步驟，frameOrder 為 0/1/2/2/2/2/3/0，時長依序 140/160/140/180/180/180/160/160 ms，共 1300 ms；播放一次後 onComplete=idle。伸手的四個步驟依序播放四格波紋。rendering.robotPoses 新增 row 13，逐格 sourceRect 與 alignmentPath 指向 spriteAlignment.scan；只新增校準欄位，不改舊結構。
+
+manifest.effectClips.areaScanWave 的 frameIndexByStep／opacityByStep 與 scan 的播放步驟對應，不可用重複的角色圖格索引取代。每格 sourceRect 是原圖像素；sizeRatio 是相對整塊田 bounds 的寬高，anchor 是相對中心。按 layerZ=1.5 畫在植株之上、角色之下，blendMode=source-over。clipToFieldCells 表示裁切至田地實際格子的聯集，讓 L/T 等不規則田地不掃到外部空格；素材試驗室範例為六格矩形田。波紋共用 scan 時鐘，暫停與減少動態設定同時生效，沒有獨立 CSS 動畫。
+
+工作動作保持正面，範圍波紋不依朝向旋轉。既有持物試驗流程維持不變，素材試驗室空手時可展示掃描。這份 scan clip 的物件數據為空手，不可直接覆蓋持物 cargo 的可見性；遊戲要在持物時掃描，可保留 carryIdle 並只採用獨立 effect 的播放數據。
+
+本次僅交付素材、試驗室與共用播放數據；感測積木觸發、判讀這整塊田的狀態、實際遊戲動畫接線由 Claude 負責。game.html、game/、vendor/ 未修改。

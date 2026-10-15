@@ -1,5 +1,5 @@
 {
-  "version": "0.9",
+  "version": "0.10",
   "status": "art-prototype",
   "width": 1254,
   "height": 1254,
@@ -252,6 +252,22 @@
         1448
       ],
       "sampling": "Use soilVariants.states[].variants[].layers sourceRect and destinationRect; decorations only, no soil base."
+    },
+    {
+      "file": "robot-area-scan-v01.png",
+      "width": 1254,
+      "height": 1254,
+      "columns": 2,
+      "rows": 2,
+      "sampling": "Use explicit per-frame sourceRect; artwork does not align to uniform cells."
+    },
+    {
+      "file": "scan-wave-v01.png",
+      "width": 1254,
+      "height": 1254,
+      "columns": 2,
+      "rows": 2,
+      "sampling": "Use explicit per-frame sourceRect; artwork does not align to uniform cells."
     }
   ],
   "produce": [
@@ -1153,6 +1169,70 @@
         180,
         180
       ]
+    },
+    "scan": {
+      "poseRows": [
+        13
+      ],
+      "frameOrder": [
+        0,
+        1,
+        2,
+        2,
+        2,
+        2,
+        3,
+        0
+      ],
+      "frameDurationMs": 160,
+      "frameDurationsMs": [
+        140,
+        160,
+        140,
+        180,
+        180,
+        180,
+        160,
+        160
+      ],
+      "loop": false,
+      "onComplete": "idle",
+      "objects": {
+        "cargoVisible": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "sourcePlantVisible": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "cargoPose": [
+          "hidden",
+          "hidden",
+          "hidden",
+          "hidden",
+          "hidden",
+          "hidden",
+          "hidden",
+          "hidden"
+        ]
+      },
+      "effects": [
+        "areaScanWave"
+      ],
+      "description": "Whole-field visual scan only; no sensing logic or state mutation. Face forward as for other work actions; scanning is independent of heading."
     }
   },
   "playback": {
@@ -1160,13 +1240,15 @@
       "idle",
       "sow",
       "water",
-      "harvest"
+      "harvest",
+      "scan"
     ],
     "actionLabels": [
       "漂浮待命",
       "播種",
       "澆水",
-      "採收"
+      "採收",
+      "範圍掃描"
     ],
     "directionalClips": {
       "empty": "move",
@@ -2107,6 +2189,63 @@
             "bobIndex": 3
           }
         ]
+      },
+      "13": {
+        "atlas": "robot-area-scan-v01.png",
+        "frames": [
+          {
+            "sourceRect": [
+              111,
+              120,
+              442,
+              429
+            ],
+            "alignmentPath": [
+              "scan",
+              0
+            ],
+            "bobIndex": null
+          },
+          {
+            "sourceRect": [
+              719,
+              120,
+              488,
+              429
+            ],
+            "alignmentPath": [
+              "scan",
+              1
+            ],
+            "bobIndex": null
+          },
+          {
+            "sourceRect": [
+              102,
+              707,
+              575,
+              427
+            ],
+            "alignmentPath": [
+              "scan",
+              2
+            ],
+            "bobIndex": null
+          },
+          {
+            "sourceRect": [
+              717,
+              707,
+              499,
+              428
+            ],
+            "alignmentPath": [
+              "scan",
+              3
+            ],
+            "bobIndex": null
+          }
+        ]
       }
     },
     "plantCanvas": [
@@ -2972,6 +3111,92 @@
         "mixed",
         "plain"
       ]
+    }
+  },
+  "effectClips": {
+    "areaScanWave": {
+      "atlas": "scan-wave-v01.png",
+      "canvasSpace": "fieldBounds",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "layerZ": 1.5,
+      "layerPlacement": "Above soil and plants, below robot and cargo; preserve existing rendering.layerOrder.",
+      "blendMode": "source-over",
+      "clipToFieldCells": true,
+      "frameIndexByStep": [
+        null,
+        null,
+        0,
+        1,
+        2,
+        3,
+        null,
+        null
+      ],
+      "opacityByStep": [
+        0,
+        0,
+        0.8,
+        0.72,
+        0.6,
+        0.35,
+        0,
+        0
+      ],
+      "frames": [
+        {
+          "sourceRect": [
+            179,
+            296,
+            268,
+            153
+          ],
+          "sizeRatio": [
+            0.24,
+            0.18
+          ]
+        },
+        {
+          "sourceRect": [
+            723,
+            258,
+            434,
+            228
+          ],
+          "sizeRatio": [
+            0.46,
+            0.35
+          ]
+        },
+        {
+          "sourceRect": [
+            46,
+            810,
+            536,
+            263
+          ],
+          "sizeRatio": [
+            0.72,
+            0.56
+          ]
+        },
+        {
+          "sourceRect": [
+            638,
+            792,
+            605,
+            301
+          ],
+          "sizeRatio": [
+            0.98,
+            0.8
+          ]
+        }
+      ],
+      "sampling": "sourceRect in atlas pixels. Center each frame at anchor within fieldBounds; sizeRatio is width/height relative to fieldBounds. frameIndexByStep and opacityByStep follow the owning animation clip playback steps, not sprite indices. Clip to union of actual field cell rectangles for irregular fields. Null frame is hidden.",
+      "reducedMotion": "Respect the shared paused/reduced-motion playback setting; do not run an independent effect timer."
     }
   }
 }
