@@ -7,7 +7,7 @@ import {
   update, drainEvents, resetPlot, exchange, upgradeCapacity, setCrop, setProgram,
   capacityOf, nextCapacityCost, canGrow, CRASH_REASONS,
 } from './sim.js';
-import { loadAssets, createBoardRenderer, createPainter } from './render.js';
+import { loadAssets, createBoardRenderer, createPainter, screenAsset, spriteURL } from './render.js';
 import { defineBlocks } from './blocks.js';
 import { createEditor, STAGE_LABEL } from './editor.js';
 import { loadGame, saveGame, autosave } from './session.js';
@@ -209,6 +209,32 @@ function buildExchange() {
   document.addEventListener('click', e => { if (!e.target.closest('.exchange')) toggle(false); });
 }
 
+// ---------- 主畫面素材 ----------
+
+// 依 manifest.mainScreenAssets 把窗框、地磚、資源圖示套上去；素材缺少時保留 CSS 畫的替代外觀。
+function applyScreenAssets(assets) {
+  const tile = (id, el, repeat) => {
+    const item = screenAsset(assets, id), [w, h] = item?.recommendedDisplaySize || [];
+    const url = item && spriteURL(assets, item, w * 2, h * 2);   // 2 倍解析度，高密度螢幕也清楚
+    if (!url) return;
+    el.style.backgroundImage = `url(${url})`;
+    el.style.backgroundRepeat = repeat;
+    el.style.backgroundSize = repeat === 'repeat-x' ? 'auto 100%' : `${w}px ${h}px`;
+    el.classList.add('has-art');
+  };
+  tile('greenhouseWindow', $('.glass'), 'repeat-x');
+  tile('stoneFloor', $('.floor'), 'repeat');
+  const grout = assets.manifest.mainScreenAssets?.lab?.groutColor;
+  if (grout && $('.floor').classList.contains('has-art')) $('.floor').style.backgroundColor = grout;
+  for (const [id, gauge] of [['token', '#tokens'], ['money', '#money']]) {
+    const item = screenAsset(assets, id), url = item && spriteURL(assets, item, 96, 96);
+    if (!url) continue;
+    const img = new Image();
+    img.src = url; img.alt = ''; img.className = 'gauge-icon';
+    $(gauge).closest('.gauge').prepend(img);
+  }
+}
+
 // ---------- 啟動 ----------
 
 async function start() {
@@ -221,6 +247,7 @@ async function start() {
     throw e;
   }
   cropNames = Object.fromEntries(assets.manifest.crops.map(c => [c.id, c.name]));
+  applyScreenAssets(assets);
   renderer = createBoardRenderer($('#farm'), assets, { background: false });
   painter = createPainter(assets);
   state = loadGame();

@@ -24,7 +24,8 @@ export async function loadAssets() {
   const files = new Set([rendering.soil.atlas, ...manifest.crops.map(c => c.atlas), ...manifest.produce.map(p => p.file),
     ...Object.values(rendering.robotPoses).map(p => p.atlas),
     ...(manifest.thoughtBubbles ? [manifest.thoughtBubbles.atlas] : []),
-    ...Object.values(manifest.effectClips || {}).map(e => e.atlas)]);
+    ...Object.values(manifest.effectClips || {}).map(e => e.atlas),
+    ...(manifest.mainScreenAssets?.items || []).map(i => i.file)]);
   const images = new Map();
   await Promise.all([...files].map(file => new Promise(resolve => {
     const img = new Image();
@@ -33,6 +34,22 @@ export async function loadAssets() {
     images.set(file, img);
   })));
   return { manifest, align, images };
+}
+
+// 主畫面靜態素材（manifest.mainScreenAssets）：依 id 取一項。
+export const screenAsset = ({ manifest }, id) => manifest.mainScreenAssets?.items.find(i => i.id === id) || null;
+
+// 把素材的 sourceRect 裁成指定大小的圖片網址，給 CSS 背景或 <img> 用。
+export function spriteURL(assets, item, width, height) {
+  const img = item && assets.images.get(item.file);
+  if (!img || !img.naturalWidth) return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = width; canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  const [sx, sy, sw, sh] = item.sourceRect;
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
+  return canvas.toDataURL('image/png');
 }
 
 export function createPainter({ manifest, align, images }) {
@@ -170,6 +187,26 @@ export function createPainter({ manifest, align, images }) {
     ctx.fillStyle = colour; ctx.textBaseline = 'middle'; ctx.fillText(text, x + size / 2, y + size * .8);
   }
 
+  // 田地名牌：依類型的中文名稱（新手／進階／高級／專家）找名牌；木樁尖端（groundAnchor）插在 (anchorX, anchorY)。
+  // 文字依 textRect 置中，字級縮到放得下。找不到名牌素材時回傳 false，由呼叫端改畫標籤。
+  const signs = new Map((manifest.mainScreenAssets?.items || []).filter(i => i.layer === 'plot-label').map(i => [i.label, i]));
+  function sign(ctx, typeName, text, anchorX, anchorY, width, textColour) {
+    const item = signs.get(typeName), img = item && images.get(item.file);
+    if (!ready(img)) return false;
+    const [sx, sy, sw, sh] = item.sourceRect, k = width / sw;
+    const x = anchorX - item.groundAnchor[0] * k, y = anchorY - item.groundAnchor[1] * k;
+    ctx.drawImage(img, sx, sy, sw, sh, x, y, sw * k, sh * k);
+    const [tx, ty, tw, th] = item.textRect.map(v => v * k);
+    let size = Math.min(item.textStyle.maxFontSize * k, th * .8);
+    ctx.font = `bold ${size}px ${FONT}`;
+    const w = ctx.measureText(text).width;
+    if (w > tw * .92) { size *= tw * .92 / w; ctx.font = `bold ${size}px ${FONT}`; }
+    ctx.fillStyle = textColour || item.textStyle.color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, x + tx + tw / 2, y + ty + th / 2);
+    ctx.textAlign = 'start';
+    return true;
+  }
+
   function floaters(ctx, list, size) {
     ctx.font = `bold ${size}px ${FONT}`; ctx.textBaseline = 'middle';
     for (let i = list.length - 1; i >= 0; i--) {
@@ -236,15 +273,18 @@ export function createPainter({ manifest, align, images }) {
   const hidesPlant = view => view.clip === 'harvest' && view.crop && !pose('harvest', clipStep('harvest', view.elapsed), view.heading).plantVisible;
   const stageOf = growth => Math.min(3, Math.floor(growth * 3 + 1e-9));
 
-  return { clipLength, clipStep, soil, plant, produce, robotAt, scanWave, outline, label, floaters, robotView, hidesPlant, stageOf, clips, manifest };
+  return { clipLength, clipStep, soil, plant, produce, sign, robotAt, scanWave, outline, label, floaters, robotView, hidesPlant, stageOf, clips, manifest };
 }
 
 // ---------- 農場盤面 ----------
 
+// 名牌顏色已經表示類型，牌面只寫形狀，例如「T 形田」。
+const SHAPE_NAME = plot => plot.name.split('・')[0] + '田';
+
 // background:false 時不畫地板，只畫淡淡的格位線，讓頁面自己的溫室地板透出來（主畫面）。
 export function createBoardRenderer(canvas, assets, { background = true } = {}) {
-  // TOP：盤面上方留白，機器人在第一排時頭不會被切掉。
-  const P = createPainter(assets), CELL = 96, TOP = CELL * .5, list = [];
+  // TOP：盤面上方留白，第一排田的名牌與機器人的頭才不會被切掉。
+  const P = createPainter(assets), CELL = 96, TOP = CELL * 1.35, SIGN_W = CELL * 1.6, list = [];
   canvas.width = BOARD.columns * CELL;
   canvas.height = BOARD.rows * CELL + TOP;
   const ctx = canvas.getContext('2d');
@@ -285,8 +325,14 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
     }
     // 名牌先畫，機器人疊在上面，免得機器人在入口格時被名牌蓋住。
     for (const plot of PLOTS) {
-      const ps = state.plots[plot.id], [gx, gy] = toGrid(plot.id, Math.min(...plot.cells.map(c => c[0])), 0);
-      P.label(ctx, plot.name + (ps.crashed ? '・當機' : ''), gx * CELL + 4, gy * CELL + 4, ps.crashed ? C.crash : 'rgba(38, 63, 60, .82)', 20);
+      const ps = state.plots[plot.id];
+      // 名牌插在田最上排、最左邊那格的上緣
+      const topY = Math.min(...plot.cells.map(c => c[1])), leftX = Math.min(...plot.cells.filter(c => c[1] === topY).map(c => c[0]));
+      const [gx, gy] = toGrid(plot.id, leftX, topY);
+      const text = SHAPE_NAME(plot) + (ps.crashed ? '・當機' : '');
+      if (!P.sign(ctx, plot.rules.name, text, gx * CELL + CELL * .55, gy * CELL + CELL * .12, SIGN_W, ps.crashed ? '#9b2c1c' : null)) {
+        P.label(ctx, plot.name + (ps.crashed ? '・當機' : ''), gx * CELL + 4, gy * CELL + 4, ps.crashed ? C.crash : 'rgba(38, 63, 60, .82)', 20);
+      }
     }
     for (const { robot, view } of views) {
       const box = P.robotAt(ctx, view, view.pos[0] * CELL + CELL / 2, view.pos[1] * CELL + CELL / 2, CELL);
