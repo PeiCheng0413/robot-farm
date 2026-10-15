@@ -11,6 +11,7 @@ import { VECTORS } from './sim.js';
 
 const C = { floor: '#e7dcb8', slot: '#ddd0a6', outline: '#263f3c', selected: '#8fc7a3', crash: '#c65f48', label: '#fffaf0' };
 const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif';
+const OUTSIDE = 'rgba(29, 47, 44, .78)';   // 盤面以外（主畫面）：比未開放格子更暗，表示不能用
 const ROBOT_SCALE = 1.4;   // 機器人 416 畫布的邊長＝格子邊長 × 這個倍數
 const ROBOT_LIFT = 0.32;   // 機身中心比格子中心高幾格
 
@@ -317,6 +318,8 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
       for (let y = 0; y <= BOARD.rows; y++) { ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(canvas.width, y * CELL); ctx.stroke(); }
     }
 
+    // 盤面上方留給名牌的那條不是農地，跟盤面外一樣壓暗（主畫面）
+    if (!background) { ctx.fillStyle = OUTSIDE; ctx.fillRect(0, -TOP, canvas.width, TOP); }
     // 還沒開放的格子：蓋一層深色，表示要花錢擴地
     const open = new Set(state.land);
     ctx.fillStyle = 'rgba(38, 63, 60, .62)';

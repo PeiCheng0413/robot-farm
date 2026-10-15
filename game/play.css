@@ -73,7 +73,9 @@ body.play { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-
   background-image: linear-gradient(90deg, var(--stone-joint) 0 3px, transparent 3px), linear-gradient(var(--stone-joint) 0 3px, transparent 3px);
   background-size: 64px 64px;
 }
-#farm { display: block; flex: none; width: 0; height: 0; image-rendering: pixelated; cursor: pointer; }
+#farm { display: block; flex: none; width: 0; height: 0; image-rendering: pixelated; cursor: pointer;
+  /* 盤面以外的地磚壓暗（與 render.js 的 OUTSIDE 同色），亮的地方才是能用的地 */
+  box-shadow: 0 0 0 100vmax rgba(29, 47, 44, .78); }
 .farm-hint {
   position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); margin: 0; padding: 8px 16px;
   background: rgba(38, 63, 60, .88); color: var(--paper); font-weight: 700; white-space: nowrap;
