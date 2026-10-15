@@ -1,4 +1,4 @@
-// 遊戲入口：串起模擬（sim.js）、畫面（render.js）、積木編輯器（blocks.js）與介面。
+// 遊戲機制測試畫面：串起模擬（sim.js）、盤面（render.js）、腳本編輯畫面（editor.js）與介面。
 
 import { SAVE_KEY, EXCHANGE_OPTIONS, TOKENS_PER_MONEY, CROPS, ACTION_COST } from './config.js';
 import { PLOTS, plotById, stagesOf } from './plots.js';
@@ -6,12 +6,12 @@ import {
   createState, serialize, restore, update, drainEvents, resetPlot, exchange, upgradeCapacity, setCrop, setProgram,
   capacityOf, nextCapacityCost, canGrow, CRASH_REASONS,
 } from './sim.js';
-import { createRenderer } from './render.js';
-import { defineBlocks, registerFunctionCategory, TOOLBOX, createTheme, DEFAULT_WORKSPACES, compile, countBlocks, CompileError } from './blocks.js';
+import { loadAssets, createBoardRenderer } from './render.js';
+import { defineBlocks, DEFAULT_WORKSPACES, compile } from './blocks.js';
+import { createEditor, STAGE_LABEL } from './editor.js';
 
 const Blockly = window.Blockly;
 const $ = s => document.querySelector(s);
-const STAGE_LABEL = { main: '腳本', sow: '播種腳本', harvest: '採收腳本', water: '澆水腳本' };
 const CROP_NAMES = {};
 
 let state, renderer, selected = PLOTS[0].id, speed = 1;
@@ -192,84 +192,32 @@ function buildControls() {
 
 // ---------- 積木編輯器 ----------
 
-let workspace = null, editing = null, dirty = false;
-
-function ensureWorkspace() {
-  if (workspace) return;
-  workspace = Blockly.inject('blockly', {
-    toolbox: TOOLBOX, theme: createTheme(), renderer: 'zelos', media: 'vendor/blockly/media/',
-    trashcan: true, sounds: false, maxInstances: { rf_start: 1 },
-    zoom: { controls: true, wheel: false, startScale: 0.95 }, move: { scrollbars: true, drag: true, wheel: true },
-  });
-  registerFunctionCategory(workspace);
-  workspace.addChangeListener(Blockly.Events.disableOrphans);
-  workspace.addChangeListener(e => {
-    if (e.isUiEvent || !editing) return;
-    dirty = true;
-    updateCount();
-  });
-}
-
-function updateCount() {
-  const cap = capacityOf(editing.plot, state.plots[editing.plot]), n = countBlocks(workspace);
-  const el = $('#block-count');
-  el.textContent = `已用 ${n} / ${cap} 積木`;
-  el.classList.toggle('over', n > cap);
-}
-
-function openEditor(plotId, stage) {
-  const plot = plotById.get(plotId), ps = state.plots[plotId];
-  $('#editor').hidden = false;
-  ensureWorkspace();
-  editing = null;
-  workspace.clear();
-  Blockly.serialization.workspaces.load(ps.workspaces[stage] || DEFAULT_WORKSPACES.main, workspace);
-  editing = { plot: plotId, stage };
-  dirty = false;
-  $('#editor-title').textContent = `${plot.name}・${STAGE_LABEL[stage]}`;
-  $('#editor-msg').textContent = '從左邊拖積木接到「開始」下面。沒接上的積木會變灰、不會執行。儲存後從下一輪開始生效。';
-  $('#editor-msg').className = '';
-  updateCount();
-  Blockly.svgResize(workspace);
-  workspace.scrollCenter();
-}
-
-function closeEditor(force) {
-  if (!force && dirty && !confirm('腳本還沒儲存，確定要放棄修改嗎？')) return;
-  editing = null;
-  $('#editor').hidden = true;
-  panelDirty = true;
-}
-
-function saveEditor() {
-  const { plot, stage } = editing, cap = capacityOf(plot, state.plots[plot]), n = countBlocks(workspace);
-  const fail = text => { $('#editor-msg').textContent = text; $('#editor-msg').className = 'error'; };
-  if (n > cap) return fail(`用了 ${n} 個積木，超過這塊田的上限 ${cap}。試著用「重複」縮短，或擴充上限。`);
-  let program;
-  try { program = compile(workspace); } catch (e) { if (e instanceof CompileError) return fail(e.message); throw e; }
-  setProgram(state, plot, stage, program, Blockly.serialization.workspaces.save(workspace));
-  save();
-  closeEditor(true);
-  log(`${plotById.get(plot).name}的${STAGE_LABEL[stage]}已更新，下一輪生效`);
-}
-
-$('#editor-save').onclick = saveEditor;
-$('#editor-close').onclick = () => closeEditor(false);
-window.addEventListener('resize', () => workspace && !$('#editor').hidden && Blockly.svgResize(workspace));
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#editor').hidden) closeEditor(false); });
+let editor = null;
+function openEditor(plotId, stage) { editor.open(plotId, stage); }
 
 // ---------- 啟動 ----------
 
 async function start() {
   defineBlocks();
+  let assets;
   try {
-    renderer = await createRenderer($('#board'));
+    assets = await loadAssets();
   } catch (e) {
     $('#hint').textContent = '素材載入失敗：' + e.message + '。請用 http 伺服器開啟（見 README）。';
     throw e;
   }
-  for (const c of renderer.manifest.crops) CROP_NAMES[c.id] = c.name;
+  renderer = createBoardRenderer($('#board'), assets);
+  for (const c of assets.manifest.crops) CROP_NAMES[c.id] = c.name;
   state = load();
+  editor = createEditor({
+    assets, getState: () => state,
+    onSave(plot, stage, program, workspace) {
+      setProgram(state, plot, stage, program, workspace);
+      save();
+      panelDirty = true;
+      log(`${plotById.get(plot).name}的${STAGE_LABEL[stage]}已更新，下一輪生效`);
+    },
+  });
   buildControls();
   setInterval(save, 5000);
   document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });

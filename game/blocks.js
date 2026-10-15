@@ -162,7 +162,8 @@ function checkCalls(list, functions) {
 
 function compileStatements(block) {
   const out = [];
-  for (let b = block; b; b = b.getNextBlock()) if (b.isEnabled()) out.push(compileStatement(b));
+  // 每個節點帶上積木 id，逐步執行時用來亮起對應積木。
+  for (let b = block; b; b = b.getNextBlock()) if (b.isEnabled()) out.push({ ...compileStatement(b), id: b.id });
   return out;
 }
 
@@ -189,6 +190,10 @@ const SLOT_NAMES = { rf_not: '不是', rf_while: '當…就重複', rf_and: '且
 
 function compileCondition(parent, input) {
   const b = parent.getInputTargetBlock(input);
+  return { ...conditionNode(parent, b), id: b.id };
+}
+
+function conditionNode(parent, b) {
   if (!b) {
     parent.select?.();
     throw new CompileError('有「' + (SLOT_NAMES[parent.type] || '如果') + '」積木還沒放條件');

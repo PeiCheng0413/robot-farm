@@ -159,7 +159,7 @@ function pickNext(state, robot) {
 
 function stepRun(state, robot) {
   const plot = plotById.get(robot.plot), ps = state.plots[robot.plot];
-  const result = nextAction(robot.run, cond => evaluate(cond, leaf => sense(state, robot, plot, ps, leaf)));
+  const result = nextAction(robot.run, cond => evaluate(cond, leaf => senseLeaf(state.tokens, robot, ps, leaf)));
   if (result.error) return crash(state, robot, result.error);
   if (result.done) return endRun(state, robot, result.left ? 'left' : 'done');
   if (robot.run.actions >= ACTION_LIMIT) return crash(state, robot, 'tooLong');
@@ -171,10 +171,19 @@ function stepRun(state, robot) {
   robot.run.tokens += cost;
   robot.run.actions++;
 
-  // 結果在開始時就決定，畫面才知道要播撞牆還是正常動作；效果在動作結束時套用。
+  const act = planAction(ps, robot, action);
+  act.cost = cost;
+  startAct(state, robot, act);
+  emit(state, 'actionStart', { robot: robot.id, plot: robot.plot, action, result: act.result, cost, from: act.from, to: act.to });
+}
+
+// ---------- 動作規則（主遊戲與編輯畫面的沙盒共用） ----------
+
+// 結果在開始時就決定，畫面才知道要播撞牆還是正常動作；效果在動作結束時由 applyAction 套用。
+export function planAction(ps, robot, action) {
   const from = { x: robot.x, y: robot.y, heading: robot.heading };
   const cell = ps.cells[cellKey(robot.x, robot.y)];
-  const act = { kind: action, ms: ACTION_MS[action], from, to: from, result: 'ok', cost, cell: cellKey(robot.x, robot.y) };
+  const act = { kind: action, ms: ACTION_MS[action], from, to: from, result: 'ok', cell: cellKey(robot.x, robot.y) };
   if (action === 'move') {
     const [dx, dy] = VECTORS[robot.heading];
     const to = { x: robot.x + dx, y: robot.y + dy, heading: robot.heading };
@@ -189,8 +198,30 @@ function stepRun(state, robot) {
     if (!(cell.crop && cell.growth >= 1)) act.result = 'noop';
     else act.crop = cell.crop;
   }
-  startAct(state, robot, act);
-  emit(state, 'actionStart', { robot: robot.id, plot: robot.plot, action, result: act.result, cost, from, to: act.to });
+  return act;
+}
+
+// 套用動作效果，回傳這個動作賺到的金錢。
+export function applyAction(ps, robot, act) {
+  switch (act.kind) {
+    case 'move': case 'turnLeft': case 'turnRight':
+      Object.assign(robot, act.to);
+      return 0;
+    case 'sow':
+      if (act.result === 'ok') Object.assign(ps.cells[act.cell], { crop: ps.crop, growth: 0 });
+      return 0;
+    case 'water': {
+      const cell = ps.cells[act.cell];
+      cell.moisture = Math.min(3, cell.moisture + 1);
+      cell.dryMs = 0;
+      return 0;
+    }
+    case 'harvest':
+      if (act.result !== 'ok') return 0;
+      Object.assign(ps.cells[act.cell], { crop: null, growth: 0 });
+      return CROPS[act.crop].price;
+  }
+  return 0;
 }
 
 function complete(state, robot, act) {
@@ -203,29 +234,16 @@ function complete(state, robot, act) {
       emit(state, 'runStart', { robot: robot.id, plot: plot.id, stage: act.stage });
       return;
     }
-    case 'move': case 'turnLeft': case 'turnRight':
-      Object.assign(robot, act.to);
+    case 'wait':
       return;
-    case 'sow':
-      if (act.result === 'ok') {
-        Object.assign(ps.cells[act.cell], { crop: ps.crop, growth: 0 });
-      }
-      return;
-    case 'water': {
-      const cell = ps.cells[act.cell];
-      cell.moisture = Math.min(3, cell.moisture + 1);
-      cell.dryMs = 0;
-      return;
-    }
-    case 'harvest':
-      if (act.result === 'ok') {
-        const price = CROPS[act.crop].price;
+    default: {
+      const price = applyAction(ps, robot, act);
+      if (price) {
         state.money += price;
         if (robot.run) robot.run.money += price;
-        Object.assign(ps.cells[act.cell], { crop: null, growth: 0 });
         emit(state, 'harvest', { robot: robot.id, plot: robot.plot, cell: act.cell, crop: act.crop, money: price });
       }
-      return;
+    }
   }
 }
 
@@ -248,7 +266,7 @@ function crash(state, robot, reason) {
 
 // ---------- 感測 ----------
 
-function sense(state, robot, plot, ps, leaf) {
+export function senseLeaf(tokens, robot, ps, leaf) {
   const here = ps.cells[cellKey(robot.x, robot.y)];
   const test = (cell, what) => what === 'mature' ? !!cell.crop && cell.growth >= 1 : what === 'empty' ? !cell.crop : cell.moisture === 0;
   switch (leaf.sense) {
@@ -258,7 +276,7 @@ function sense(state, robot, plot, ps, leaf) {
       const [dx, dy] = VECTORS[robot.heading];
       return !!ps.cells[cellKey(robot.x + dx, robot.y + dy)];
     }
-    case 'tokenLess': return state.tokens < leaf.value;
+    case 'tokenLess': return tokens < leaf.value;
     default: return false;
   }
 }
