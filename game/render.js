@@ -243,19 +243,23 @@ export function createPainter({ manifest, align, images }) {
 
 // background:false 時不畫地板，只畫淡淡的格位線，讓頁面自己的溫室地板透出來（主畫面）。
 export function createBoardRenderer(canvas, assets, { background = true } = {}) {
-  const P = createPainter(assets), CELL = 96, list = [];
+  // TOP：盤面上方留白，機器人在第一排時頭不會被切掉。
+  const P = createPainter(assets), CELL = 96, TOP = CELL * .5, list = [];
   canvas.width = BOARD.columns * CELL;
-  canvas.height = BOARD.rows * CELL;
+  canvas.height = BOARD.rows * CELL + TOP;
   const ctx = canvas.getContext('2d');
   const toGrid = (plotId, x, y) => { const p = plotById.get(plotId); return [p.board[0] + x, p.board[1] + y]; };
 
   function draw(state, { selected } = {}) {
     const time = state.time;
     ctx.imageSmoothingEnabled = false;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (background) { ctx.fillStyle = C.floor; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+    ctx.translate(0, TOP);
+    const boardH = BOARD.rows * CELL;
     ctx.strokeStyle = background ? C.slot : 'rgba(38, 63, 60, .12)'; ctx.lineWidth = 2;
-    for (let x = 0; x <= BOARD.columns; x++) { ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, canvas.height); ctx.stroke(); }
+    for (let x = 0; x <= BOARD.columns; x++) { ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, boardH); ctx.stroke(); }
     for (let y = 0; y <= BOARD.rows; y++) { ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(canvas.width, y * CELL); ctx.stroke(); }
 
     const views = state.robots.map(r => ({ robot: r, view: P.robotView(r, r.act, time, toGrid) }));
@@ -299,8 +303,8 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
   // 把滑鼠座標換成點到的田塊 id。
   function plotAt(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
-    const bx = Math.floor((clientX - rect.left) / rect.width * BOARD.columns);
-    const by = Math.floor((clientY - rect.top) / rect.height * BOARD.rows);
+    const bx = Math.floor((clientX - rect.left) / rect.width * canvas.width / CELL);
+    const by = Math.floor(((clientY - rect.top) / rect.height * canvas.height - TOP) / CELL);
     const plot = PLOTS.find(p => p.cells.some(([x, y]) => p.board[0] + x === bx && p.board[1] + y === by));
     return plot ? plot.id : null;
   }
