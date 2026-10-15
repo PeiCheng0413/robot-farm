@@ -1,5 +1,5 @@
 {
-  "version": "0.11",
+  "version": "0.12",
   "status": "art-prototype",
   "width": 1254,
   "height": 1254,
@@ -288,6 +288,14 @@
         887
       ],
       "sampling": "Use rendering.robotPoses per-frame sourceRect; row boundary is calibrated, not half the image height."
+    },
+    {
+      "file": "robot-decision-v01.png",
+      "width": 1254,
+      "height": 1254,
+      "columns": 2,
+      "rows": 2,
+      "sampling": "Use explicit per-frame sourceRect and shell alignment. Top row: red/green, green/red; bottom row: green/green, red/red. Eye sides are viewer-relative."
     }
   ],
   "produce": [
@@ -1315,6 +1323,118 @@
         "areaScanWave"
       ],
       "description": "Whole-field visual scan: retract antenna, deploy and turn roof radar, retract dish, restore antenna. Empty hands remain lowered. Forward work pose independent of heading; no sensing logic or game state mutation."
+    },
+    "decisionThinking": {
+      "poseRows": [
+        15
+      ],
+      "frameOrder": [
+        0,
+        1
+      ],
+      "frameDurationMs": 300,
+      "frameDurationsMs": [
+        300,
+        300
+      ],
+      "loop": true,
+      "objects": {
+        "cargoVisible": [
+          false,
+          false
+        ],
+        "sourcePlantVisible": [
+          true,
+          true
+        ],
+        "cargoPose": [
+          "hidden",
+          "hidden"
+        ],
+        "eyeLeft": [
+          "red",
+          "green"
+        ],
+        "eyeRight": [
+          "green",
+          "red"
+        ],
+        "decisionResult": [
+          null,
+          null
+        ]
+      },
+      "description": "Visual status only. Eye sides are viewer-relative. Thinking repeats until the caller supplies a result or another action. Result is provided externally; do not infer or randomly generate a condition outcome."
+    },
+    "decisionTrue": {
+      "poseRows": [
+        15
+      ],
+      "frameOrder": [
+        2
+      ],
+      "frameDurationMs": 1000,
+      "frameDurationsMs": [
+        1000
+      ],
+      "loop": false,
+      "objects": {
+        "cargoVisible": [
+          false
+        ],
+        "sourcePlantVisible": [
+          true
+        ],
+        "cargoPose": [
+          "hidden"
+        ],
+        "eyeLeft": [
+          "green"
+        ],
+        "eyeRight": [
+          "green"
+        ],
+        "decisionResult": [
+          true
+        ]
+      },
+      "description": "Visual status only. Eye sides are viewer-relative. Thinking repeats until the caller supplies a result or another action. Result is provided externally; do not infer or randomly generate a condition outcome.",
+      "onComplete": "idle"
+    },
+    "decisionFalse": {
+      "poseRows": [
+        15
+      ],
+      "frameOrder": [
+        3
+      ],
+      "frameDurationMs": 1000,
+      "frameDurationsMs": [
+        1000
+      ],
+      "loop": false,
+      "objects": {
+        "cargoVisible": [
+          false
+        ],
+        "sourcePlantVisible": [
+          true
+        ],
+        "cargoPose": [
+          "hidden"
+        ],
+        "eyeLeft": [
+          "red"
+        ],
+        "eyeRight": [
+          "red"
+        ],
+        "decisionResult": [
+          false
+        ]
+      },
+      "description": "Visual status only. Eye sides are viewer-relative. Thinking repeats until the caller supplies a result or another action. Result is provided externally; do not infer or randomly generate a condition outcome.",
+      "onComplete": "idle"
     }
   },
   "playback": {
@@ -1323,14 +1443,20 @@
       "sow",
       "water",
       "harvest",
-      "scan"
+      "scan",
+      "decisionThinking",
+      "decisionTrue",
+      "decisionFalse"
     ],
     "actionLabels": [
       "漂浮待命",
       "播種",
       "澆水",
       "採收",
-      "範圍掃描"
+      "範圍掃描",
+      "判斷中",
+      "判斷成立",
+      "判斷不成立"
     ],
     "directionalClips": {
       "empty": "move",
@@ -1339,6 +1465,11 @@
     "restClips": {
       "empty": "idle",
       "loaded": "carryIdle"
+    },
+    "decisionClips": {
+      "thinking": "decisionThinking",
+      "true": "decisionTrue",
+      "false": "decisionFalse"
     }
   },
   "rendering": {
@@ -2445,6 +2576,67 @@
             "label": "天線復位"
           }
         ]
+      },
+      "15": {
+        "atlas": "robot-decision-v01.png",
+        "frames": [
+          {
+            "sourceRect": [
+              100,
+              82,
+              479,
+              492
+            ],
+            "alignmentPath": [
+              "decision",
+              0
+            ],
+            "bobIndex": null,
+            "label": "左紅・右綠"
+          },
+          {
+            "sourceRect": [
+              699,
+              82,
+              481,
+              492
+            ],
+            "alignmentPath": [
+              "decision",
+              1
+            ],
+            "bobIndex": null,
+            "label": "左綠・右紅"
+          },
+          {
+            "sourceRect": [
+              99,
+              683,
+              482,
+              491
+            ],
+            "alignmentPath": [
+              "decision",
+              2
+            ],
+            "bobIndex": null,
+            "label": "成立・雙綠"
+          },
+          {
+            "sourceRect": [
+              698,
+              680,
+              485,
+              494
+            ],
+            "alignmentPath": [
+              "decision",
+              3
+            ],
+            "bobIndex": null,
+            "label": "不成立・雙紅"
+          }
+        ]
       }
     },
     "plantCanvas": [
@@ -2520,6 +2712,12 @@
         "cantaloupe",
         "carrot"
       ]
+    },
+    "decisionLights": {
+      "eyeSideConvention": "viewer-relative",
+      "red": "#ed6a62",
+      "green": "#91e69b",
+      "note": "Colors are generation targets. Actual eye pixels are baked into the robot-decision-v01.png frames. No extra light overlay or glow filter is needed. These clips are empty-hand front work poses; preserve cargo and use separate carry variants if the game needs loaded decision poses."
     }
   },
   "soilVariants": {

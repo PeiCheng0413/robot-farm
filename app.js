@@ -1,6 +1,6 @@
 
 (async function(){
-  const response=await fetch('assets/manifest.json?v=11');
+  const response=await fetch('assets/manifest.json?v=12');
   if(!response.ok)throw new Error('素材數據讀取失敗：'+response.status);
   const manifest=await response.json(),rendering=manifest.rendering,clips=manifest.animationClips;
   const $=s=>document.querySelector(s),alignment=spriteAlignment;
@@ -249,7 +249,7 @@
   $('#pause').onclick=()=>{paused=!paused;pauseLabel();};
 
   const catalog=[];
-  [['idle','原版待命'],['sow','播種'],['water','澆水'],['harvest','空手採收'],['scan','範圍掃描']].forEach(([key,label])=>{
+  [['idle','原版待命'],['sow','播種'],['water','澆水'],['harvest','空手採收'],['scan','範圍掃描'],[manifest.playback.decisionClips.thinking,'判斷燈號']].forEach(([key,label])=>{
     catalog.push({label,type:'robot',row:clips[key].poseRows[0]});
   });
   clips[manifest.playback.directionalClips.empty].poseRows.forEach((row,i)=>catalog.push({label:directions[i].name+'向漂浮',type:'robot',row}));

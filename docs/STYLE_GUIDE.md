@@ -193,3 +193,12 @@ manifest.animationClips.scan 沿用名稱與原有欄位結構，poseRows 改採
 scan 的 12 步 frameOrder 為 0/1/2/3/4/5/4/5/6/2/1/7；frameDurationsMs 為 120/140/100/160/180/180/180/180/140/100/140/120，合計 1740 ms，loop=false，完成後 idle。objects 明列每步的天線／雷達可見性與頭頂機構狀態；它們已畫在角色來源格裡，無須再額外疊畫。areaScanWave 沿用獨立 scan-wave-v01.png，frameIndexByStep／opacityByStep 更新為 12 步，只在第 5–8 步（索引 4–7，雷達轉動時）播放原四格波紋；原來源框、尺寸、定位、圖層與裁切規則保留。
 
 素材試驗室照同一份數據播放，八格角色展示以兩列呈現。遊戲觸發與狀態偵測仍由 Claude 負責。內建 image_gen 完整提示詞與來源記錄於 prompts-v11.json。
+
+
+## v0.12 判斷燈號
+
+新增 robot-decision-v01.png（1254 × 1254 RGBA，二欄二列）。四格依閱讀順序為左紅右綠、左綠右紅、雙綠、雙紅，左右以觀看者為準。維持方形 LED、奶油白機殼、黃銅天線與空手垂放姿勢；亮燈以硬邊色塊呈現，不加模糊光暈。圖集原樣保存，機殼中心按 spriteAlignment.decision 校準；rendering.robotPoses 新增 row 15，原資料與素材保留。
+
+playback.decisionClips 指定 thinking、true、false 三種 clip，供 Claude 依外部判斷結果選用。animationClips.decisionThinking 的 frameOrder=0/1，每步 300 ms、loop=true，持續左右交換紅綠直到外部切換。decisionTrue 使用圖格 2、decisionFalse 使用圖格 3，均穩定亮燈 1000 ms、loop=false、onComplete=idle。objects 提供逐步 eyeLeft、eyeRight 與 decisionResult，null 表示尚無結果，true/false 表示外部已提供的狀態；不是在素材程式內計算條件。每步的 cargoVisible、sourcePlantVisible、cargoPose 也明列。三種 clip 不啟動掃描波紋，與雷達掃描獨立。
+
+素材試驗室動作按鈕由 playback.actionClips/actionLabels 建立，新增「判斷中／判斷成立／判斷不成立」，手動選擇結果而不自動抽取或判讀田地。暫停與減少動態設定沿用共用播放器。角色圖集為正面空手姿勢，遊戲若需持物時判斷，不能直接用空手 clip 隱藏既有 cargo；可另外設計持物眼燈疊加。感測條件、成立與否、觸發時機均由 Claude 的遊戲邏輯負責；game.html、game/、vendor/ 未修改。內建 image_gen 完整提示詞保存於 prompts-v12.json。
