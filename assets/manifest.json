@@ -4154,5 +4154,354 @@
       "groutColor": "#35665b"
     },
     "note": "Static art only; no new animation, growth, sensing, economic, token-cost or currency logic. Existing manifest fields including root version remain unchanged."
+  },
+  "valleyFarm": {
+    "version": "v01",
+    "name": "山谷農田・輕微俯角",
+    "assets": {
+      "mountains": {
+        "file": "mountain-backdrop-v01.png",
+        "imageSize": [
+          2172,
+          724
+        ],
+        "sourceRect": [
+          0,
+          100,
+          2172,
+          624
+        ]
+      },
+      "forest": {
+        "file": "forest-edge-v01.png",
+        "imageSize": [
+          2172,
+          724
+        ],
+        "sourceRect": [
+          0,
+          145,
+          2172,
+          495
+        ]
+      },
+      "grass": {
+        "file": "grass-ground-tile-v01.png",
+        "imageSize": [
+          1254,
+          1254
+        ],
+        "sourceRect": [
+          0,
+          0,
+          1254,
+          1254
+        ],
+        "baseColor": "#69965b",
+        "repeatDisplaySize": [
+          128,
+          96
+        ],
+        "repeatAxes": [
+          "x",
+          "y"
+        ],
+        "note": "Transparent sparse tufts over baseColor, all four outer edges alpha0."
+      },
+      "soilFront": {
+        "file": "soil-front-edges-v01.png",
+        "imageSize": [
+          1199,
+          1312
+        ],
+        "frames": [
+          {
+            "soilIndex": 0,
+            "sourceRect": [
+              132,
+              219,
+              936,
+              124
+            ]
+          },
+          {
+            "soilIndex": 1,
+            "sourceRect": [
+              132,
+              498,
+              936,
+              127
+            ]
+          },
+          {
+            "soilIndex": 2,
+            "sourceRect": [
+              132,
+              782,
+              936,
+              125
+            ]
+          },
+          {
+            "soilIndex": 3,
+            "sourceRect": [
+              132,
+              1063,
+              936,
+              124
+            ]
+          }
+        ],
+        "sourceSpace": "Full image pixels; sample only the solid bands, excluding margins and stray generation specks."
+      }
+    },
+    "environment": {
+      "skyColor": "#cfe3d3",
+      "groundColor": "#69965b",
+      "layers": [
+        {
+          "asset": "mountains",
+          "rect": [
+            0,
+            0,
+            1,
+            0.45
+          ],
+          "z": 0
+        },
+        {
+          "asset": "grass",
+          "rect": [
+            0,
+            0.35,
+            1,
+            0.65
+          ],
+          "z": 1,
+          "repeat": true
+        },
+        {
+          "asset": "forest",
+          "rect": [
+            0,
+            0.1,
+            1,
+            0.3
+          ],
+          "z": 2
+        }
+      ],
+      "rectSpace": "Normalized [x,y,width,height] of viewport. Background layers scale independently of grid; never squash upright sprites."
+    },
+    "projection": {
+      "kind": "orthographic-shallow-front",
+      "defaultView": "slight",
+      "views": {
+        "slight": {
+          "label": "輕微俯角",
+          "tileSize": [
+            64,
+            48
+          ],
+          "frontDepth": 4,
+          "previewOrigin": [
+            288,
+            260
+          ]
+        },
+        "topDown": {
+          "label": "原俯視比較",
+          "tileSize": [
+            64,
+            64
+          ],
+          "frontDepth": 0,
+          "previewOrigin": [
+            288,
+            256
+          ]
+        }
+      },
+      "forward": "screen-y-positive",
+      "shearX": 0,
+      "rotationDegrees": 0,
+      "gridToScreen": "screenX=originX+gridX*tileWidth; screenY=originY+gridY*tileHeight",
+      "screenToGrid": "gridX=floor((screenX-originX)/tileWidth); gridY=floor((screenY-originY)/tileHeight)",
+      "interactionNote": "Invert only the ground projection for cell picking and placement. Exclude the decorative frontDepth from cell hit bounds; keep all existing game grid/collision rules. Claude owns game integration."
+    },
+    "terrain": {
+      "topSource": "soilVariants.states[soilIndex].variants[variantId].layers",
+      "frontSource": "assets.soilFront.frames[soilIndex]",
+      "frontNeighbor": [
+        0,
+        1
+      ],
+      "frontRule": "Draw a front face only if the neighbor cell at [x+frontNeighbor[0],y+frontNeighbor[1]] is absent from the combined occupied-cell set. Test across plot boundaries too. Draw below y+tileHeight, with width=tileWidth and height=frontDepth. No interior dividing soil wall.",
+      "topScale": [
+        1,
+        0.75
+      ],
+      "seamRule": "Adjacent top faces share the exact grid boundary; no per-cell gap, rotation, skew or corner rounding. Corners use straight cut ends of the front strip."
+    },
+    "uprightSprites": {
+      "plantCanvasDisplaySize": [
+        72,
+        72
+      ],
+      "plantGroundAnchor": [
+        0.5,
+        0.68
+      ],
+      "plantRootSource": "rendering.plantRoot / rendering.plantCanvas",
+      "robotCanvasDisplaySize": [
+        128,
+        128
+      ],
+      "robotGroundAnchor": [
+        0.5,
+        0.68
+      ],
+      "robotCenterOffset": [
+        0,
+        -30
+      ],
+      "robotAlignmentSource": "rendering.robotPoses + spriteAlignment",
+      "signDisplaySize": [
+        80,
+        70
+      ],
+      "preserveAspect": true,
+      "rule": "Compress only soil/ground surfaces. Keep plants, robots, held produce, thought bubbles and signs upright at their original aspect ratio."
+    },
+    "depthOrder": {
+      "terrainFirst": true,
+      "sortKey": [
+        "groundY",
+        "groundX",
+        "kindOrder"
+      ],
+      "kindOrder": {
+        "plant": 1,
+        "robot": 2,
+        "sign": 3
+      },
+      "rule": "Sort all upright sprites globally by their projected ground anchor, across plot boundaries. Draw increasing groundY; nearer plants may occlude robots farther back. Cargo/thought bubbles belong to the same robot draw group. Front soil walls are terrain, not upright sprites."
+    },
+    "preview": {
+      "canvas": [
+        960,
+        600
+      ],
+      "initialSoil": 1,
+      "initialView": "slight",
+      "stage": 3,
+      "variantCycle": [
+        "flowers",
+        "stones",
+        "mixed",
+        "plain"
+      ],
+      "fields": [
+        {
+          "id": "L",
+          "signType": "beginner",
+          "cells": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        },
+        {
+          "id": "T",
+          "signType": "intermediate",
+          "cells": [
+            [
+              3,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              5,
+              0
+            ],
+            [
+              4,
+              1
+            ]
+          ]
+        },
+        {
+          "id": "O",
+          "signType": "advanced",
+          "cells": [
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ]
+          ]
+        }
+      ],
+      "cropCycle": [
+        "carrot",
+        "tomato",
+        "lettuce",
+        "strawberry",
+        "watermelon",
+        "cantaloupe"
+      ],
+      "robots": [
+        {
+          "cell": [
+            0,
+            1
+          ],
+          "clip": "idle",
+          "step": 0
+        },
+        {
+          "cell": [
+            4,
+            0
+          ],
+          "clip": "idle",
+          "step": 0
+        }
+      ],
+      "signOffset": [
+        -0.35,
+        1.1
+      ],
+      "note": "Static composition preview; no game mechanics or independent animation timer.",
+      "signAnchorRule": "Use [minimum field cell x, maximum field cell y] + signOffset, then project to screen; signs stand beside the lower-left outer edge."
+    },
+    "note": "Additive data; previous manifest fields, asset paths and alignment shape unchanged. Game projection, picking, dragging, movement rendering and final occlusion integration remain Claude responsibilities."
   }
 }
