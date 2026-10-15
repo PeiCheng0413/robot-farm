@@ -62,7 +62,44 @@ function scenarioCells(plot, real, kind) {
   return cells;
 }
 
+// 編輯畫面的 HTML 由這裡掛上去，主畫面與測試畫面不必各寫一份。
+const MARKUP = `
+<div id="editor" class="editor" hidden>
+  <div class="editor-bar">
+    <h2 id="editor-title"></h2>
+    <span id="block-count" class="count"></span>
+    <button id="editor-save" class="primary">儲存腳本</button>
+    <button id="editor-close">返回農場</button>
+  </div>
+  <p id="editor-msg" role="status"></p>
+  <div class="editor-body">
+    <div id="blockly"></div>
+    <section class="runner" aria-label="試跑">
+      <div class="runner-head">
+        <h3>試跑</h3>
+        <span class="runner-note">沙盒：不扣真的 Token、不改真的田</span>
+      </div>
+      <p id="editor-rule" class="runner-rule"></p>
+      <canvas id="runner-view" aria-label="這塊田的特寫，機器人照腳本動作"></canvas>
+      <p id="runner-status" class="runner-status" aria-live="polite"></p>
+      <div id="runner-check" class="runner-check" aria-live="polite" hidden></div>
+      <div class="runner-controls">
+        <button id="run-toggle" class="primary">▶ 執行</button>
+        <button id="run-step">下一步 ⏭</button>
+        <button id="run-reset">⟲ 重來</button>
+      </div>
+      <div class="runner-options">
+        <span class="option-label">速度</span><div id="run-speed" class="buttons"></div>
+        <label for="run-scenario" class="option-label">田的情境</label>
+        <select id="run-scenario"></select>
+      </div>
+      <p id="runner-stats" class="runner-stats"></p>
+    </section>
+  </div>
+</div>`;
+
 export function createEditor({ assets, getState, onSave }) {
+  if (!$('#editor')) document.body.insertAdjacentHTML('beforeend', MARKUP);
   let workspace = null, editing = null, dirty = false, view = null;
   let sandbox = null, mode = 'paused', speed = 1, scenario = 'current', last = 0, raf = 0;
 

@@ -1,0 +1,24 @@
+/* 共用基礎樣式。色票取自 docs/STYLE_GUIDE.md；使用者含年長者與學生，字級偏大、對比偏高。 */
+:root {
+  --ink: #263f3c; --panel: #35665b; --mint: #8fc7a3; --cream: #f0e4bb; --shell-dark: #c6b887;
+  --brass: #d7a44b; --water: #75bdd0; --tomato: #c65f48; --paper: #fbf6e6; --floor: #efe5c6;
+  --text: #1d2b29; --muted: #4a5a57;
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  font-size: 18px; color: var(--text); background: var(--floor);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--floor); line-height: 1.55; }
+button, select { font: inherit; }
+button {
+  min-height: 44px; padding: 6px 14px; border: 2px solid var(--ink); border-radius: 8px;
+  background: var(--paper); color: var(--ink); font-weight: 700; cursor: pointer;
+}
+button:hover:not(:disabled) { background: #fff; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+button:focus-visible, select:focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
+button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+button.primary { background: var(--panel); color: #fff; border-color: var(--ink); }
+button.primary:hover:not(:disabled) { background: var(--ink); }
+button.danger { background: var(--tomato); }
+button.quiet { border-color: transparent; background: none; text-decoration: underline; font-weight: 400; color: var(--muted); }
+.buttons { display: flex; gap: 6px; flex-wrap: wrap; }

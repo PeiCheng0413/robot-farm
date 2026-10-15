@@ -236,12 +236,13 @@ export function createPainter({ manifest, align, images }) {
   const hidesPlant = view => view.clip === 'harvest' && view.crop && !pose('harvest', clipStep('harvest', view.elapsed), view.heading).plantVisible;
   const stageOf = growth => Math.min(3, Math.floor(growth * 3 + 1e-9));
 
-  return { clipLength, clipStep, soil, plant, robotAt, scanWave, outline, label, floaters, robotView, hidesPlant, stageOf, clips, manifest };
+  return { clipLength, clipStep, soil, plant, produce, robotAt, scanWave, outline, label, floaters, robotView, hidesPlant, stageOf, clips, manifest };
 }
 
 // ---------- 農場盤面 ----------
 
-export function createBoardRenderer(canvas, assets) {
+// background:false 時不畫地板，只畫淡淡的格位線，讓頁面自己的溫室地板透出來（主畫面）。
+export function createBoardRenderer(canvas, assets, { background = true } = {}) {
   const P = createPainter(assets), CELL = 96, list = [];
   canvas.width = BOARD.columns * CELL;
   canvas.height = BOARD.rows * CELL;
@@ -251,8 +252,9 @@ export function createBoardRenderer(canvas, assets) {
   function draw(state, { selected } = {}) {
     const time = state.time;
     ctx.imageSmoothingEnabled = false;
-    ctx.fillStyle = C.floor; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = C.slot; ctx.lineWidth = 2;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (background) { ctx.fillStyle = C.floor; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+    ctx.strokeStyle = background ? C.slot : 'rgba(38, 63, 60, .12)'; ctx.lineWidth = 2;
     for (let x = 0; x <= BOARD.columns; x++) { ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, canvas.height); ctx.stroke(); }
     for (let y = 0; y <= BOARD.rows; y++) { ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(canvas.width, y * CELL); ctx.stroke(); }
 

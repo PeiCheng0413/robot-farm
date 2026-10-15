@@ -1,16 +1,16 @@
 // 遊戲機制測試畫面：串起模擬（sim.js）、盤面（render.js）、腳本編輯畫面（editor.js）與介面。
 
-import { SAVE_KEY, EXCHANGE_OPTIONS, TOKENS_PER_MONEY, CROPS, ACTION_COST } from './config.js';
+import { EXCHANGE_OPTIONS, TOKENS_PER_MONEY, CROPS, ACTION_COST } from './config.js';
 import { PLOTS, plotById, stagesOf } from './plots.js';
+import { newGame, loadGame, saveGame, autosave } from './session.js';
 import {
-  createState, serialize, restore, update, drainEvents, resetPlot, exchange, upgradeCapacity, setCrop, setProgram,
+  update, drainEvents, resetPlot, exchange, upgradeCapacity, setCrop, setProgram,
   capacityOf, nextCapacityCost, canGrow, CRASH_REASONS,
 } from './sim.js';
 import { loadAssets, createBoardRenderer } from './render.js';
-import { defineBlocks, DEFAULT_WORKSPACES, compile } from './blocks.js';
+import { defineBlocks } from './blocks.js';
 import { createEditor, STAGE_LABEL } from './editor.js';
 
-const Blockly = window.Blockly;
 const $ = s => document.querySelector(s);
 const CROP_NAMES = {};
 
@@ -18,34 +18,7 @@ let state, renderer, selected = PLOTS[0].id, speed = 1;
 
 // ---------- 存檔 ----------
 
-function compileJson(json) {
-  const ws = new Blockly.Workspace();
-  try { Blockly.serialization.workspaces.load(json, ws); return compile(ws); } finally { ws.dispose(); }
-}
-
-function newGame() {
-  const s = createState();
-  for (const plot of PLOTS) {
-    // 只有第一塊直線新手田附範例腳本，讓經濟一開始就轉得起來；其他田從空白開始練。
-    for (const stage of stagesOf(plot)) {
-      const json = plot.id === PLOTS[0].id && DEFAULT_WORKSPACES[stage] || DEFAULT_WORKSPACES.main;
-      setProgram(s, plot.id, stage, compileJson(json), json);
-    }
-  }
-  return s;
-}
-
-function load() {
-  try {
-    const json = localStorage.getItem(SAVE_KEY);
-    if (json) { const s = restore(json); if (s) return s; }
-  } catch (e) { console.warn('讀檔失敗，改開新遊戲', e); }
-  return newGame();
-}
-
-function save() {
-  try { localStorage.setItem(SAVE_KEY, serialize(state)); } catch (e) { /* 私密視窗等情況存不了，遊戲照常進行 */ }
-}
+const save = () => saveGame(state);
 
 // ---------- 主迴圈 ----------
 
@@ -209,7 +182,7 @@ async function start() {
   }
   renderer = createBoardRenderer($('#board'), assets);
   for (const c of assets.manifest.crops) CROP_NAMES[c.id] = c.name;
-  state = load();
+  state = loadGame();
   editor = createEditor({
     assets, getState: () => state,
     onSave(plot, stage, program, workspace) {
@@ -220,9 +193,7 @@ async function start() {
     },
   });
   buildControls();
-  setInterval(save, 5000);
-  document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
-  window.addEventListener('pagehide', save);
+  autosave(() => state);
   requestAnimationFrame(frame);
 }
 

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>浮葉農場</title>
+<link rel="stylesheet" href="game/base.css">
+<link rel="stylesheet" href="game/editor.css">
+<link rel="stylesheet" href="game/play.css">
+</head>
+<body class="play">
+<header class="console">
+  <h1 class="console-brand">浮葉農場</h1>
+  <div class="gauges" aria-live="polite">
+    <div class="gauge">
+      <span class="gauge-label">Token</span>
+      <output id="tokens" class="lcd">0</output>
+    </div>
+    <div class="gauge">
+      <span class="gauge-label">金錢</span>
+      <output id="money" class="lcd lcd-money">0</output>
+    </div>
+    <div class="exchange">
+      <button id="exchange-open" class="console-button" aria-expanded="false" aria-controls="exchange-menu">用金錢換 Token</button>
+      <div id="exchange-menu" class="exchange-menu" hidden></div>
+    </div>
+  </div>
+  <nav class="tools" aria-label="農場工具">
+    <button class="console-button" disabled>排列田地<small>即將推出</small></button>
+    <button class="console-button" disabled>買賣田地<small>即將推出</small></button>
+    <button class="console-button" disabled>作物圖鑑<small>即將推出</small></button>
+  </nav>
+</header>
+
+<main class="greenhouse">
+  <div class="glass" aria-hidden="true"></div>
+  <div class="floor">
+    <canvas id="farm" aria-label="農場。點一塊田查看狀態與編寫腳本"></canvas>
+  </div>
+  <p id="farm-hint" class="farm-hint">點一塊田，查看狀態、換作物、編寫機器人的腳本。</p>
+</main>
+
+<aside id="card" class="plot-card" hidden aria-labelledby="card-title"></aside>
+<div id="toasts" class="toasts" aria-live="assertive"></div>
+
+<script src="vendor/blockly/blockly_compressed.js"></script>
+<script src="vendor/blockly/blocks_compressed.js"></script>
+<script src="vendor/blockly/msg/zh-hant.js"></script>
+<script src="alignment.js"></script>
+<script type="module" src="game/play.js"></script>
+</body>
+</html>

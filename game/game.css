@@ -1,27 +1,4 @@
-/* 遊戲畫面樣式。色票取自 docs/STYLE_GUIDE.md；使用者含年長者與學生，字級偏大、對比偏高。 */
-:root {
-  --ink: #263f3c; --panel: #35665b; --mint: #8fc7a3; --cream: #f0e4bb; --shell-dark: #c6b887;
-  --brass: #d7a44b; --water: #75bdd0; --tomato: #c65f48; --paper: #fbf6e6; --floor: #efe5c6;
-  --text: #1d2b29; --muted: #4a5a57;
-  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-  font-size: 18px; color: var(--text); background: var(--floor);
-}
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--floor); line-height: 1.55; }
-button, select { font: inherit; }
-button {
-  min-height: 44px; padding: 6px 14px; border: 2px solid var(--ink); border-radius: 8px;
-  background: var(--paper); color: var(--ink); font-weight: 700; cursor: pointer;
-}
-button:hover:not(:disabled) { background: #fff; }
-button:disabled { opacity: .45; cursor: not-allowed; }
-button:focus-visible, select:focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
-button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
-button.primary { background: var(--panel); color: #fff; border-color: var(--ink); }
-button.primary:hover:not(:disabled) { background: var(--ink); }
-button.danger { background: var(--tomato); }
-button.quiet { border-color: transparent; background: none; text-decoration: underline; font-weight: 400; color: var(--muted); }
-
+/* 遊戲機制測試畫面（game.html）。 */
 .hud {
   display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 12px 20px;
   background: var(--ink); color: var(--paper); position: sticky; top: 0; z-index: 5;
@@ -35,7 +12,6 @@ button.quiet { border-color: transparent; background: none; text-decoration: und
 .resource.money { background: var(--brass); color: var(--ink); }
 .hud-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .hud-label { font-size: .9rem; opacity: .85; }
-.buttons { display: flex; gap: 6px; flex-wrap: wrap; }
 .hud button { min-height: 40px; padding: 4px 10px; font-size: .9rem; }
 
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; padding: 20px; align-items: start; }
@@ -67,58 +43,8 @@ button.quiet { border-color: transparent; background: none; text-decoration: und
 .footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
 .footer a { color: var(--panel); font-weight: 700; }
 
-.editor { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; background: var(--paper); }
-.editor[hidden] { display: none; }
-body.editing { overflow: hidden; }
-.editor-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 16px; background: var(--ink); color: var(--paper); }
-.editor-bar h2 { margin: 0; font-size: 1.3rem; flex: 1 1 auto; }
-.count { font-weight: 700; padding: 4px 12px; border-radius: 8px; background: var(--mint); color: var(--ink); }
-.count.over { background: var(--tomato); color: #fff; }
-#editor-msg { margin: 0; padding: 8px 16px; background: var(--cream); border-bottom: 2px solid var(--shell-dark); }
-#editor-msg.error { background: #f6d2c6; color: #7d2a1a; font-weight: 700; }
-.editor-body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 34vw); }
-#blockly { min-height: 0; min-width: 0; }
-.blocklyTreeLabel { font-size: 18px !important; }
-
-/* 試跑區：田的特寫＋控制 */
-.runner { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; overflow: auto; background: var(--floor); border-left: 3px solid var(--ink); }
-.runner-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-.runner-head h3 { margin: 0; font-size: 1.3rem; }
-.runner-note { font-size: .85rem; color: var(--muted); }
-.runner-rule { margin: 0; font-size: .95rem; color: var(--muted); }
-#runner-view { width: 100%; height: auto; max-height: 48vh; object-fit: contain; border: 3px solid var(--ink); border-radius: 10px; background: #e7dcb8; image-rendering: pixelated; }
-.runner-status {
-  margin: 0; min-height: 3.2em; padding: 10px 12px; border-radius: 8px; border: 2px solid var(--shell-dark);
-  background: var(--paper); font-size: 1.05rem; font-weight: 700; line-height: 1.45;
-}
-.runner-status.yes { border-color: #3c8a4f; background: #e3f4e5; color: #1f5a2c; }
-.runner-status.no { border-color: #b4483a; background: #f8e1dc; color: #7d2a1a; }
-.runner-status.warn { border-color: var(--brass); background: #f8ecd0; }
-.runner-status.error { border-color: #b4483a; background: #f6d2c6; color: #7d2a1a; }
-.runner-status.done { border-color: var(--panel); background: #dcefe6; }
-.runner-check { padding: 10px 14px; border-radius: 8px; border: 3px solid; }
-.runner-check[hidden] { display: none; }
-.runner-check.ok { border-color: #3c8a4f; background: #e3f4e5; color: #1f5a2c; }
-.runner-check.bad { border-color: #b4483a; background: #fbe9e4; color: #6e2416; }
-.runner-check ul { margin: 4px 0 0; padding-left: 1.3em; }
-.runner-check li { margin: 2px 0; font-weight: 700; }
-.check-title { margin: 0; font-size: 1.15rem; font-weight: 800; }
-.check-tip-title { margin: 8px 0 0; font-weight: 700; color: var(--muted); }
-.runner-check .check-tips li { font-weight: 400; color: var(--text); }
-.runner-controls { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; }
-.runner-controls button { min-height: 52px; font-size: 1.1rem; }
-.runner-options { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px 12px; }
-.option-label { font-weight: 700; font-size: .95rem; }
-.runner-options select { min-height: 44px; padding: 4px 8px; border: 2px solid var(--ink); border-radius: 8px; background: #fff; }
-.runner-stats { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; color: var(--muted); }
-.runner-stats b { color: var(--text); font-size: 1.15rem; font-variant-numeric: tabular-nums; }
-
 @media (max-width: 900px) {
   .layout { grid-template-columns: 1fr; padding: 12px 16px; }
-  /* 窄螢幕：試跑在上、積木在下 */
-  .editor-body { grid-template-columns: 1fr; grid-template-rows: auto minmax(55vh, 1fr); overflow: auto; }
-  .runner { order: -1; border-left: 0; border-bottom: 3px solid var(--ink); overflow: visible; }
-  #runner-view { max-height: 32vh; }
   .hud { padding: 10px 16px; }
   .log-wrap { padding: 0 16px 20px; }
 }
