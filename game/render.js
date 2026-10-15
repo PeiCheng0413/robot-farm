@@ -320,7 +320,7 @@ export function createPlotView(canvas, plot, assets) {
   const origin = (x, y) => toGrid(null, x, y).map(v => v * CELL);
   const rects = plot.cells.map(([x, y]) => [...origin(x, y), CELL, CELL]);
 
-  function draw({ ps, robot, act, time }) {
+  function draw({ ps, robot, act, time, marks = [] }) {
     ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = C.floor; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = C.slot; ctx.lineWidth = 2;
@@ -338,6 +338,12 @@ export function createPlotView(canvas, plot, assets) {
     for (const [x, y] of [...plot.cells].sort((a, b) => a[1] - b[1])) {
       const cell = ps.cells[cellKey(x, y)];
       if (cell.crop && !(P.hidesPlant(view) && view.cell === cellKey(x, y))) P.plant(ctx, ...origin(x, y), CELL, cell.crop, P.stageOf(cell.growth));
+    }
+    // 過關檢查標出的問題格子：紅色粗框閃爍
+    if (marks.length) {
+      ctx.strokeStyle = C.crash; ctx.lineWidth = 7; ctx.globalAlpha = .55 + .45 * Math.sin(performance.now() / 260);
+      for (const m of marks) { const [mx, my] = origin(m.x, m.y); ctx.strokeRect(mx + 6, my + 6, CELL - 12, CELL - 12); }
+      ctx.globalAlpha = 1;
     }
     if (view.clip === 'scan') P.scanWave(ctx, P.clipStep('scan', view.elapsed), rects);
     P.robotAt(ctx, view, view.pos[0] * CELL + CELL / 2, view.pos[1] * CELL + CELL / 2, CELL);

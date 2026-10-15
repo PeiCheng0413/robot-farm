@@ -27,6 +27,27 @@ const SCENARIOS = {
 };
 const DEFAULT_SCENARIO = { main: 'mixed', sow: 'empty', harvest: 'mature', water: 'dry' };
 
+// 過關檢查：跑完後整塊田應該達成什麼。每種腳本只檢查自己負責的事；專家田的一份腳本全部都要顧。
+const GOALS = {
+  empty:  { test: c => !c.crop,                                   text: n => `還有 ${n} 格空地沒種到` },
+  mature: { test: c => c.crop && c.growth >= 1,                   text: n => `還有 ${n} 格成熟作物沒採收` },
+  dry:    { test: c => c.crop && c.growth < 1 && c.moisture === 0, text: n => `還有 ${n} 格乾裂沒澆到` },
+  soaked: { test: c => c.moisture >= 3,                           text: n => `${n} 格澆到積水了（積水不會長）` },
+};
+const GOALS_BY_STAGE = { sow: ['empty'], harvest: ['mature'], water: ['dry', 'soaked'], main: ['mature', 'empty', 'dry', 'soaked'] };
+
+function checkGoals(plot, ps, stage) {
+  const problems = [], marks = [];
+  for (const goal of GOALS_BY_STAGE[stage]) {
+    if (goal === 'dry' && plot.rules.noDrying) continue;
+    const bad = plot.cells.filter(([x, y]) => GOALS[goal].test(ps.cells[cellKey(x, y)]));
+    if (!bad.length) continue;
+    problems.push(GOALS[goal].text(bad.length));
+    for (const [x, y] of bad) marks.push({ x, y });
+  }
+  return { problems, marks };
+}
+
 function scenarioCells(plot, real, kind) {
   const cells = {};
   plot.cells.forEach(([x, y], i) => {
@@ -79,10 +100,11 @@ export function createEditor({ assets, getState, onSave }) {
     sandbox = {
       plot, ps: { crop: real.crop, cells: scenarioCells(plot, real, scenario) },
       robot: { plot: plot.id, x: plot.entry.x, y: plot.entry.y, heading: plot.entry.heading },
-      tokens: getState().tokens, spent: 0, money: 0, actions: 0, steps: 0, controls: 0,
+      tokens: getState().tokens, spent: 0, money: 0, actions: 0, steps: 0, controls: 0, bumps: 0, wasted: 0, marks: [],
       run: null, act: null, clock: sandbox?.clock || 0, status: 'ready', pending: false,
     };
     mode = 'paused';
+    showCheck(null);
     if (workspace) highlight(null);
     say(message || '按「執行」連續跑，或按「下一步」一次走一個積木。試跑不會扣真的 Token。');
     renderControls();
@@ -105,6 +127,35 @@ export function createEditor({ assets, getState, onSave }) {
     sandbox.status = 'crashed';
     mode = 'paused';
     say('當機：' + CRASH_REASONS[reason], 'error');
+    showCheck({ title: '沒有過關：腳本當機了', items: [CRASH_REASONS[reason]], ok: false });
+  }
+
+  // 跑完後檢查整塊田，列出沒做到的事，並在田上標出有問題的格子。
+  function finishCheck(left) {
+    const sb = sandbox, { problems, marks } = checkGoals(sb.plot, sb.ps, editing.stage);
+    sb.marks = marks;
+    const tips = [];
+    if (sb.bumps) tips.push(`撞到邊界 ${sb.bumps} 次，每次白扣 Token`);
+    if (sb.wasted) tips.push(`白做 ${sb.wasted} 次（腳下那格不需要），可以加「如果」判斷`);
+    const summary = `${left ? '離開這塊田' : '腳本跑完了'}：${sb.actions} 個動作，花 ${sb.spent} Token，賺 ${sb.money} 金錢。`;
+    if (problems.length) {
+      say(summary, 'warn');
+      showCheck({ title: '還沒過關', items: problems, tips, ok: false });
+    } else {
+      say(summary, 'done');
+      showCheck({ title: '過關！這塊田的事都做完了', items: [], tips, ok: true });
+    }
+  }
+
+  function showCheck(result) {
+    const el = $('#runner-check');
+    el.hidden = !result;
+    if (!result) return;
+    el.className = 'runner-check ' + (result.ok ? 'ok' : 'bad');
+    const list = (items, cls) => items.length ? `<ul class="${cls}">${items.map(t => `<li>${t}</li>`).join('')}</ul>` : '';
+    el.innerHTML = `<p class="check-title">${result.ok ? '✔' : '✘'} ${result.title}</p>`
+      + list(result.items, 'check-problems')
+      + (result.tips?.length ? `<p class="check-tip-title">可以更好</p>${list(result.tips, 'check-tips')}` : '');
   }
 
   // 執行一個積木，並排好對應的動畫。
@@ -124,6 +175,8 @@ export function createEditor({ assets, getState, onSave }) {
         sb.tokens -= cost; sb.spent += cost; sb.actions++; sb.controls = 0;
         const act = planAction(sb.ps, sb.robot, e.op);
         sb.act = { ...act, start, end: start + act.ms, cost };
+        if (act.result === 'bump') sb.bumps++;
+        if (act.result === 'noop') sb.wasted++;
         const note = act.result === 'bump' ? '：前面不是田，撞到了' : act.result === 'noop' ? '：這格不需要，白做了' : '';
         say(`第 ${sb.steps} 步｜${ACTION_NAMES[e.op]}${cost ? `（−${cost} Token）` : ''}${note}`, act.result === 'ok' ? '' : 'warn');
         if (cost) view.floatAt(sb.robot.x, sb.robot.y, `−${cost}`, '#35665b');
@@ -151,8 +204,8 @@ export function createEditor({ assets, getState, onSave }) {
       case 'done':
         sb.status = 'done';
         mode = 'paused';
-        say(`${e.left ? '離開這塊田' : '腳本跑完了'}：共 ${sb.actions} 個動作，花 ${sb.spent} Token，賺 ${sb.money} 金錢。`, 'done');
         if (!e.left) highlight(null);
+        finishCheck(e.left);
         return;
       case 'error':
         return crash(e.error);
@@ -180,7 +233,7 @@ export function createEditor({ assets, getState, onSave }) {
     }
     if (sb.act && sb.clock >= sb.act.end) finishAct();
     if (!sb.act && sb.status === 'ready' && (mode === 'running' || sb.pending)) { sb.pending = false; advance(); }
-    view.draw({ ps: sb.ps, robot: sb.robot, act: sb.act, time: sb.clock });
+    view.draw({ ps: sb.ps, robot: sb.robot, act: sb.act, time: sb.clock, marks: sb.marks });
     renderStats();
     raf = requestAnimationFrame(tick);
   }

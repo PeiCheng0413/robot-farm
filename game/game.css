@@ -96,6 +96,15 @@ body.editing { overflow: hidden; }
 .runner-status.warn { border-color: var(--brass); background: #f8ecd0; }
 .runner-status.error { border-color: #b4483a; background: #f6d2c6; color: #7d2a1a; }
 .runner-status.done { border-color: var(--panel); background: #dcefe6; }
+.runner-check { padding: 10px 14px; border-radius: 8px; border: 3px solid; }
+.runner-check[hidden] { display: none; }
+.runner-check.ok { border-color: #3c8a4f; background: #e3f4e5; color: #1f5a2c; }
+.runner-check.bad { border-color: #b4483a; background: #fbe9e4; color: #6e2416; }
+.runner-check ul { margin: 4px 0 0; padding-left: 1.3em; }
+.runner-check li { margin: 2px 0; font-weight: 700; }
+.check-title { margin: 0; font-size: 1.15rem; font-weight: 800; }
+.check-tip-title { margin: 8px 0 0; font-weight: 700; color: var(--muted); }
+.runner-check .check-tips li { font-weight: 400; color: var(--text); }
 .runner-controls { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; }
 .runner-controls button { min-height: 52px; font-size: 1.1rem; }
 .runner-options { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px 12px; }
