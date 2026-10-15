@@ -6,7 +6,7 @@
   --stone: #d9cba3; --stone-joint: #c4b386; --console-h: 84px;
 }
 html, body { height: 100%; }
-body.play { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 100dvh; background: var(--stone); overflow: hidden; }
+body.play { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); min-height: 100dvh; background: var(--stone); overflow: hidden; }
 
 /* ---------- 環控面板 ---------- */
 .console {
@@ -22,7 +22,7 @@ body.play { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 
 .console::before { left: 8px; }
 .console::after { right: 8px; }
 .console-brand { margin: 0 8px 0 10px; font-size: 1.55rem; font-weight: 900; letter-spacing: .12em; color: var(--ink); }
-.gauges { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.gauges { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; min-width: 0; }
 .gauge { display: flex; align-items: center; gap: 8px; }
 .gauge-label { font-weight: 800; font-size: 1rem; }
 .lcd {
@@ -50,7 +50,7 @@ body.play { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 
 .exchange-menu button { border-radius: 0; text-align: left; }
 
 /* ---------- 溫室 ---------- */
-.greenhouse { position: relative; display: grid; grid-template-rows: clamp(48px, 10vh, 96px) minmax(0, 1fr); min-height: 0; }
+.greenhouse { position: relative; min-width: 0; display: grid; grid-template-rows: clamp(48px, 10vh, 96px) minmax(0, 1fr); min-height: 0; }
 /* 上方玻璃窗：深青綠窗框格出一片片玻璃，每片左上角一道硬邊反光 */
 .glass {
   background-color: var(--glass);
@@ -64,12 +64,12 @@ body.play { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 
 }
 /* 石板地：一格格接縫 */
 .floor {
-  position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; padding: 18px;
+  position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; min-width: 0; overflow: hidden; padding: 18px;
   background-color: var(--stone);
   background-image: linear-gradient(90deg, var(--stone-joint) 0 3px, transparent 3px), linear-gradient(var(--stone-joint) 0 3px, transparent 3px);
   background-size: 64px 64px;
 }
-#farm { display: block; image-rendering: pixelated; cursor: pointer; }
+#farm { display: block; flex: none; width: 0; height: 0; image-rendering: pixelated; cursor: pointer; }
 .farm-hint {
   position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); margin: 0; padding: 8px 16px;
   background: rgba(38, 63, 60, .88); color: var(--paper); font-weight: 700; white-space: nowrap;
@@ -139,8 +139,12 @@ body.play { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 
   .console::before, .console::after { display: none; }
   .console-brand { font-size: 1.25rem; margin: 0; }
   .lcd { font-size: 1.45rem; min-width: 5ch; }
+  .console-brand { width: 100%; }
   .tools { margin-left: 0; width: 100%; }
-  .tools .console-button { flex: 1 1 0; padding: 4px 6px; font-size: .9rem; }
+  .tools .console-button { flex: 1 1 0; min-width: 0; min-height: 40px; padding: 2px 4px; font-size: .85rem; }
+  .gauge-label { font-size: .9rem; }
+  .exchange { width: 100%; }
+  .exchange .console-button { width: 100%; min-height: 40px; }
   .floor { padding: 10px; }
   .farm-hint { white-space: normal; width: calc(100% - 32px); text-align: center; }
   .plot-card { top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 68dvh; border-width: 4px 0 0; transform: translateY(105%); }
