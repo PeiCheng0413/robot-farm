@@ -10,7 +10,8 @@ export const TOKENS_PER_MONEY = 2;
 export const EXCHANGE_OPTIONS = [10, 50, 200];
 
 // 動作積木每執行一次扣的 Token。控制積木（重複、如果、條件）不扣。
-export const ACTION_COST = { move: 1, turnLeft: 1, turnRight: 1, sow: 2, water: 1, harvest: 1 };
+// 轉彎不扣（2026-10-15）：難走的形狀不該因為多轉幾次彎就吃虧，形狀難度改由積木數體現。
+export const ACTION_COST = { move: 1, turnLeft: 0, turnRight: 0, sow: 2, water: 1, harvest: 1 };
 
 // 每個動作花多久。move 對齊 manifest.movement.stepDurationMs；
 // sow／water／harvest 對齊 manifest 動畫片段四格各 180ms。

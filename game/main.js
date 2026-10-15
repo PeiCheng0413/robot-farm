@@ -178,8 +178,9 @@ function buildControls() {
     speed = +b.dataset.speed;
     $('#speed').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.speed === speed)));
   };
-  $('#costs').textContent = '動作 Token：' + Object.entries({ 前進: 'move', 轉彎: 'turnLeft', 播種: 'sow', 澆水: 'water', 採收: 'harvest' })
-    .map(([name, key]) => `${name} ${ACTION_COST[key]}`).join('、') + '。重複、如果、感測不扣 Token。';
+  const costs = Object.entries({ 前進: 'move', 轉彎: 'turnLeft', 播種: 'sow', 澆水: 'water', 採收: 'harvest' });
+  $('#costs').textContent = '動作 Token：' + costs.filter(([, key]) => ACTION_COST[key]).map(([name, key]) => `${name} ${ACTION_COST[key]}`).join('、')
+    + '。' + costs.filter(([, key]) => !ACTION_COST[key]).map(([name]) => name).concat(['重複', '如果', '感測']).join('、') + '不扣 Token。';
   $('#new-game').onclick = () => {
     if (!confirm('確定要清除進度、重新開始嗎？這個動作無法復原。')) return;
     state = newGame(); save(); panelDirty = true; $('#log').innerHTML = '';

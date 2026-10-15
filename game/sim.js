@@ -123,22 +123,23 @@ function startAct(state, robot, act) {
 
 // ---------- 排程 ----------
 
-// 系統自動選腳本時，各份腳本在什麼情況下會被派出去。
+// 系統自動選腳本時，各份腳本在什麼情況下會被派出去。空地乾掉不用澆，只看還在長的作物。
 const NEEDS = {
   harvest: c => c.crop && c.growth >= 1,
   sow: c => !c.crop,
-  water: c => c.moisture === 0,
+  water: c => c.crop && c.growth < 1 && c.moisture === 0,
 };
 
 function chooseProgram(plot, ps) {
   const ready = stage => programBody(ps.programs[stage]).length ? { program: ps.programs[stage], stage } : null;
   if (!plot.rules.autoScript) return ready('main');
-  // 優先順序：有成熟就採收，否則有空地就播種，否則有乾裂就澆水，都沒有就跳過。
+  // 優先順序：採收 > 播種 > 澆水。但上一輪跑過的腳本這次往後排，
+  // 避免一直有空地時播種腳本霸佔，澆水、採收永遠輪不到（例如學生故意留一格不種）。
   const cells = Object.values(ps.cells);
-  for (const stage of ['harvest', 'sow', 'water']) {
-    if (stage in ps.programs && cells.some(NEEDS[stage])) { const choice = ready(stage); if (choice) return choice; }
-  }
-  return null;
+  const due = ['harvest', 'sow', 'water'].filter(stage => stage in ps.programs && cells.some(NEEDS[stage]) && ready(stage));
+  if (!due.length) return null;
+  const stage = due.length > 1 && due[0] === ps.lastStage ? due[1] : due[0];
+  return ready(stage);
 }
 
 function pickNext(state, robot) {
@@ -150,6 +151,7 @@ function pickNext(state, robot) {
     const choice = chooseProgram(plot, ps);
     if (!choice) continue;
     robot.lastPlot = index;
+    ps.lastStage = choice.stage;
     const ms = robot.plot === plot.id ? TRAVEL_MS / 3 : TRAVEL_MS;
     startAct(state, robot, { kind: 'travel', ms, fromPlot: robot.plot, from: { x: robot.x, y: robot.y, heading: robot.heading }, toPlot: plot.id, ...choice });
     return;
