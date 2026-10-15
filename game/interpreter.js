@@ -3,7 +3,8 @@
 // 指令：{op:'move'|'turnLeft'|'turnRight'|'sow'|'water'|'harvest'|'leave'}
 //       {op:'repeat', times, body}  {op:'while', cond, body}  {op:'if', cond, then, else}
 // 條件：{sense:'cell', what:'mature'|'empty'|'dry'}  {sense:'front'}
-//       {sense:'plot', what:'mature'|'empty'|'dry'}  {sense:'tokenLess', value}  {not:條件}
+//       {sense:'plot', what:'mature'|'empty'|'dry'}  {sense:'tokenLess', value}
+//       {not:條件}  {all:[條件, 條件]}（且）  {any:[條件, 條件]}（或）
 //
 // nextAction 一路執行控制積木，直到遇到下一個動作積木才回傳，所以控制積木不花時間也不扣 Token。
 
@@ -50,8 +51,10 @@ export function nextAction(run, sense) {
   return { done: true };
 }
 
-// 包一層，讓 sense 支援「不是」。
+// 包一層，讓 sense 支援「不是」「且」「或」。
 export function evaluate(cond, senseLeaf) {
   if (cond.not) return !evaluate(cond.not, senseLeaf);
+  if (cond.all) return cond.all.every(c => evaluate(c, senseLeaf));
+  if (cond.any) return cond.any.some(c => evaluate(c, senseLeaf));
   return senseLeaf(cond);
 }

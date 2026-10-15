@@ -50,6 +50,8 @@ const BLOCKS = [
   condition('rf_plot', '這塊田 %1', [{ type: 'field_dropdown', name: 'WHAT', options: PLOT_WHAT }], '檢查整塊田只要有一格符合'),
   condition('rf_token_less', 'Token 少於 %1', [{ type: 'field_number', name: 'VALUE', value: 20, min: 0, max: 99999, precision: 1 }], '全農場剩餘 Token 是否少於這個數字'),
   condition('rf_not', '不是 %1', [{ type: 'input_value', name: 'COND', check: 'Boolean' }], '條件反過來'),
+  { ...condition('rf_and', '%1 且 %2', [{ type: 'input_value', name: 'A', check: 'Boolean' }, { type: 'input_value', name: 'B', check: 'Boolean' }], '兩個條件都成立才算成立'), inputsInline: true },
+  { ...condition('rf_or', '%1 或 %2', [{ type: 'input_value', name: 'A', check: 'Boolean' }, { type: 'input_value', name: 'B', check: 'Boolean' }], '任一個條件成立就算成立'), inputsInline: true },
 ];
 
 export function defineBlocks() {
@@ -63,7 +65,7 @@ export const TOOLBOX = {
     { kind: 'category', name: '移動', colour: COLOURS.move, contents: blocks(['rf_move', 'rf_turn_left', 'rf_turn_right']) },
     { kind: 'category', name: '農務', colour: COLOURS.farm, contents: blocks(['rf_sow', 'rf_water', 'rf_harvest']) },
     { kind: 'category', name: '流程', colour: COLOURS.flow, contents: blocks(['rf_repeat', 'rf_while', 'rf_if', 'rf_if_else', 'rf_leave']) },
-    { kind: 'category', name: '感測', colour: COLOURS.sense, contents: blocks(['rf_cell', 'rf_front', 'rf_plot', 'rf_token_less', 'rf_not']) },
+    { kind: 'category', name: '感測', colour: COLOURS.sense, contents: blocks(['rf_cell', 'rf_front', 'rf_plot', 'rf_token_less', 'rf_not', 'rf_and', 'rf_or']) },
   ],
 };
 
@@ -136,11 +138,13 @@ function compileStatement(b) {
   }
 }
 
+const SLOT_NAMES = { rf_not: '不是', rf_while: '當…就重複', rf_and: '且', rf_or: '或' };
+
 function compileCondition(parent, input) {
   const b = parent.getInputTargetBlock(input);
   if (!b) {
     parent.select?.();
-    throw new CompileError('有「' + (parent.type === 'rf_not' ? '不是' : parent.type === 'rf_while' ? '當…就重複' : '如果') + '」積木還沒放條件');
+    throw new CompileError('有「' + (SLOT_NAMES[parent.type] || '如果') + '」積木還沒放條件');
   }
   switch (b.type) {
     case 'rf_cell': return { sense: 'cell', what: b.getFieldValue('WHAT') };
@@ -148,6 +152,8 @@ function compileCondition(parent, input) {
     case 'rf_front': return { sense: 'front' };
     case 'rf_token_less': return { sense: 'tokenLess', value: Number(b.getFieldValue('VALUE')) };
     case 'rf_not': return { not: compileCondition(b, 'COND') };
+    case 'rf_and': return { all: [compileCondition(b, 'A'), compileCondition(b, 'B')] };
+    case 'rf_or': return { any: [compileCondition(b, 'A'), compileCondition(b, 'B')] };
     default: throw new CompileError('不認得的條件：' + b.type);
   }
 }
