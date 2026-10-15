@@ -4,9 +4,9 @@
 
 import {
   START, SAVE_VERSION, TOKENS_PER_MONEY, ACTION_COST, ACTION_MS, TRAVEL_MS, IDLE_MS, ACTION_LIMIT, CALL_DEPTH,
-  CAPACITY, capacityCost, MOISTURE_DECAY_MS, GROWTH_RATE_BY_MOISTURE, CROPS, TUTORIAL_CROPS,
+  CAPACITY, capacityCost, MOISTURE_DECAY_MS, GROWTH_RATE_BY_MOISTURE, CROPS,
 } from './config.js';
-import { PLOTS, plotById, cellKey } from './plots.js';
+import { PLOTS, plotById, cellKey, stagesOf } from './plots.js';
 import { createRun, nextAction, evaluate, programBody } from './interpreter.js';
 
 // 朝向順序與左右轉方向和 manifest.movement 一致：右轉 +1、左轉 -1。
@@ -35,9 +35,10 @@ function newPlotState(plot) {
   for (const [x, y] of plot.cells) cells[cellKey(x, y)] = { crop: null, growth: 0, moisture: 1, dryMs: 0 };
   return {
     crop: plot.defaultCrop, crashed: null, cells, capacityLevel: 0, lastRun: null,
-    // 正式田一份腳本；新手田分播種、採收兩份。program 是編譯後的指令樹，workspace 是 Blockly 存檔。
-    program: [], workspace: null,
-    programs: { sow: [], harvest: [] }, workspaces: { sow: null, harvest: null },
+    // 自動選腳本的類型分播種／採收（／澆水）多份，否則只有 main 一份（plots.js stagesOf）。
+    // programs 是編譯後的指令樹，workspaces 是 Blockly 存檔。
+    programs: Object.fromEntries(stagesOf(plot).map(s => [s, []])),
+    workspaces: Object.fromEntries(stagesOf(plot).map(s => [s, null])),
   };
 }
 
@@ -82,8 +83,7 @@ export function update(state, ms) {
 function grow(state, ms) {
   for (const plot of PLOTS) {
     for (const cell of Object.values(state.plots[plot.id].cells)) {
-      // 新手田含水固定一般，不會乾。
-      if (!plot.tutorial) {
+      if (!plot.rules.noDrying) {
         cell.dryMs += ms;
         while (cell.dryMs >= MOISTURE_DECAY_MS) {
           cell.dryMs -= MOISTURE_DECAY_MS;
@@ -91,7 +91,7 @@ function grow(state, ms) {
         }
       }
       if (cell.crop && cell.growth < 1) {
-        const rate = plot.tutorial ? 1 : GROWTH_RATE_BY_MOISTURE[cell.moisture];
+        const rate = plot.rules.noDrying ? 1 : GROWTH_RATE_BY_MOISTURE[cell.moisture];
         cell.growth = Math.min(1, cell.growth + ms * rate / CROPS[cell.crop].growMs);
       }
     }
@@ -123,12 +123,21 @@ function startAct(state, robot, act) {
 
 // ---------- 排程 ----------
 
+// 系統自動選腳本時，各份腳本在什麼情況下會被派出去。
+const NEEDS = {
+  harvest: c => c.crop && c.growth >= 1,
+  sow: c => !c.crop,
+  water: c => c.moisture === 0,
+};
+
 function chooseProgram(plot, ps) {
-  if (!plot.tutorial) return programBody(ps.program).length ? { program: ps.program, stage: 'main' } : null;
-  // 新手田：系統依作物狀態決定跑哪一份。有成熟就採收，否則有空地就播種，都沒有就跳過。
+  const ready = stage => programBody(ps.programs[stage]).length ? { program: ps.programs[stage], stage } : null;
+  if (!plot.rules.autoScript) return ready('main');
+  // 優先順序：有成熟就採收，否則有空地就播種，否則有乾裂就澆水，都沒有就跳過。
   const cells = Object.values(ps.cells);
-  if (cells.some(c => c.crop && c.growth >= 1) && programBody(ps.programs.harvest).length) return { program: ps.programs.harvest, stage: 'harvest' };
-  if (cells.some(c => !c.crop) && programBody(ps.programs.sow).length) return { program: ps.programs.sow, stage: 'sow' };
+  for (const stage of ['harvest', 'sow', 'water']) {
+    if (stage in ps.programs && cells.some(NEEDS[stage])) { const choice = ready(stage); if (choice) return choice; }
+  }
   return null;
 }
 
@@ -156,7 +165,7 @@ function stepRun(state, robot) {
   if (robot.run.actions >= ACTION_LIMIT) return crash(state, robot, 'tooLong');
 
   const action = result.action;
-  const cost = plot.tutorial ? 0 : ACTION_COST[action];
+  const cost = plot.rules.tokenFree ? 0 : ACTION_COST[action];
   if (state.tokens < cost) return crash(state, robot, 'token');
   state.tokens -= cost;
   robot.run.tokens += cost;
@@ -199,8 +208,7 @@ function complete(state, robot, act) {
       return;
     case 'sow':
       if (act.result === 'ok') {
-        const crop = plotById.get(robot.plot).tutorial && !TUTORIAL_CROPS.includes(ps.crop) ? TUTORIAL_CROPS[0] : ps.crop;
-        Object.assign(ps.cells[act.cell], { crop, growth: 0 });
+        Object.assign(ps.cells[act.cell], { crop: ps.crop, growth: 0 });
       }
       return;
     case 'water': {
@@ -257,7 +265,7 @@ function sense(state, robot, plot, ps, leaf) {
 
 // ---------- 玩家操作 ----------
 
-export const capacityOf = ps => CAPACITY.start + CAPACITY.step * ps.capacityLevel;
+export const capacityOf = (plotId, ps) => plotById.get(plotId).rules.capacity + CAPACITY.step * ps.capacityLevel;
 export const nextCapacityCost = ps => capacityCost(ps.capacityLevel);
 
 export function resetPlot(state, plotId) {
@@ -286,15 +294,16 @@ export function upgradeCapacity(state, plotId) {
 }
 
 export function setCrop(state, plotId, crop) {
-  const plot = plotById.get(plotId);
-  if (plot.tutorial && !TUTORIAL_CROPS.includes(crop)) return false;
+  if (!canGrow(plotById.get(plotId), crop)) return false;
   state.plots[plotId].crop = crop;
   return true;
 }
 
+export const canGrow = (plot, crop) => CROPS[crop].tier <= plot.rules.maxTier;
+
 // 新腳本從下一次執行開始生效；正在跑的那一輪不受影響。
 export function setProgram(state, plotId, stage, program, workspace) {
   const ps = state.plots[plotId];
-  if (stage === 'main') { ps.program = program; ps.workspace = workspace; }
-  else { ps.programs[stage] = program; ps.workspaces[stage] = workspace; }
+  ps.programs[stage] = program;
+  ps.workspaces[stage] = workspace;
 }

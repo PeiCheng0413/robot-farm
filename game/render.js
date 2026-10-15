@@ -6,7 +6,7 @@ import { PLOTS, BOARD, plotById, cellKey } from './plots.js';
 export const CELL = 96;
 const ROBOT_SIZE = CELL * 1.4;     // 機器人 416 畫布對應到畫面上的邊長
 const ROBOT_LIFT = CELL * 0.32;    // 機身中心比格子中心高多少
-const C = { floor: '#e7dcb8', slot: '#ddd0a6', outline: '#263f3c', tutorial: '#d7a44b', selected: '#8fc7a3', crash: '#c65f48', label: '#fffaf0' };
+const C = { floor: '#e7dcb8', slot: '#ddd0a6', outline: '#263f3c', selected: '#8fc7a3', crash: '#c65f48', label: '#fffaf0' };
 
 export async function createRenderer(canvas) {
   const response = await fetch('assets/manifest.json', { cache: 'no-cache' });
@@ -199,7 +199,7 @@ export async function createRenderer(canvas) {
       const ps = state.plots[plot.id];
       for (const [x, y] of plot.cells) drawSoil(...cellOrigin(plot, x, y), ps.cells[cellKey(x, y)].moisture);
       outlinePlot(plot, C.outline, 6);
-      if (plot.tutorial) outlinePlot(plot, C.tutorial, 3);
+      outlinePlot(plot, plot.rules.colour, 3);   // 內框顏色代表田的類型
       if (selected === plot.id) outlinePlot(plot, C.selected, 5);
     }
     for (const plot of PLOTS) {

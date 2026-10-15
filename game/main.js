@@ -1,17 +1,17 @@
 // 遊戲入口：串起模擬（sim.js）、畫面（render.js）、積木編輯器（blocks.js）與介面。
 
-import { SAVE_KEY, EXCHANGE_OPTIONS, TOKENS_PER_MONEY, CROPS, TUTORIAL_CROPS, ACTION_COST } from './config.js';
-import { PLOTS, plotById } from './plots.js';
+import { SAVE_KEY, EXCHANGE_OPTIONS, TOKENS_PER_MONEY, CROPS, ACTION_COST } from './config.js';
+import { PLOTS, plotById, stagesOf } from './plots.js';
 import {
   createState, serialize, restore, update, drainEvents, resetPlot, exchange, upgradeCapacity, setCrop, setProgram,
-  capacityOf, nextCapacityCost, CRASH_REASONS,
+  capacityOf, nextCapacityCost, canGrow, CRASH_REASONS,
 } from './sim.js';
 import { createRenderer } from './render.js';
 import { defineBlocks, registerFunctionCategory, TOOLBOX, createTheme, DEFAULT_WORKSPACES, compile, countBlocks, CompileError } from './blocks.js';
 
 const Blockly = window.Blockly;
 const $ = s => document.querySelector(s);
-const STAGE_LABEL = { main: '腳本', sow: '播種腳本', harvest: '採收腳本' };
+const STAGE_LABEL = { main: '腳本', sow: '播種腳本', harvest: '採收腳本', water: '澆水腳本' };
 const CROP_NAMES = {};
 
 let state, renderer, selected = PLOTS[0].id, speed = 1;
@@ -26,8 +26,11 @@ function compileJson(json) {
 function newGame() {
   const s = createState();
   for (const plot of PLOTS) {
-    const stages = plot.tutorial ? ['sow', 'harvest'] : ['main'];
-    for (const stage of stages) setProgram(s, plot.id, stage, compileJson(DEFAULT_WORKSPACES[stage]), DEFAULT_WORKSPACES[stage]);
+    // 只有第一塊直線新手田附範例腳本，讓經濟一開始就轉得起來；其他田從空白開始練。
+    for (const stage of stagesOf(plot)) {
+      const json = plot.id === PLOTS[0].id && DEFAULT_WORKSPACES[stage] || DEFAULT_WORKSPACES.main;
+      setProgram(s, plot.id, stage, compileJson(json), json);
+    }
   }
   return s;
 }
@@ -112,17 +115,15 @@ function robotStatus(plotId) {
 
 function renderPanel() {
   const plot = plotById.get(selected), ps = state.plots[selected];
-  const stages = plot.tutorial ? ['sow', 'harvest'] : ['main'];
-  const crops = Object.keys(CROPS).filter(id => !plot.tutorial || TUTORIAL_CROPS.includes(id));
+  const stages = stagesOf(plot), cap = capacityOf(selected, ps);
+  const crops = Object.keys(CROPS).filter(id => canGrow(plot, id));
   const cells = Object.values(ps.cells);
   const mature = cells.filter(c => c.crop && c.growth >= 1).length, growing = cells.filter(c => c.crop && c.growth < 1).length;
   const lastRun = ps.lastRun;
   const html = `
-    <p class="eyebrow">${plot.tutorial ? '新手田・教學關' : '正式田'}</p>
+    <p class="eyebrow">${plot.rules.name}田・可種到第 ${plot.rules.maxTier} 級作物</p>
     <h2>${plot.name}</h2>
-    <p class="plot-rule">${plot.tutorial
-      ? '不扣 Token，只能種收益低的作物。系統依作物狀態自動選擇跑「播種腳本」或「採收腳本」。'
-      : '每執行一個動作積木就扣 Token。Token 不夠時這塊田會當機，要手動重置。'}</p>
+    <p class="plot-rule">${plot.rules.rule}${plot.rules.tokenFree ? '' : ' Token 不夠時這塊田會當機，要手動重置。'}</p>
     <dl class="facts">
       <dt>狀態</dt><dd class="${ps.crashed ? 'bad' : ''}">${robotStatus(selected)}</dd>
       ${ps.crashed ? `<dt>當機原因</dt><dd class="bad">${CRASH_REASONS[ps.crashed.reason]}</dd>` : ''}
@@ -131,9 +132,9 @@ function renderPanel() {
     </dl>
     ${ps.crashed ? '<button id="reset" class="primary danger">重置這塊田（免費）</button>' : ''}
     <label for="crop">種植作物</label>
-    <select id="crop">${crops.map(id => `<option value="${id}" ${ps.crop === id ? 'selected' : ''}>${CROP_NAMES[id] || id}・${CROPS[id].price} 金錢・${Math.round(CROPS[id].growMs / 1000)} 秒</option>`).join('')}</select>
+    <select id="crop">${crops.map(id => `<option value="${id}" ${ps.crop === id ? 'selected' : ''}>${CROPS[id].tier} 級 ${CROP_NAMES[id] || id}・${CROPS[id].price} 金錢・${Math.round(CROPS[id].growMs / 1000)} 秒</option>`).join('')}</select>
     <div class="scripts">
-      ${stages.map(stage => `<button class="primary" data-edit="${stage}">編輯${STAGE_LABEL[stage]}（${blockCountOf(stage)} / ${capacityOf(ps)} 積木）</button>`).join('')}
+      ${stages.map(stage => `<button class="primary" data-edit="${stage}">編輯${STAGE_LABEL[stage]}（${blockCountOf(stage)} / ${cap} 積木）</button>`).join('')}
     </div>
     <button id="upgrade" ${state.money < nextCapacityCost(ps) ? 'disabled' : ''}>擴充積木上限 +4（${nextCapacityCost(ps)} 金錢）</button>`;
   const panel = $('#panel');
@@ -146,7 +147,7 @@ function renderPanel() {
 
 function blockCountOf(stage) {
   const ps = state.plots[selected];
-  const json = stage === 'main' ? ps.workspace : ps.workspaces[stage];
+  const json = ps.workspaces[stage];
   const count = blocks => blocks.reduce((n, b) => n + 1 + Object.values(b.inputs || {}).reduce((m, i) => m + (i.block ? count([i.block]) : 0), 0) + (b.next ? count([b.next.block]) : 0), 0);
   // 與 blocks.js 的 countBlocks 相同：開始下面的積木＋每個函式定義。
   const tops = json?.blocks?.blocks || [];
@@ -210,7 +211,7 @@ function ensureWorkspace() {
 }
 
 function updateCount() {
-  const cap = capacityOf(state.plots[editing.plot]), n = countBlocks(workspace);
+  const cap = capacityOf(editing.plot, state.plots[editing.plot]), n = countBlocks(workspace);
   const el = $('#block-count');
   el.textContent = `已用 ${n} / ${cap} 積木`;
   el.classList.toggle('over', n > cap);
@@ -222,7 +223,7 @@ function openEditor(plotId, stage) {
   ensureWorkspace();
   editing = null;
   workspace.clear();
-  Blockly.serialization.workspaces.load((stage === 'main' ? ps.workspace : ps.workspaces[stage]) || DEFAULT_WORKSPACES[stage], workspace);
+  Blockly.serialization.workspaces.load(ps.workspaces[stage] || DEFAULT_WORKSPACES.main, workspace);
   editing = { plot: plotId, stage };
   dirty = false;
   $('#editor-title').textContent = `${plot.name}・${STAGE_LABEL[stage]}`;
@@ -241,7 +242,7 @@ function closeEditor(force) {
 }
 
 function saveEditor() {
-  const { plot, stage } = editing, cap = capacityOf(state.plots[plot]), n = countBlocks(workspace);
+  const { plot, stage } = editing, cap = capacityOf(plot, state.plots[plot]), n = countBlocks(workspace);
   const fail = text => { $('#editor-msg').textContent = text; $('#editor-msg').className = 'error'; };
   if (n > cap) return fail(`用了 ${n} 個積木，超過這塊田的上限 ${cap}。試著用「重複」縮短，或擴充上限。`);
   let program;
