@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { git pull --ff-only 2>&1 && echo '[hook] git pull 完成，本機為最新版本。'; } || echo '[hook] git pull 失敗：先停下來回報使用者，不要自行 merge、rebase 或 stash。'",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
