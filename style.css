@@ -64,3 +64,6 @@ button:disabled,select:disabled,input:disabled{opacity:.45;cursor:not-allowed}
 
 /* v0.10 掃描效果由 manifest.effectClips 決定位置、尺寸及圖層。 */
 .field-effect{position:absolute;pointer-events:none;image-rendering:pixelated}.field-effect[hidden]{display:none}#actions{grid-template-columns:repeat(3,minmax(0,1fr))}.scan-library{margin:48px 0}.scan-library>p{line-height:1.8;color:var(--teal);font-size:14px}#scan-wave-samples{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}#scan-wave-samples figure{margin:0;text-align:center;border:1px solid var(--line);background:#35665b;border-radius:12px;padding:12px;color:var(--cream);font-size:12px}.scan-wave-sample{display:block;width:100%;height:auto;image-rendering:pixelated}@media(max-width:600px){#scan-wave-samples{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* v0.11：八格頭頂雷達動作以兩列呈現。 */
+.catalog-row.expanded-catalog{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.catalog-row.expanded-catalog>strong{grid-column:1/-1}.expanded-catalog .sample{min-width:0}

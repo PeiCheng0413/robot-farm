@@ -1,5 +1,5 @@
 {
-  "version": "0.10",
+  "version": "0.11",
   "status": "art-prototype",
   "width": 1254,
   "height": 1254,
@@ -268,6 +268,26 @@
       "columns": 2,
       "rows": 2,
       "sampling": "Use explicit per-frame sourceRect; artwork does not align to uniform cells."
+    },
+    {
+      "file": "robot-area-scan-v02.png",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "columnBoundaries": [
+        0,
+        443,
+        887,
+        1330,
+        1774
+      ],
+      "rowBoundaries": [
+        0,
+        490,
+        887
+      ],
+      "sampling": "Use rendering.robotPoses per-frame sourceRect; row boundary is calibrated, not half the image height."
     }
   ],
   "produce": [
@@ -1172,33 +1192,45 @@
     },
     "scan": {
       "poseRows": [
-        13
+        14
       ],
       "frameOrder": [
         0,
         1,
         2,
-        2,
-        2,
-        2,
         3,
-        0
+        4,
+        5,
+        4,
+        5,
+        6,
+        2,
+        1,
+        7
       ],
       "frameDurationMs": 160,
       "frameDurationsMs": [
+        120,
         140,
+        100,
         160,
+        180,
+        180,
+        180,
+        180,
         140,
-        180,
-        180,
-        180,
-        160,
-        160
+        100,
+        140,
+        120
       ],
       "loop": false,
       "onComplete": "idle",
       "objects": {
         "cargoVisible": [
+          false,
+          false,
+          false,
+          false,
           false,
           false,
           false,
@@ -1216,6 +1248,10 @@
           true,
           true,
           true,
+          true,
+          true,
+          true,
+          true,
           true
         ],
         "cargoPose": [
@@ -1226,13 +1262,59 @@
           "hidden",
           "hidden",
           "hidden",
+          "hidden",
+          "hidden",
+          "hidden",
+          "hidden",
           "hidden"
+        ],
+        "antennaVisible": [
+          true,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          true
+        ],
+        "radarVisible": [
+          false,
+          false,
+          false,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          false,
+          false,
+          false
+        ],
+        "headMechanism": [
+          "天線升起",
+          "天線下降",
+          "頂蓋開啟",
+          "雷達升起",
+          "雷達轉向",
+          "雷達回掃",
+          "雷達轉向",
+          "雷達回掃",
+          "雷達收回",
+          "頂蓋開啟",
+          "天線下降",
+          "天線復位"
         ]
       },
       "effects": [
         "areaScanWave"
       ],
-      "description": "Whole-field visual scan only; no sensing logic or state mutation. Face forward as for other work actions; scanning is independent of heading."
+      "description": "Whole-field visual scan: retract antenna, deploy and turn roof radar, retract dish, restore antenna. Empty hands remain lowered. Forward work pose independent of heading; no sensing logic or game state mutation."
     }
   },
   "playback": {
@@ -2246,6 +2328,123 @@
             "bobIndex": null
           }
         ]
+      },
+      "14": {
+        "atlas": "robot-area-scan-v02.png",
+        "frames": [
+          {
+            "sourceRect": [
+              59,
+              131,
+              351,
+              350
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              0
+            ],
+            "bobIndex": null,
+            "label": "天線升起"
+          },
+          {
+            "sourceRect": [
+              500,
+              156,
+              350,
+              325
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              1
+            ],
+            "bobIndex": null,
+            "label": "天線下降"
+          },
+          {
+            "sourceRect": [
+              940,
+              189,
+              349,
+              292
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              2
+            ],
+            "bobIndex": null,
+            "label": "頂蓋開啟"
+          },
+          {
+            "sourceRect": [
+              1381,
+              117,
+              349,
+              364
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              3
+            ],
+            "bobIndex": null,
+            "label": "雷達升起"
+          },
+          {
+            "sourceRect": [
+              59,
+              507,
+              351,
+              366
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              4
+            ],
+            "bobIndex": null,
+            "label": "雷達轉向"
+          },
+          {
+            "sourceRect": [
+              500,
+              507,
+              349,
+              366
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              5
+            ],
+            "bobIndex": null,
+            "label": "雷達回掃"
+          },
+          {
+            "sourceRect": [
+              940,
+              548,
+              349,
+              325
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              6
+            ],
+            "bobIndex": null,
+            "label": "雷達收回"
+          },
+          {
+            "sourceRect": [
+              1381,
+              523,
+              348,
+              350
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              7
+            ],
+            "bobIndex": null,
+            "label": "天線復位"
+          }
+        ]
       }
     },
     "plantCanvas": [
@@ -3128,20 +3327,28 @@
       "frameIndexByStep": [
         null,
         null,
+        null,
+        null,
         0,
         1,
         2,
         3,
+        null,
+        null,
         null,
         null
       ],
       "opacityByStep": [
         0,
         0,
+        0,
+        0,
         0.8,
         0.72,
         0.6,
         0.35,
+        0,
+        0,
         0,
         0
       ],

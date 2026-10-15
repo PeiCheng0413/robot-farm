@@ -1,6 +1,6 @@
 
 (async function(){
-  const response=await fetch('assets/manifest.json?v=10');
+  const response=await fetch('assets/manifest.json?v=11');
   if(!response.ok)throw new Error('素材數據讀取失敗：'+response.status);
   const manifest=await response.json(),rendering=manifest.rendering,clips=manifest.animationClips;
   const $=s=>document.querySelector(s),alignment=spriteAlignment;
@@ -259,6 +259,7 @@
   catalog.forEach(({label,type,row})=>{
     const r=document.createElement('div');r.className='catalog-row';const title=document.createElement('strong');title.textContent=label;r.append(title);
     const count=type==='robot'?rendering.robotPoses[row].frames.length:row===0?soilLabels.length:cropByValue.get(row).frames.length;
+    if(count>4)r.classList.add('expanded-catalog');
     for(let c=0;c<count;c++){
       const cell=document.createElement('div');cell.className='sample';const s=document.createElement('div');s.className='sprite '+type;position(s,c,row);
       if(type==='robot'&&rendering.robotPoses[row].frames[c].cargoAnchorPath){
@@ -266,7 +267,7 @@
         held.append(itemCanvas(cropById.get(rendering.lab.sampleCarryCrops[c%rendering.lab.sampleCarryCrops.length]).labValue));
         s.append(held);s.sampleCargo=held;drawRobot(s);
       }
-      cell.append(s,document.createTextNode(type==='robot'?'動作 '+(c+1):row===0?soilLabels[c]:stages[c]));r.append(cell);
+      cell.append(s,document.createTextNode(type==='robot'?(rendering.robotPoses[row].frames[c].label||'動作 '+(c+1)):row===0?soilLabels[c]:stages[c]));r.append(cell);
     }
     $('#catalog').append(r);
   });

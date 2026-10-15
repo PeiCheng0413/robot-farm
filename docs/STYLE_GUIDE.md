@@ -182,3 +182,14 @@ manifest.effectClips.areaScanWave 的 frameIndexByStep／opacityByStep 與 scan 
 工作動作保持正面，範圍波紋不依朝向旋轉。既有持物試驗流程維持不變，素材試驗室空手時可展示掃描。這份 scan clip 的物件數據為空手，不可直接覆蓋持物 cargo 的可見性；遊戲要在持物時掃描，可保留 carryIdle 並只採用獨立 effect 的播放數據。
 
 本次僅交付素材、試驗室與共用播放數據；感測積木觸發、判讀這整塊田的狀態、實際遊戲動畫接線由 Claude 負責。game.html、game/、vendor/ 未修改。
+
+
+## v0.11 天線收納與頭頂雷達
+
+依使用者選擇 A，掃描改成頭頂機構，雙手全程空手垂放。新增 robot-area-scan-v02.png（1774 × 887 RGBA，四欄兩列），保留 v01 手持感測器舊圖。八個來源格依序為天線升起、天線下降、頂蓋開啟、雷達升起、雷達轉向、雷達回掃、雷達收回、天線復位；以深青綠碟面、薄荷亮部與黃銅饋源維持原色系。雷達出現時原天線已完全縮入機殼。
+
+manifest.animationClips.scan 沿用名稱與原有欄位結構，poseRows 改採新增 row 14；逐格 alignmentPath 指向新增 spriteAlignment.scanRadar，原 scan 校準與 row 13 保留。外殼大小固定，以機殼中心對位，不按雷達或天線外框縮放。圖集第二列由 y=490 起，禁止直接二等分高度。
+
+scan 的 12 步 frameOrder 為 0/1/2/3/4/5/4/5/6/2/1/7；frameDurationsMs 為 120/140/100/160/180/180/180/180/140/100/140/120，合計 1740 ms，loop=false，完成後 idle。objects 明列每步的天線／雷達可見性與頭頂機構狀態；它們已畫在角色來源格裡，無須再額外疊畫。areaScanWave 沿用獨立 scan-wave-v01.png，frameIndexByStep／opacityByStep 更新為 12 步，只在第 5–8 步（索引 4–7，雷達轉動時）播放原四格波紋；原來源框、尺寸、定位、圖層與裁切規則保留。
+
+素材試驗室照同一份數據播放，八格角色展示以兩列呈現。遊戲觸發與狀態偵測仍由 Claude 負責。內建 image_gen 完整提示詞與來源記錄於 prompts-v11.json。
