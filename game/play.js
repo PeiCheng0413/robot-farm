@@ -252,6 +252,9 @@ async function start() {
     farm.style.height = Math.floor(farm.height * k) + 'px';
   }).observe(floor);
   autosave(() => state);
+  // play.html#plot=T-high 直接打開該塊田的卡片
+  const linked = new URLSearchParams(location.hash.slice(1)).get('plot');
+  if (plotById.has(linked)) select(linked);
   requestAnimationFrame(frame);
 }
 
