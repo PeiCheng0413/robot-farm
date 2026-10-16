@@ -10,7 +10,7 @@ import {
 } from './sim.js';
 import { loadAssets, createBoardRenderer, createPainter, screenAsset, spriteURL } from './render.js';
 import { defineBlocks } from './blocks.js';
-import { createValleyRenderer, drawValleyBackdrop } from './valley.js';
+import { createValleyRenderer, drawValleyBackdrop, landView } from './valley.js';
 import { createEditor, STAGE_LABEL } from './editor.js';
 import { loadGame, saveGame, autosave } from './session.js';
 
@@ -20,6 +20,7 @@ const TIER_TYPE = Object.fromEntries([1, 2, 3, 4].map(t => [t, Object.values(PLO
 
 let state, renderer, painter, editor, selected = null, cropNames = {};
 let arranging = false, drag = null, pendingLand = null;
+let fitFarm = () => {}, landCount = 0;
 
 // ---------- 主迴圈 ----------
 
@@ -29,6 +30,7 @@ function frame(now) {
   last = now;
   update(state, dt);
   handleEvents();
+  if (state.land.length !== landCount) { landCount = state.land.length; fitFarm(); }   // 擴地後鏡頭拉遠
   renderer.draw(state, { selected: arranging ? null : selected, ghost: drag?.moved && drag.overBoard ? drag : null, land: arranging ? landHints() : null });
   setText('#tokens', Math.floor(state.tokens));
   setText('#money', Math.floor(state.money));
@@ -257,7 +259,8 @@ function startDrag(e, plotId, grab, place, el) {
 }
 
 const overTray = e => { const r = $('#tray').getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; };
-const overBoard = e => { const r = $('#farm').getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; };
+// 山谷版的 canvas 會比地板大（鏡頭放大），所以用地板的範圍判斷「在盤面上」
+const overBoard = e => { if (overTray(e)) return false; const r = $('.floor').getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; };
 
 function onPointerMove(e) {
   if (!drag) return;
@@ -490,20 +493,34 @@ async function start() {
   window.addEventListener('resize', fitCard);
   fitCard();
   // 盤面等比縮放到放得進地板（CSS 的 max-height 對 canvas 在這個版面裡不生效）。
+  // 山谷版多一個鏡頭：只把「開放範圍＋一圈草地」放大到填滿地板，擴地後鏡頭自動拉遠。
   const floor = $('.floor'), farm = $('#farm');
-  new ResizeObserver(() => {
+  fitFarm = () => {
     const pad = parseFloat(getComputedStyle(floor).paddingLeft) * 2;
-    const k = Math.min((floor.clientWidth - pad) / farm.width, (floor.clientHeight - pad) / farm.height);
+    const fw = floor.clientWidth - pad, fh = floor.clientHeight - pad;
+    if (renderer.valley) {
+      const v = landView(state, renderer);
+      const k = Math.min(fw / v.width, fh / v.height, 1.6);
+      farm.style.width = farm.width * k + 'px';
+      farm.style.height = farm.height * k + 'px';
+      farm.style.left = floor.clientWidth / 2 - (v.x + v.width / 2) * k + 'px';
+      farm.style.top = floor.clientHeight / 2 - (v.y + v.height / 2) * k + 'px';
+      return;
+    }
+    const k = Math.min(fw / farm.width, fh / farm.height);
     farm.style.width = Math.floor(farm.width * k) + 'px';
     farm.style.height = Math.floor(farm.height * k) + 'px';
-    if (renderer.valley) drawValleyBackdrop($('#valley-bg'), assets, $('.glass').offsetHeight);
     // 地磚大小與位置對齊盤面格子：每塊石板就是一個格位（溫室版）
-    if (!renderer.valley && floor.classList.contains('has-art')) {
+    if (floor.classList.contains('has-art')) {
       const cell = renderer.cell * k, left = (floor.clientWidth - farm.width * k) / 2, top = (floor.clientHeight - farm.height * k) / 2 + renderer.top * k;
       floor.style.backgroundSize = `${cell}px ${cell}px`;
       floor.style.backgroundPosition = `${left}px ${top}px`;
     }
-  }).observe(floor);
+  };
+  new ResizeObserver(() => {
+    if (renderer.valley) drawValleyBackdrop($('#valley-bg'), assets);
+    fitFarm();
+  }).observe($('.greenhouse'));
   autosave(() => state);
   // play.html#plot=T-high 直接打開該塊田的卡片
   const linked = new URLSearchParams(location.hash.slice(1)).get('plot');

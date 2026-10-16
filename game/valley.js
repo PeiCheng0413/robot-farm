@@ -210,47 +210,52 @@ export function createValleyRenderer(canvas, assets) {
     return plot ? plot.id : null;
   }
 
-  return { draw, floatAt, plotAt, cellAt, manifest, cell: TILE_W, top: TOP, valley: true };
+  return { draw, floatAt, plotAt, cellAt, manifest, cell: TILE_W, tileH: TILE_H, front: FRONT, top: TOP, valley: true };
 }
 
 // ---------- 背景：遠山、林緣、草地、農舍 ----------
-// 依 valleyFarm.environment 分層，等比縮放（不壓扁），只在大小改變時重畫，平常零成本。
-// bandH：上方遠景帶的高度（盤面從這裡以下開始）。
-export function drawValleyBackdrop(canvas, assets, bandH) {
-  const { manifest, images } = assets, v = manifest.valleyFarm;
+// 照 valleyFarm.environment.layers 的比例與前後（rect 是整個場景的 0～1 比例），只在大小改變時重畫，平常零成本。
+export function drawValleyBackdrop(canvas, assets) {
+  const { manifest, images } = assets, v = manifest.valleyFarm, env = v.environment;
   const ready = img => img && img.complete && img.naturalWidth;
   const w = canvas.clientWidth, h = canvas.clientHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
   canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
   const ctx = canvas.getContext('2d');
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.imageSmoothingEnabled = false;
-  ctx.fillStyle = v.environment.skyColor; ctx.fillRect(0, 0, w, h);
-
-  // 草地：底色加重複的草叢
-  const grass = v.assets.grass, grassTop = bandH * .72;
-  ctx.fillStyle = grass.baseColor || v.environment.groundColor; ctx.fillRect(0, grassTop, w, h - grassTop);
-  const gimg = images.get(grass.file);
-  if (ready(gimg)) {
-    const [tw, th] = grass.repeatDisplaySize;
-    for (let y = grassTop; y < h; y += th) for (let x = 0; x < w; x += tw) ctx.drawImage(gimg, ...grass.sourceRect, x, y, tw, th);
+  ctx.fillStyle = env.skyColor; ctx.fillRect(0, 0, w, h);
+  for (const layer of [...env.layers].sort((a, b) => a.z - b.z)) {
+    const asset = v.assets[layer.asset], img = images.get(asset.file);
+    const [rx, ry, rw, rh] = [layer.rect[0] * w, layer.rect[1] * h, layer.rect[2] * w, layer.rect[3] * h];
+    if (layer.repeat) {
+      ctx.fillStyle = asset.baseColor || env.groundColor; ctx.fillRect(rx, ry, rw, rh);
+      if (!ready(img)) continue;
+      const [tw, th] = asset.repeatDisplaySize;
+      for (let y = ry; y < ry + rh; y += th) for (let x = rx; x < rx + rw; x += tw) ctx.drawImage(img, ...asset.sourceRect, x, y, tw, th);
+    } else if (ready(img)) {
+      ctx.drawImage(img, ...asset.sourceRect, rx, ry, rw, rh);
+    }
   }
-  // 遠山：寬度蓋滿，底部對齊遠景帶中段
-  const layer = (asset, bottom, minHeight) => {
-    const img = images.get(asset.file);
-    if (!ready(img)) return;
-    const [, , sw, sh] = asset.sourceRect;
-    const k = Math.max(w / sw, minHeight / sh), dw = sw * k, dh = sh * k;
-    ctx.drawImage(img, ...asset.sourceRect, (w - dw) / 2, bottom - dh, dw, dh);
-  };
-  layer(v.assets.mountains, bandH * .85, bandH * .9);
-  layer(v.assets.forest, bandH * 1.02, bandH * .55);
-  // 農舍：站在左側林緣前
+  // 農舍：站在左側林緣前的草地上
   const house = v.assets.farmhouse, himg = house && images.get(house.file);
   if (ready(himg)) {
-    const [, , sw, sh] = house.sourceRect, dh = Math.min(bandH * .95, 190), k = dh / sh;
-    const groundX = Math.max(24, w * .07) + house.groundAnchor[0] * k, groundY = bandH * 1.05;
+    const [, , sw, sh] = house.sourceRect, dh = Math.min(h * .26, 220), k = dh / sh;
+    const groundX = Math.max(16, w * .04) + house.groundAnchor[0] * k, groundY = h * .43;
     ctx.fillStyle = 'rgba(38, 63, 60, .26)';
-    ctx.beginPath(); ctx.roundRect(groundX - sw * k * .42, groundY - 6, sw * k * .86, 12, 6); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(groundX - sw * k * .42 + 4, groundY - 6, sw * k * .86, 12, 6); ctx.fill();
     ctx.drawImage(himg, ...house.sourceRect, groundX - house.groundAnchor[0] * k, groundY - house.groundAnchor[1] * k, sw * k, sh * k);
   }
+}
+
+// 鏡頭：開放範圍（加一圈可擴地的草地）在 canvas 原始像素裡的範圍，給頁面把它放大到填滿畫面。
+export function landView(state, renderer) {
+  const cells = state.land.map(k => k.split(',').map(Number));
+  const margin = 1;
+  const minX = Math.max(0, Math.min(...cells.map(c => c[0])) - margin), maxX = Math.min(BOARD.columns - 1, Math.max(...cells.map(c => c[0])) + margin);
+  const minY = Math.max(0, Math.min(...cells.map(c => c[1])) - margin), maxY = Math.min(BOARD.rows - 1, Math.max(...cells.map(c => c[1])) + margin);
+  const { cell, tileH, top, front } = renderer;
+  return {
+    x: minX * cell, y: top + minY * tileH - top * .75,   // 上方多留名牌與機器人的高度
+    width: (maxX - minX + 1) * cell, height: (maxY - minY + 1) * tileH + top * .75 + front + 10,
+  };
 }
