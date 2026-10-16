@@ -26,7 +26,9 @@ export async function loadAssets() {
     ...Object.values(rendering.robotPoses).map(p => p.atlas),
     ...(manifest.thoughtBubbles ? [manifest.thoughtBubbles.atlas] : []),
     ...Object.values(manifest.effectClips || {}).map(e => e.atlas),
-    ...(manifest.mainScreenAssets?.items || []).map(i => i.file)]);
+    ...(manifest.mainScreenAssets?.items || []).map(i => i.file),
+    ...Object.values(manifest.valleyFarm?.assets || {}).map(a => a.file),
+    ...(manifest.landBoundary ? [manifest.landBoundary.atlas] : [])]);
   const images = new Map();
   await Promise.all([...files].map(file => new Promise(resolve => {
     const img = new Image();
@@ -91,19 +93,24 @@ export function createPainter({ manifest, align, images }) {
 
   // ---------- 元件 ----------
 
-  function soil(ctx, x, y, cell, moisture) {
+  // 田面；h 不給就是正方形。山谷俯角把田面壓扁（valleyFarm.terrain.topScale），只壓地面、不壓直立物。
+  function soil(ctx, x, y, cell, moisture, h = cell) {
     const img = images.get(rendering.soil.atlas), b = manifest.pixelBoundaries;
-    if (!ready(img)) { ctx.fillStyle = ['#c6a376', '#a67950', '#77513b', '#5f7f8a'][moisture]; ctx.fillRect(x, y, cell, cell); return; }
-    ctx.drawImage(img, b[moisture], b[0], b[moisture + 1] - b[moisture], b[1] - b[0], x, y, cell, cell);
+    if (!ready(img)) { ctx.fillStyle = ['#c6a376', '#a67950', '#77513b', '#5f7f8a'][moisture]; ctx.fillRect(x, y, cell, h); return; }
+    ctx.drawImage(img, b[moisture], b[0], b[moisture + 1] - b[moisture], b[1] - b[0], x, y, cell, h);
   }
 
   function plant(ctx, x, y, cell, cropId, stage) {
+    const [canvasW] = rendering.plantCanvas, [rootX, rootY] = rendering.plantRoot;
+    plantAt(ctx, x + cell * rootX / canvasW, y + cell * rootY / canvasW, cell, cropId, stage);
+  }
+  // 從地面落點（根部）畫作物；size 是作物畫布（plantCanvas）對應的邊長。
+  function plantAt(ctx, groundX, groundY, size, cropId, stage) {
     const crop = cropById.get(cropId), img = crop && images.get(crop.atlas);
     if (!ready(img)) return;
     const f = crop.frames[stage], [sx, sy, sw, sh] = f.sourceRect;
-    const [canvasW] = rendering.plantCanvas, [rootX, rootY] = rendering.plantRoot;
-    const k = cell / canvasW * f.scale;
-    ctx.drawImage(img, sx, sy, sw, sh, x + cell * rootX / canvasW - f.root[0] * k, y + cell * rootY / canvasW - f.root[1] * k, sw * k, sh * k);
+    const k = size / rendering.plantCanvas[0] * f.scale;
+    ctx.drawImage(img, sx, sy, sw, sh, groundX - f.root[0] * k, groundY - f.root[1] * k, sw * k, sh * k);
   }
 
   // 依外殼中心與高度對齊：外殼高度縮放成 bodyHeight，中心放在 bodyCenter（再加上漂浮位移）。回傳持物錨點。
@@ -167,16 +174,16 @@ export function createPainter({ manifest, align, images }) {
   }
 
   // 沿著田塊外緣畫框線（相鄰格屬於同一塊田的邊不畫）。origin(x, y) 回傳該格左上角像素座標。
-  function outline(ctx, cells, origin, cell, colour, width) {
+  function outline(ctx, cells, origin, cell, colour, width, cellH = cell) {
     const has = new Set(cells.map(([x, y]) => cellKey(x, y)));
     ctx.strokeStyle = colour; ctx.lineWidth = width; ctx.lineCap = 'square';
     ctx.beginPath();
     for (const [x, y] of cells) {
       const [ox, oy] = origin(x, y);
       if (!has.has(cellKey(x, y - 1))) { ctx.moveTo(ox, oy); ctx.lineTo(ox + cell, oy); }
-      if (!has.has(cellKey(x, y + 1))) { ctx.moveTo(ox, oy + cell); ctx.lineTo(ox + cell, oy + cell); }
-      if (!has.has(cellKey(x - 1, y))) { ctx.moveTo(ox, oy); ctx.lineTo(ox, oy + cell); }
-      if (!has.has(cellKey(x + 1, y))) { ctx.moveTo(ox + cell, oy); ctx.lineTo(ox + cell, oy + cell); }
+      if (!has.has(cellKey(x, y + 1))) { ctx.moveTo(ox, oy + cellH); ctx.lineTo(ox + cell, oy + cellH); }
+      if (!has.has(cellKey(x - 1, y))) { ctx.moveTo(ox, oy); ctx.lineTo(ox, oy + cellH); }
+      if (!has.has(cellKey(x + 1, y))) { ctx.moveTo(ox + cell, oy); ctx.lineTo(ox + cell, oy + cellH); }
     }
     ctx.stroke();
   }
@@ -279,7 +286,7 @@ export function createPainter({ manifest, align, images }) {
   const hidesPlant = view => view.clip === 'harvest' && view.crop && !pose('harvest', clipStep('harvest', view.elapsed), view.heading).plantVisible;
   const stageOf = growth => Math.min(3, Math.floor(growth * 3 + 1e-9));
 
-  return { clipLength, clipStep, soil, plant, produce, sign, robotAt, scanWave, outline, label, floaters, robotView, hidesPlant, stageOf, clips, manifest };
+  return { clipLength, clipStep, soil, plant, plantAt, produce, sign, robotAt, scanWave, outline, label, floaters, robotView, hidesPlant, stageOf, clips, manifest };
 }
 
 // ---------- 農場盤面 ----------

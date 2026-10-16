@@ -33,6 +33,7 @@
 </header>
 
 <main class="greenhouse">
+  <canvas id="valley-bg" class="valley-bg" aria-hidden="true"></canvas>
   <div class="glass" aria-hidden="true"></div>
   <div class="floor">
     <canvas id="farm" aria-label="農場。點一塊田查看狀態與編寫腳本"></canvas>
@@ -41,7 +42,7 @@
   <div id="arrange-banner" class="arrange-banner" hidden>
     <div class="arrange-text">
       <p>拖曳田塊換位置，會自動對齊格子；點一下田塊轉 90°（拖曳中也可以按 R）。綠色可以放，紅色放不下。</p>
-      <p>深色格子還沒開放：點有「+」的格子兩下就能擴地。</p>
+      <p>圍欄外的草地還沒開放：點有「+」的格子兩下就能擴地。</p>
     </div>
     <div class="tray-wrap">
       <p class="tray-title">倉庫<small>把田拖到盤面；把盤面上的田拖到這裡收起來</small></p>

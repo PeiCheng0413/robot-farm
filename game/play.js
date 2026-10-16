@@ -10,6 +10,7 @@ import {
 } from './sim.js';
 import { loadAssets, createBoardRenderer, createPainter, screenAsset, spriteURL } from './render.js';
 import { defineBlocks } from './blocks.js';
+import { createValleyRenderer, drawValleyBackdrop } from './valley.js';
 import { createEditor, STAGE_LABEL } from './editor.js';
 import { loadGame, saveGame, autosave } from './session.js';
 
@@ -421,8 +422,11 @@ function applyScreenAssets(assets) {
     el.style.backgroundSize = repeat === 'repeat-x' ? 'auto 100%' : `${w}px ${h}px`;
     el.classList.add('has-art');
   };
-  tile('greenhouseWindow', $('.glass'), 'repeat-x');
-  tile('stoneFloor', $('.floor'), 'repeat');
+  // 有山谷素材就用山谷（背景由 drawValleyBackdrop 畫），溫室窗框與石板地是舊版備用外觀
+  if (!assets.manifest.valleyFarm) {
+    tile('greenhouseWindow', $('.glass'), 'repeat-x');
+    tile('stoneFloor', $('.floor'), 'repeat');
+  }
   const grout = assets.manifest.mainScreenAssets?.lab?.groutColor;
   if (grout && $('.floor').classList.contains('has-art')) $('.floor').style.backgroundColor = grout;
   for (const [id, gauge] of [['token', '#tokens'], ['money', '#money']]) {
@@ -447,7 +451,9 @@ async function start() {
   }
   cropNames = Object.fromEntries(assets.manifest.crops.map(c => [c.id, c.name]));
   applyScreenAssets(assets);
-  renderer = createBoardRenderer($('#farm'), assets, { background: false });
+  const valley = !!assets.manifest.valleyFarm;
+  renderer = valley ? createValleyRenderer($('#farm'), assets) : createBoardRenderer($('#farm'), assets, { background: false });
+  $('.greenhouse').classList.toggle('valley', valley);
   painter = createPainter(assets);
   state = loadGame();
   editor = createEditor({
@@ -490,8 +496,9 @@ async function start() {
     const k = Math.min((floor.clientWidth - pad) / farm.width, (floor.clientHeight - pad) / farm.height);
     farm.style.width = Math.floor(farm.width * k) + 'px';
     farm.style.height = Math.floor(farm.height * k) + 'px';
-    // 地磚大小與位置對齊盤面格子：每塊石板就是一個格位
-    if (floor.classList.contains('has-art')) {
+    if (renderer.valley) drawValleyBackdrop($('#valley-bg'), assets, $('.glass').offsetHeight);
+    // 地磚大小與位置對齊盤面格子：每塊石板就是一個格位（溫室版）
+    if (!renderer.valley && floor.classList.contains('has-art')) {
       const cell = renderer.cell * k, left = (floor.clientWidth - farm.width * k) / 2, top = (floor.clientHeight - farm.height * k) / 2 + renderer.top * k;
       floor.style.backgroundSize = `${cell}px ${cell}px`;
       floor.style.backgroundPosition = `${left}px ${top}px`;
