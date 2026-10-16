@@ -251,3 +251,13 @@ terrain.frontNeighbor=[0,1]，所有田區佔用格子的聯集內只要正南�
 manifest 僅新增 valleyFarm.assets.farmhouse、depthOrder.kindOrder.building、preview.props／propPositionSpace。sourceRect 為全圖來源框，groundAnchor 是相對來源框左上角的入口落地點，recommendedDisplaySize 為 contain 等比顯示盒。農舍與其他直立素材共用 groundY／groundX／kindOrder 排序，不隨俯視切換壓扁。preview.props 的落地位置以 960×600 示範畫布像素表示，遊戲可自行選擇位置後沿用來源框與錨點。
 
 農舍為單張靜態素材，animated=false，沒有新增門、燈、面板動畫或遊戲機制。遊戲本體與 alignment.js 未修改；Claude 由 manifest 接入。
+
+## v0.17 木樁與繩索界線
+
+新增 land-boundary-atlas-v01.png（2172×724 RGBA）：三個獨立零件為木樁、橫繩、直繩。內建 image_gen 生成，原圖透明背景與像素保留，提示詞在 prompts-v17.json。來源框依實際生成圖校準，不可三等分直接當內容框。木樁等比顯示約 5×16px，繩索厚 3px，架高 11px；低矮窄輪廓避免大面積遮田，未宣稱已作嚴格色票量化。
+
+manifest 只新增 landBoundary，包含 atlas／parts、geometry.sides、placement、depthOrder、lab。以同一個範圍的整數田格聯集判斷四方鄰格，只輸出沒有鄰格的外露邊；內邊刪除、端點用整數頂點去重，每個外緣頂點一根樁，T／L 凹角、分離區塊、內洞邊同樣處理。擴地後由遊戲提供更新的範圍格集合再重建顯示；擴地條件、價格、碰撞與存檔由 Claude 負責。
+
+橫繩與直繩分別使用獨立來源框，不旋轉木樁。endpointRatios 對應兩端接點；端點沿格線投影再上移 ropeElevation，只有繩索長軸隨格寬／格深伸展，厚度與木樁高度固定。木樁依 groundAnchor 落地；繩索使用未上移的線段中點排序，木樁使用原頂點排序，與作物、角色、名牌共用 groundY／groundX／kindOrder，全組不得一律蓋在作物上方。後方細繩可被前排作物遮住。無新增動畫。
+
+試驗室新增主山谷邊界開關、T／L／I／O 帶作物拼接預覽。它是範圍呈現範例，不是擴地機制；game.html、play.html、game/、vendor/、alignment.js 均不修改。

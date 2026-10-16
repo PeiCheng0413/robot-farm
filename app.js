@@ -1,6 +1,6 @@
 
 (async function(){
-  const response=await fetch('assets/manifest.json?v=16');
+  const response=await fetch('assets/manifest.json?v=17');
   if(!response.ok)throw new Error('素材數據讀取失敗：'+response.status);
   const manifest=await response.json(),rendering=manifest.rendering,clips=manifest.animationClips;
   const $=s=>document.querySelector(s),alignment=spriteAlignment;
@@ -9,6 +9,7 @@
   const thoughtState={clip:null,elapsedMs:0,frame:null};
   const mainAssets=manifest.mainScreenAssets,mainAssetViews=new Map();
   const valley=manifest.valleyFarm;
+  const boundary=manifest.landBoundary,boundaryViews=new Map();
   const valleyState={soil:valley.preview.initialSoil,view:valley.preview.initialView};
   const lookup=path=>path.reduce((value,key)=>value[key],alignment);
   const firstFrame=name=>clips[name].frameOrder[0];
@@ -29,7 +30,7 @@
   function imageSource(file){
     if(images.has(file))return images.get(file);
     const image=new Image();images.set(file,image);
-    image.onload=()=>{robotViews.forEach(drawRobot);plantViews.forEach(drawPlant);itemViews.forEach(drawItem);soilViews.forEach(drawSoil);effectViews.forEach((view,canvas)=>drawEffect(canvas,view));updateEffects();thoughtViews.forEach((index,canvas)=>drawThought(canvas,index));updateThought(true);mainAssetViews.forEach((item,canvas)=>drawMainAsset(canvas,item));drawValley();};
+    image.onload=()=>{robotViews.forEach(drawRobot);plantViews.forEach(drawPlant);itemViews.forEach(drawItem);soilViews.forEach(drawSoil);effectViews.forEach((view,canvas)=>drawEffect(canvas,view));updateEffects();thoughtViews.forEach((index,canvas)=>drawThought(canvas,index));updateThought(true);mainAssetViews.forEach((item,canvas)=>drawMainAsset(canvas,item));drawValley();boundaryViews.forEach((sample,canvas)=>drawBoundarySample(canvas,sample));};
     image.onerror=()=>{$('#status').textContent='素材載入失敗，請重新整理頁面。';};
     image.src='assets/'+file+'?v='+encodeURIComponent(manifest.version);
     return image;
@@ -353,6 +354,59 @@
     const link=document.createElement('a');link.href='assets/'+item.file;link.textContent='查看透明原圖 ↗';
     card.append(title,canvas,note,link);$('#main-asset-samples').append(card);
   });
+
+  // Boundary geometry and placement are driven by manifest.landBoundary.
+  function boundaryGeometry(cells){
+    const occupied=new Set(cells.map(([x,y])=>x+','+y)),edges=[],vertices=new Map();
+    for(const key of occupied){
+      const [x,y]=key.split(',').map(Number);
+      for(const side of boundary.geometry.sides){
+        const [nx,ny]=side.neighbor;if(occupied.has((x+nx)+','+(y+ny)))continue;
+        const start=[x+side.start[0],y+side.start[1]],end=[x+side.end[0],y+side.end[1]];
+        edges.push({start,end,part:side.part});
+        for(const point of [start,end])vertices.set(point.join(','),point);
+      }
+    }
+    return {edges,vertices:[...vertices.values()]};
+  }
+  function addBoundarySprites(sprites,cells,origin,tile,blit){
+    const geometry=boundaryGeometry(cells),[ox,oy]=origin,[tw,th]=tile;
+    const project=([x,y])=>[ox+x*tw,oy+y*th],z=boundary.depthOrder.kindOrder;
+    for(const edge of geometry.edges){
+      const part=boundary.parts[edge.part],[ax,ay]=project(edge.start),[bx,by]=project(edge.end);
+      const [pa,pb]=part.endpointRatios;
+      const w=bx===ax?part.displayThickness:(bx-ax)/(pb[0]-pa[0]);
+      const h=by===ay?part.displayThickness:(by-ay)/(pb[1]-pa[1]);
+      const target=[ax-pa[0]*w,ay-boundary.placement.ropeElevation-pa[1]*h,w,h];
+      sprites.push({groundX:(ax+bx)/2,groundY:(ay+by)/2,kindOrder:z.rope,draw:()=>blit(boundary.atlas,part.sourceRect,target)});
+    }
+    for(const vertex of geometry.vertices){
+      const [gx,gy]=project(vertex),part=boundary.parts.post,[sw,sh]=part.sourceRect.slice(2);
+      const s=Math.min(part.recommendedDisplaySize[0]/sw,part.recommendedDisplaySize[1]/sh);
+      sprites.push({groundX:gx,groundY:gy,kindOrder:z.post,draw:()=>blit(boundary.atlas,part.sourceRect,[gx-part.groundAnchor[0]*s,gy-part.groundAnchor[1]*s,sw*s,sh*s])});
+    }
+    return geometry;
+  }
+  function drawBoundarySample(canvas,sample){
+    const ctx=canvas.getContext('2d'),lab=boundary.lab,[ox,oy]=lab.origin,[tw,th]=lab.tileSize;
+    ctx.clearRect(0,0,...lab.canvas);ctx.imageSmoothingEnabled=false;
+    ctx.fillStyle=valley.environment.groundColor;ctx.fillRect(0,0,...lab.canvas);
+    const blit=(file,rect,target)=>{const image=imageSource(file);if(image.complete&&image.naturalWidth)ctx.drawImage(image,...rect,...target);};
+    const soil=soilData.states.find(s=>s.soilIndex===lab.soilIndex).variants.find(v=>v.id==='plain');
+    const sprites=[];
+    sample.cells.forEach(([x,y],i)=>{
+      for(const layer of [...soil.layers].sort((a,b)=>a.z-b.z)){
+        const [dx,dy,w,h]=layer.destinationRect,[cw,ch]=soilData.canvas;
+        blit(layer.atlas,layer.sourceRect,[ox+x*tw+dx/cw*tw,oy+y*th+dy/ch*th,w/cw*tw,h/ch*th]);
+      }
+      const crop=cropById.get(lab.cropCycle[i%lab.cropCycle.length]),frame=crop.frames[lab.cropStage];
+      const gx=ox+(x+lab.plantGroundAnchor[0])*tw,gy=oy+(y+lab.plantGroundAnchor[1])*th;
+      const s=frame.scale*lab.cropDisplaySize/rendering.plantCanvas[0],[sw,sh]=frame.sourceRect.slice(2);
+      sprites.push({groundX:gx,groundY:gy,kindOrder:valley.depthOrder.kindOrder.plant,draw:()=>blit(crop.atlas,frame.sourceRect,[gx-frame.root[0]*s,gy-frame.root[1]*s,sw*s,sh*s])});
+    });
+    addBoundarySprites(sprites,sample.cells,lab.origin,lab.tileSize,blit);
+    sprites.sort((a,b)=>{for(const key of boundary.depthOrder.sortKey){const d=a[key]-b[key];if(d)return d;}return 0;}).forEach(sprite=>sprite.draw());
+  }
   const valleyCanvas=$('#valley-preview');[valleyCanvas.width,valleyCanvas.height]=valley.preview.canvas;
   function drawValley(){
     const ctx=valleyCanvas.getContext('2d'),[cw,ch]=valley.preview.canvas;
@@ -385,6 +439,7 @@
       }
     }
     const sprites=[],u=valley.uprightSprites,kind=valley.depthOrder.kindOrder;
+    if($('#boundary-visible').checked)addBoundarySprites(sprites,cells.map(c=>[c.x,c.y]),[ox,oy],[tw,th],blit);
     for(const prop of valley.preview.props||[]){
       const asset=valley.assets[prop.asset],[gx,gy]=prop.groundPosition;
       sprites.push({groundX:gx,groundY:gy,kindOrder:kind[asset.sortKind],draw:()=>{
@@ -432,6 +487,16 @@
   });
   $('#valley-views').onclick=e=>{if(!e.target.matches('button'))return;valleyState.view=e.target.dataset.view;drawValley();syncValleyControls();};
   $('#valley-soils').onclick=e=>{if(!e.target.matches('button'))return;valleyState.soil=+e.target.dataset.value;drawValley();syncValleyControls();};
+
+  $('#boundary-visible').checked=boundary.lab.initialVisible;
+  $('#boundary-visible').onchange=()=>drawValley();
+  for(const sample of boundary.lab.samples){
+    const card=document.createElement('figure'),canvas=document.createElement('canvas'),caption=document.createElement('figcaption');
+    [canvas.width,canvas.height]=boundary.lab.canvas;canvas.setAttribute('role','img');canvas.setAttribute('aria-label',sample.label+'木樁與繩索外緣及作物遮擋預覽');
+    const geometry=boundaryGeometry(sample.cells);
+    caption.textContent=sample.label+' ／ '+geometry.edges.length+' 段繩・'+geometry.vertices.length+' 根樁';
+    card.append(canvas,caption);$('#boundary-samples').append(card);boundaryViews.set(canvas,sample);drawBoundarySample(canvas,sample);
+  }
   drawValley();syncValleyControls();
   function turn(delta){
     if(movement||harvestTarget){$('#status').textContent='請等目前的移動或採收完成再轉向。';return;}

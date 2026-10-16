@@ -4546,5 +4546,289 @@
       "propPositionSpace": "Preview canvas logical pixels; groundPosition is the projected ground anchor. Game chooses placement independently."
     },
     "note": "Additive data; previous manifest fields, asset paths and alignment shape unchanged. Game projection, picking, dragging, movement rendering and final occlusion integration remain Claude responsibilities."
+  },
+  "landBoundary": {
+    "version": "v01",
+    "label": "低矮木樁與繩索界線",
+    "atlas": "land-boundary-atlas-v01.png",
+    "imageSize": [
+      2172,
+      724
+    ],
+    "animated": false,
+    "parts": {
+      "post": {
+        "sourceRect": [
+          314,
+          227,
+          89,
+          285
+        ],
+        "groundAnchor": [
+          44.5,
+          285
+        ],
+        "recommendedDisplaySize": [
+          6,
+          16
+        ],
+        "preserveAspect": true
+      },
+      "horizontal": {
+        "sourceRect": [
+          752,
+          343,
+          652,
+          39
+        ],
+        "endpointRatios": [
+          [
+            0,
+            0.3
+          ],
+          [
+            1,
+            0.3
+          ]
+        ],
+        "displayThickness": 3
+      },
+      "vertical": {
+        "sourceRect": [
+          1797,
+          91,
+          43,
+          543
+        ],
+        "endpointRatios": [
+          [
+            0.5,
+            0
+          ],
+          [
+            0.5,
+            1
+          ]
+        ],
+        "displayThickness": 3
+      }
+    },
+    "geometry": {
+      "input": "Union of integer [x,y] cells belonging to ONE displayed land range, regardless of crop/soil/plot grouping. Do not create fences between cells of this same set.",
+      "edgeRule": "neighbor-absent",
+      "sides": [
+        {
+          "id": "north",
+          "neighbor": [
+            0,
+            -1
+          ],
+          "start": [
+            0,
+            0
+          ],
+          "end": [
+            1,
+            0
+          ],
+          "part": "horizontal"
+        },
+        {
+          "id": "east",
+          "neighbor": [
+            1,
+            0
+          ],
+          "start": [
+            1,
+            0
+          ],
+          "end": [
+            1,
+            1
+          ],
+          "part": "vertical"
+        },
+        {
+          "id": "south",
+          "neighbor": [
+            0,
+            1
+          ],
+          "start": [
+            0,
+            1
+          ],
+          "end": [
+            1,
+            1
+          ],
+          "part": "horizontal"
+        },
+        {
+          "id": "west",
+          "neighbor": [
+            -1,
+            0
+          ],
+          "start": [
+            0,
+            0
+          ],
+          "end": [
+            0,
+            1
+          ],
+          "part": "vertical"
+        }
+      ],
+      "postPolicy": "unique-boundary-vertices",
+      "vertexKey": "integer x,y",
+      "includeHoleEdges": true,
+      "rule": "Emit an edge only if its side neighbor is absent from the union. Add both integer endpoints to a unique vertex set. Place one post per unique vertex, even at concave corners; no doubled stakes or interior edges. Disconnected components and enclosed holes follow the same rule.",
+      "expansionVisualRule": "After game-owned range cells change, rebuild this geometry from the new set. Shared edges vanish; retained edges stay fixed. This is presentation data, not expansion eligibility/cost/collision logic."
+    },
+    "placement": {
+      "projectionSource": "valleyFarm.projection.views[view].tileSize",
+      "ropeElevation": 11,
+      "postSizeMode": "constant-screen-pixels",
+      "horizontalRule": "Map rope endpoint ratios to projected boundary endpoints shifted upward by ropeElevation; stretch span only along grid X, use displayThickness on Y.",
+      "verticalRule": "Map endpoints to projected boundary endpoints shifted upward by ropeElevation; stretch span only along grid Y, use displayThickness on X.",
+      "postRule": "Contain in recommendedDisplaySize, keep aspect, align local groundAnchor to projected grid vertex. Never rotate the stake or flatten its height.",
+      "inset": 0
+    },
+    "depthOrder": {
+      "sortKey": [
+        "groundY",
+        "groundX",
+        "kindOrder"
+      ],
+      "kindOrder": {
+        "rope": 0,
+        "post": 0.5
+      },
+      "ropeGroundKey": "projected segment midpoint, before elevation offset",
+      "postGroundKey": "projected vertex",
+      "rule": "Merge with plants, robots, signs and props in global ground order. Terrain first. Do not draw the whole boundary as a final overlay; near crops may cover rear ropes."
+    },
+    "lab": {
+      "initialVisible": true,
+      "canvas": [
+        320,
+        240
+      ],
+      "tileSize": [
+        64,
+        48
+      ],
+      "origin": [
+        32,
+        48
+      ],
+      "soilIndex": 1,
+      "cropStage": 3,
+      "cropCycle": [
+        "carrot",
+        "tomato",
+        "lettuce",
+        "strawberry"
+      ],
+      "cropDisplaySize": 64,
+      "plantGroundAnchor": [
+        0.5,
+        0.68
+      ],
+      "samples": [
+        {
+          "id": "T",
+          "label": "T 字・含凹角",
+          "cells": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              1,
+              1
+            ]
+          ]
+        },
+        {
+          "id": "L",
+          "label": "L 字・轉角",
+          "cells": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        },
+        {
+          "id": "I",
+          "label": "I 字・連續直線",
+          "cells": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              3,
+              1
+            ]
+          ]
+        },
+        {
+          "id": "O",
+          "label": "O 字・方形",
+          "cells": [
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    "note": "Opaque narrow sprites over transparent alpha; no wide fence panels, floor, mesh or animation. Land area state and game integration remain Claude responsibilities."
   }
 }
