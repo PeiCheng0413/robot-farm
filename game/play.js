@@ -521,6 +521,7 @@ async function start() {
     if (renderer.valley) drawValleyBackdrop($('#valley-bg'), assets);
     fitFarm();
   }).observe($('.greenhouse'));
+  assets.onImage(() => { if (renderer.valley) drawValleyBackdrop($('#valley-bg'), assets); });
   autosave(() => state);
   // play.html#plot=T-high 直接打開該塊田的卡片
   const linked = new URLSearchParams(location.hash.slice(1)).get('plot');

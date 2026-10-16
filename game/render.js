@@ -29,14 +29,18 @@ export async function loadAssets() {
     ...(manifest.mainScreenAssets?.items || []).map(i => i.file),
     ...Object.values(manifest.valleyFarm?.assets || {}).map(a => a.file),
     ...(manifest.landBoundary ? [manifest.landBoundary.atlas] : [])]);
-  const images = new Map();
-  await Promise.all([...files].map(file => new Promise(resolve => {
+  // 圖片失敗會重試一次（網路不穩時偶爾有大圖載入失敗）。每張圖成功載入都會通知 onImage，
+  // 讓只在大小改變時才重畫的背景，在晚到的圖載好後補畫。
+  const images = new Map(), listeners = new Set();
+  const load = (file, attempt) => new Promise(resolve => {
     const img = new Image();
-    img.onload = img.onerror = resolve;
-    img.src = 'assets/' + file + '?v=' + encodeURIComponent(manifest.version);
+    img.onload = () => { listeners.forEach(fn => fn(file)); resolve(); };
+    img.onerror = () => attempt ? resolve() : load(file, 1).then(resolve);
+    img.src = 'assets/' + file + '?v=' + encodeURIComponent(manifest.version) + (attempt ? '&retry=1' : '');
     images.set(file, img);
-  })));
-  return { manifest, align, images };
+  });
+  await Promise.all([...files].map(file => load(file, 0)));
+  return { manifest, align, images, onImage: fn => listeners.add(fn) };
 }
 
 // 主畫面靜態素材（manifest.mainScreenAssets）：依 id 取一項。
