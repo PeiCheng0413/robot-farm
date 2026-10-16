@@ -1,7 +1,7 @@
 // 遊戲數值設定表。調整平衡只改這裡，不改程式。時間單位一律毫秒。
 
 export const SAVE_KEY = 'robot-farm-save-v1';
-export const SAVE_VERSION = 3;   // 3：田改成玩家擁有、可買賣，盤面可擴地；舊存檔不相容
+export const SAVE_VERSION = 4;   // 4：腳本改屬於關卡（形狀 × 類型）共用；舊存檔不相容
 
 export const START = { tokens: 120, money: 30 };
 
@@ -74,3 +74,15 @@ export const SELL_REFUND = 0.5;   // 賣田退回買價的比例
 export const START_LAND = { x: 4, y: 2, width: 5, height: 3 };
 export const LAND_PRICE = { base: 15, growth: 1.07 };
 export const landPrice = bought => Math.round(LAND_PRICE.base * LAND_PRICE.growth ** bought);
+
+// ---------- 關卡星等 ----------
+// 一星：試跑通過過關檢查。二星：積木數 ≤ 目標。三星：二星，而且沒有白做、沒有撞牆。
+// 目標積木數依「關卡（形狀）× 難度（類型）× 哪份腳本」設定；暫定值，等「最難版本逐步降階」實測後再調。
+// 估算依據：直線不撞牆的播種是「播種、重複 2 次（前進、播種）」4 塊；澆水與專家用函式（如果乾裂就澆水＝4 塊定義）。
+export const STAR_TARGETS = {
+  line3: { novice: { sow: 4, harvest: 4 },  advanced: { sow: 4, harvest: 4 },  high: { sow: 4, harvest: 4, water: 8 },    expert: { main: 21 } },
+  L:     { novice: { sow: 7, harvest: 7 },  advanced: { sow: 7, harvest: 7 },  high: { sow: 7, harvest: 7, water: 11 },   expert: { main: 24 } },
+  T:     { novice: { sow: 10, harvest: 10 }, advanced: { sow: 10, harvest: 10 }, high: { sow: 10, harvest: 10, water: 14 }, expert: { main: 27 } },
+  U:     { novice: { sow: 10, harvest: 10 }, advanced: { sow: 10, harvest: 10 }, high: { sow: 10, harvest: 10, water: 14 }, expert: { main: 27 } },
+};
+export const starTarget = (shape, type, stage) => STAR_TARGETS[shape]?.[type]?.[stage] ?? Infinity;

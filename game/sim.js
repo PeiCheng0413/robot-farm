@@ -33,18 +33,27 @@ export const drainEvents = state => queue(state).splice(0);
 // state.plots[id]：玩家擁有的田（含倉庫裡的）。shape／type／price 是田的身分，其餘是田的狀態。
 // state.layout[id]：擺在盤面上的位置與旋轉；沒有這一筆就是收在倉庫，不生長、機器人也不去。
 // state.land：已開放（買下）的盤面格子 "x,y"；田只能放在開放的格子上。
+// state.levels["形狀|類型"]：關卡（形狀）× 難度（類型）。同關卡同難度的田共用這裡的腳本、積木上限與星等，
+// 解過的題不用重寫；賣掉田，腳本仍留在關卡裡（2026-10-16 定案）。
 
-function newPlotState(plot, price) {
-  const cells = {};
-  for (const [x, y] of plot.cells) cells[cellKey(x, y)] = { crop: null, growth: 0, moisture: 1, dryMs: 0 };
+export const levelKey = (shape, type) => shape + '|' + type;
+export const levelOf = (state, plotId) => { const ps = state.plots[plotId]; return state.levels[levelKey(ps.shape, ps.type)]; };
+
+function newLevel(plot) {
   return {
-    shape: plot.shape, type: plot.type, price,
-    crop: plot.defaultCrop, crashed: null, cells, capacityLevel: 0, lastRun: null,
     // 自動選腳本的類型分播種／採收（／澆水）多份，否則只有 main 一份（plots.js stagesOf）。
     // programs 是編譯後的指令樹，workspaces 是 Blockly 存檔。
     programs: Object.fromEntries(stagesOf(plot).map(s => [s, []])),
     workspaces: Object.fromEntries(stagesOf(plot).map(s => [s, null])),
+    capacityLevel: 0,
+    stars: {},        // 每份腳本的最佳星等：{ sow: 2, harvest: 3 }
   };
+}
+
+function newPlotState(plot, price) {
+  const cells = {};
+  for (const [x, y] of plot.cells) cells[cellKey(x, y)] = { crop: null, growth: 0, moisture: 1, dryMs: 0 };
+  return { shape: plot.shape, type: plot.type, price, crop: plot.defaultCrop, crashed: null, cells, lastRun: null };
 }
 
 function newRobot(id, plot) {
@@ -57,7 +66,7 @@ export const landSet = state => new Set(state.land);
 export const isPlaced = (state, plotId) => !!state.layout[plotId];
 
 export function createState() {
-  const state = { version: SAVE_VERSION, tokens: START.tokens, money: START.money, time: 0, plots: {}, layout: {}, land: [], landBought: 0, nextId: 1, robots: [] };
+  const state = { version: SAVE_VERSION, tokens: START.tokens, money: START.money, time: 0, plots: {}, levels: {}, layout: {}, land: [], landBought: 0, nextId: 1, robots: [] };
   for (let y = START_LAND.y; y < START_LAND.y + START_LAND.height; y++) {
     for (let x = START_LAND.x; x < START_LAND.x + START_LAND.width; x++) state.land.push(cellKey(x, y));
   }
@@ -71,8 +80,9 @@ export function createState() {
 
 // 新增一塊田到倉庫，回傳 id。
 function addPlot(state, shape, type, price) {
-  const id = `${shape}-${type}-${state.nextId++}`;
-  state.plots[id] = newPlotState(makePlot(id, shape, type), price);
+  const id = `${shape}-${type}-${state.nextId++}`, plot = makePlot(id, shape, type);
+  state.plots[id] = newPlotState(plot, price);
+  state.levels[levelKey(shape, type)] ||= newLevel(plot);
   sync(state);
   return id;
 }
@@ -88,6 +98,7 @@ export function restore(json) {
   if (saved.version !== SAVE_VERSION) return null;
   const state = { ...saved, robots: saved.robots.map(r => ({ ...r, act: null, run: null, freeAt: saved.time, phase: r.phase === 'stuck' ? 'stuck' : 'idle' })) };
   sync(state);
+  for (const plot of PLOTS) state.levels[levelKey(plot.shape, plot.type)] ||= newLevel(plot);
   // 存檔的排列有任何一塊放不下，那塊先收回倉庫。
   const land = landSet(state), check = {};
   for (const [id, place] of Object.entries(state.layout)) {
@@ -162,13 +173,14 @@ const NEEDS = {
   water: c => c.crop && c.growth < 1 && c.moisture === 0,
 };
 
-function chooseProgram(plot, ps) {
-  const ready = stage => programBody(ps.programs[stage]).length ? { program: ps.programs[stage], stage } : null;
+function chooseProgram(state, plot, ps) {
+  const level = levelOf(state, plot.id);
+  const ready = stage => programBody(level.programs[stage]).length ? { program: level.programs[stage], stage } : null;
   if (!plot.rules.autoScript) return ready('main');
   // 優先順序：採收 > 播種 > 澆水。但上一輪跑過的腳本這次往後排，
   // 避免一直有空地時播種腳本霸佔，澆水、採收永遠輪不到（例如學生故意留一格不種）。
   const cells = Object.values(ps.cells);
-  const due = ['harvest', 'sow', 'water'].filter(stage => stage in ps.programs && cells.some(NEEDS[stage]) && ready(stage));
+  const due = ['harvest', 'sow', 'water'].filter(stage => stage in level.programs && cells.some(NEEDS[stage]) && ready(stage));
   if (!due.length) return null;
   const stage = due.length > 1 && due[0] === ps.lastStage ? due[1] : due[0];
   return ready(stage);
@@ -180,7 +192,7 @@ function pickNext(state, robot) {
     const plot = PLOTS[index], ps = state.plots[plot.id];
     if (ps.crashed || !isPlaced(state, plot.id)) continue;
     if (state.robots.some(o => o !== robot && o.plot === plot.id && o.phase !== 'idle')) continue;
-    const choice = chooseProgram(plot, ps);
+    const choice = chooseProgram(state, plot, ps);
     if (!choice) continue;
     robot.lastPlot = index;
     ps.lastStage = choice.stage;
@@ -317,8 +329,9 @@ export function senseLeaf(tokens, robot, ps, leaf) {
 
 // ---------- 玩家操作 ----------
 
-export const capacityOf = (plotId, ps) => plotById.get(plotId).rules.capacity + CAPACITY.step * ps.capacityLevel;
-export const nextCapacityCost = ps => capacityCost(ps.capacityLevel);
+// 積木上限跟著關卡：同關卡同難度的田共用一份腳本，上限也一起。
+export const capacityOf = (state, plotId) => plotById.get(plotId).rules.capacity + CAPACITY.step * levelOf(state, plotId).capacityLevel;
+export const nextCapacityCost = (state, plotId) => capacityCost(levelOf(state, plotId).capacityLevel);
 
 // 排列模式：把田（盤面上或倉庫裡的）移到新位置／轉向。放不下就不動，回傳 false。
 export const canPlacePlot = (state, plotId, place) => canPlace(state.layout, plotId, place, landSet(state));
@@ -416,10 +429,10 @@ export function exchange(state, money) {
 }
 
 export function upgradeCapacity(state, plotId) {
-  const ps = state.plots[plotId], cost = nextCapacityCost(ps);
+  const level = levelOf(state, plotId), cost = nextCapacityCost(state, plotId);
   if (state.money < cost) return false;
   state.money -= cost;
-  ps.capacityLevel++;
+  level.capacityLevel++;
   return true;
 }
 
@@ -431,9 +444,21 @@ export function setCrop(state, plotId, crop) {
 
 export const canGrow = (plot, crop) => CROPS[crop].tier <= plot.rules.maxTier;
 
-// 新腳本從下一次執行開始生效；正在跑的那一輪不受影響。
+// 新腳本從下一次執行開始生效；正在跑的那一輪不受影響。同關卡同難度的田一起換。
 export function setProgram(state, plotId, stage, program, workspace) {
-  const ps = state.plots[plotId];
-  ps.programs[stage] = program;
-  ps.workspaces[stage] = workspace;
+  const level = levelOf(state, plotId);
+  level.programs[stage] = program;
+  level.workspaces[stage] = workspace;
 }
+
+// 試跑通過過關檢查後記錄星等，只保留最好的成績。
+export function recordStars(state, plotId, stage, stars) {
+  const level = levelOf(state, plotId);
+  level.stars[stage] = Math.max(level.stars[stage] || 0, stars);
+}
+// 關卡的星等：每份腳本都要有星，取最低的那份（新手田要播種、採收都過關才算）。
+export function levelStars(level, plot) {
+  const stages = stagesOf(plot);
+  return Math.min(...stages.map(s => level.stars[s] || 0));
+}
+export const plotsOfLevel = (state, key) => Object.keys(state.plots).filter(id => levelKey(state.plots[id].shape, state.plots[id].type) === key);

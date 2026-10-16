@@ -2,9 +2,9 @@
 // 試跑是沙盒：複製田的狀態來跑，不扣真的 Token、不改真的作物。動作規則與主遊戲共用 sim.js。
 // 逐步執行每個積木都停（含「如果」「重複」），並亮起正在執行的積木。
 
-import { ACTION_COST, ACTION_LIMIT, CONTROL_LIMIT } from './config.js';
+import { ACTION_COST, ACTION_LIMIT, CONTROL_LIMIT, starTarget } from './config.js';
 import { plotById, cellKey } from './plots.js';
-import { planAction, applyAction, senseLeaf, capacityOf, CRASH_REASONS } from './sim.js';
+import { planAction, applyAction, senseLeaf, capacityOf, levelOf, plotsOfLevel, levelKey, CRASH_REASONS } from './sim.js';
 import { createRun, step, evaluate, describeCondition, usesPlotSense } from './interpreter.js';
 import { createPlotView } from './render.js';
 import { TOOLBOX, createTheme, registerFunctionCategory, DEFAULT_WORKSPACES, compile, countBlocks, CompileError } from './blocks.js';
@@ -98,7 +98,7 @@ const MARKUP = `
   </div>
 </div>`;
 
-export function createEditor({ assets, getState, onSave }) {
+export function createEditor({ assets, getState, onSave, onStars }) {
   if (!$('#editor')) document.body.insertAdjacentHTML('beforeend', MARKUP);
   let workspace = null, editing = null, dirty = false, view = null;
   let sandbox = null, mode = 'paused', speed = 1, scenario = 'current', last = 0, raf = 0;
@@ -123,7 +123,7 @@ export function createEditor({ assets, getState, onSave }) {
   }
 
   function updateCount() {
-    const cap = capacityOf(editing.plot, getState().plots[editing.plot]), n = countBlocks(workspace);
+    const cap = capacityOf(getState(), editing.plot), n = countBlocks(workspace);
     $('#block-count').textContent = `已用 ${n} / ${cap} 積木`;
     $('#block-count').classList.toggle('over', n > cap);
   }
@@ -151,6 +151,7 @@ export function createEditor({ assets, getState, onSave }) {
     if (sandbox.run) return true;
     try {
       sandbox.run = createRun(compile(workspace));
+      sandbox.blocks = countBlocks(workspace);
       return true;
     } catch (e) {
       if (!(e instanceof CompileError)) throw e;
@@ -178,10 +179,19 @@ export function createEditor({ assets, getState, onSave }) {
     if (problems.length) {
       say(summary, 'warn');
       showCheck({ title: '還沒過關', items: problems, tips, ok: false });
-    } else {
-      say(summary, 'done');
-      showCheck({ title: '過關！這塊田的事都做完了', items: [], tips, ok: true });
+      return;
     }
+    // 星等：一星過關；二星積木數在目標內；三星再加上沒有白做、沒有撞牆。只在預設情境下記錄，避免挑簡單情境刷星。
+    const plot = sb.plot, target = starTarget(plot.shape, plot.type, editing.stage);
+    const stars = 1 + (sb.blocks <= target ? 1 + (!sb.bumps && !sb.wasted ? 1 : 0) : 0);
+    const graded = scenario === DEFAULT_SCENARIO[editing.stage];
+    const starText = '★'.repeat(stars) + '☆'.repeat(3 - stars);
+    const how = [`用了 ${sb.blocks} 塊積木，目標 ${target === Infinity ? '—' : target} 塊`];
+    if (stars === 2) how.push('三星條件：不能白做、不能撞牆');
+    if (!graded) how.push(`這個情境不記分；要記星等，請用「${SCENARIOS[DEFAULT_SCENARIO[editing.stage]]}」情境試跑`);
+    say(summary, 'done');
+    showCheck({ title: `過關！${starText}`, items: [], tips: [...how, ...tips], ok: true });
+    if (graded) onStars?.(editing.plot, editing.stage, stars);
   }
 
   function showCheck(result) {
@@ -320,10 +330,11 @@ export function createEditor({ assets, getState, onSave }) {
     ensureWorkspace();
     editing = null;
     workspace.clear();
-    Blockly.serialization.workspaces.load(ps.workspaces[stage] || DEFAULT_WORKSPACES.main, workspace);
+    Blockly.serialization.workspaces.load(levelOf(getState(), plotId).workspaces[stage] || DEFAULT_WORKSPACES.main, workspace);
     editing = { plot: plotId, stage };
     dirty = false;
-    $('#editor-title').textContent = `${plot.name}・${STAGE_LABEL[stage]}`;
+    const shared = plotsOfLevel(getState(), levelKey(plot.shape, plot.type)).length;
+    $('#editor-title').textContent = `${plot.name.replace(/ \d+$/, '')}・${STAGE_LABEL[stage]}` + (shared > 1 ? `（${shared} 塊田共用）` : '');
     $('#editor-rule').textContent = plot.rules.rule;
     $('#editor-msg').textContent = '從左邊拖積木接到「開始」下面。沒接上的積木會變灰、不會執行。儲存後從下一輪開始生效。';
     $('#editor-msg').className = '';
@@ -351,7 +362,7 @@ export function createEditor({ assets, getState, onSave }) {
   }
 
   function save() {
-    const { plot, stage } = editing, cap = capacityOf(plot, getState().plots[plot]), n = countBlocks(workspace);
+    const { plot, stage } = editing, cap = capacityOf(getState(), plot), n = countBlocks(workspace);
     const fail = text => { $('#editor-msg').textContent = text; $('#editor-msg').className = 'error'; };
     if (n > cap) return fail(`用了 ${n} 個積木，超過這塊田的上限 ${cap}。試著用「重複」或函式縮短，或擴充上限。`);
     let program;

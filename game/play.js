@@ -6,7 +6,7 @@ import { PLOTS, plotById, stagesOf, SHAPES, rotation, cellKey } from './plots.js
 import {
   update, drainEvents, resetPlot, exchange, upgradeCapacity, setCrop, setProgram, placePlot, canPlacePlot,
   isPlaced, storePlot, buyPlot, sellPlot, plotPrice, refundOf, canBuyLand, buyLand, nextLandPrice,
-  capacityOf, nextCapacityCost, canGrow, CRASH_REASONS,
+  capacityOf, nextCapacityCost, canGrow, levelOf, levelKey, levelStars, plotsOfLevel, recordStars, CRASH_REASONS,
 } from './sim.js';
 import { loadAssets, createBoardRenderer, createPainter, screenAsset, spriteURL } from './render.js';
 import { defineBlocks } from './blocks.js';
@@ -18,7 +18,7 @@ const $ = s => document.querySelector(s);
 const escape = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const TIER_TYPE = Object.fromEntries([1, 2, 3, 4].map(t => [t, Object.values(PLOT_TYPES).find(r => r.maxTier >= t).name]));
 
-let state, renderer, painter, editor, selected = null, cropNames = {};
+let state, renderer, painter, editor, assetsRef, selected = null, cropNames = {};
 let arranging = false, drag = null, pendingLand = null;
 let fitFarm = () => {}, landCount = 0;
 
@@ -110,6 +110,7 @@ function buildCard() {
     </header>
     <div class="card-body">
       <p class="card-rule">${escape(rules.rule)}</p>
+      <p id="card-level" class="card-level"></p>
       <p id="card-status" class="card-status"></p>
       <div id="card-reset"></div>
 
@@ -157,7 +158,7 @@ function buildCard() {
 
 function refreshCard() {
   if (!plotById.has(selected)) return closeCard();
-  const plot = plotById.get(selected), ps = state.plots[selected], cap = capacityOf(selected, ps);
+  const plot = plotById.get(selected), ps = state.plots[selected], cap = capacityOf(state, selected), level = levelOf(state, selected);
   const status = $('#card-status');
   if (!status) return;
   const text = ps.crashed ? `當機了：${CRASH_REASONS[ps.crashed.reason]}` : robotStatus(selected);
@@ -168,14 +169,17 @@ function refreshCard() {
     reset.innerHTML = ps.crashed ? '<button id="card-reset-button" class="primary danger">重置這塊田（免費）</button>' : '';
   }
   for (const el of $('#card').querySelectorAll('[data-count]')) {
-    const n = blockCount(ps.workspaces[el.dataset.count]);
-    setEl(el, `${n} / ${cap} 積木${n ? '' : '・還沒寫'}`);
+    const n = blockCount(level.workspaces[el.dataset.count]);
+    const st = level.stars[el.dataset.count] || 0;
+    setEl(el, `${n} / ${cap} 積木${n ? '' : '・還沒寫'}　${'★'.repeat(st)}${'☆'.repeat(3 - st)}`);
   }
   const lr = ps.lastRun;
   setEl($('#card-last'), lr ? `上一輪${lr.stage === 'main' ? '' : `（${STAGE_LABEL[lr.stage]}）`}：花 ${lr.tokens} Token、賺 ${lr.money} 金錢、${(lr.ms / 1000).toFixed(1)} 秒` : '機器人還沒來這塊田工作過。');
   for (const tile of $('#card').querySelectorAll('.crop-tile')) tile.setAttribute('aria-checked', String(tile.dataset.crop === ps.crop));
   setEl($('#card-capacity'), `每份腳本最多 ${cap} 塊積木。`);
-  const cost = nextCapacityCost(ps), up = $('#card-upgrade');
+  const shared = plotsOfLevel(state, levelKey(plot.shape, plot.type)).length, stars = levelStars(level, plot);
+  setEl($('#card-level'), `關卡星等 ${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}` + (shared > 1 ? `・${shared} 塊田共用這份腳本` : ''));
+  const cost = nextCapacityCost(state, selected), up = $('#card-upgrade');
   setEl(up, `擴充 +4 塊（${cost} 金錢）`);
   up.disabled = state.money < cost;
   setEl($('#card-sell'), `賣掉（退回 ${refundOf(state, selected)} 金錢）`);
@@ -216,7 +220,7 @@ $('#card').addEventListener('click', e => {
 // 賣田不能復原：作物和腳本會一起消失，先確認。
 function confirmSell(plotId) {
   const plot = plotById.get(plotId), refund = refundOf(state, plotId);
-  if (!confirm(`確定要賣掉「${plot.name}」嗎？\n\n這塊田的作物和所有腳本都會消失，無法復原。\n會退回 ${refund} 金錢。`)) return;
+  if (!confirm(`確定要賣掉「${plot.name}」嗎？\n\n這塊田和上面的作物會消失，無法復原；腳本與星等會留在關卡裡。\n會退回 ${refund} 金錢。`)) return;
   if (!sellPlot(state, plotId)) return toast('盤面上至少要留一塊田，機器人才有地方工作。');
   if (selected === plotId) closeCard();
   saveGame(state);
@@ -229,10 +233,19 @@ function confirmSell(plotId) {
 // 拖曳田塊：預覽位置吸附在游標所在的格子上（像棋盤），放開時能放就放、放不下就回原位。
 // 點一下（沒有拖動）轉 90°；拖曳中按 R 也能轉。機器人照常工作，田的局部座標不變。
 
+// 平常是山谷斜角；排列時換成正上方俯瞰的格子盤面，拖曳、吸附、擴地都在格子上一目了然。
+function useRenderer(topDown) {
+  const valley = !!assetsRef.manifest.valleyFarm;
+  renderer = valley && !topDown ? createValleyRenderer($('#farm'), assetsRef) : createBoardRenderer($('#farm'), assetsRef, { background: valley });
+  $('.greenhouse').classList.toggle('top-down', valley && topDown);
+  fitFarm();
+}
+
 function setArranging(on) {
   arranging = on;
   drag = null;
   pendingLand = null;
+  useRenderer(on);
   if (on) { closeCard(); renderTray(); }
   document.body.classList.toggle('arranging', on);
   $('#arrange-toggle').setAttribute('aria-pressed', String(on));
@@ -339,28 +352,45 @@ function onLandClick(e) {
 
 // ---------- 商店 ----------
 
+// 選關畫面：每種形狀是一關，每關分四種難度（田的類型）。同關同難度的田共用一份腳本與星等。
 function buildShop() {
   const types = Object.entries(PLOT_TYPES), shapes = Object.keys(SHAPE_PRICE);
+  const stars = (shape, type) => {
+    const level = state.levels[levelKey(shape, type)];
+    if (!level) return '<span class="stars none">還沒玩過</span>';
+    const n = levelStars(level, makeProbe(shape, type));
+    return `<span class="stars">${'★'.repeat(n)}<span class="dim">${'☆'.repeat(3 - n)}</span></span>`;
+  };
+  const owned = (shape, type) => plotsOfLevel(state, levelKey(shape, type)).length;
   $('#shop').innerHTML = `
     <div class="shop-panel">
-      <header class="shop-head"><h2 id="shop-title">買賣田地</h2><button class="card-close" data-close aria-label="關閉商店">×</button></header>
+      <header class="shop-head"><h2 id="shop-title">選擇關卡</h2><button class="card-close" data-close aria-label="關閉選關畫面">×</button></header>
       <div class="shop-body">
-        <p class="shop-note">買下的田會先放進倉庫，再到「排列田地」把它拖到盤面上。越難的類型越貴，但能種越高級的作物。</p>
-        <table class="shop-table">
-          <thead><tr><th scope="col">形狀</th>${types.map(([, r]) => `<th scope="col" style="--type:${r.colour}"><span class="type-chip">${r.name}田</span><small>種到 ${r.maxTier} 級</small></th>`).join('')}</tr></thead>
-          <tbody>${shapes.map(shape => `<tr><th scope="row">${shapePreview(shape)}<span>${SHAPES[shape].name}</span></th>${types.map(([type]) => {
-            const price = plotPrice(shape, type);
-            return `<td><button class="buy" data-buy="${shape}|${type}" ${state.money < price ? 'disabled' : ''}>買 ${price}</button></td>`;
-          }).join('')}</tr>`).join('')}</tbody>
-        </table>
+        <p class="shop-note">每種田的形狀是一關，難度越高能種越高級的作物。買下的田先放進倉庫，再到「排列田地」放上盤面。同一關同一難度的田共用一份腳本，解一次就好。</p>
+        <ol class="levels">${shapes.map((shape, i) => `
+          <li class="level">
+            <div class="level-head">${shapePreview(shape)}<div><p class="level-no">第 ${i + 1} 關</p><h3>${SHAPES[shape].name}田</h3></div></div>
+            <ul class="difficulties">${types.map(([type, r]) => {
+              const price = plotPrice(shape, type), n = owned(shape, type);
+              return `<li style="--type:${r.colour}">
+                <span class="type-chip">${r.name}</span>
+                ${stars(shape, type)}
+                <span class="owned-count">${n ? `擁有 ${n} 塊` : ''}</span>
+                <button class="buy" data-buy="${shape}|${type}" ${state.money < price ? 'disabled' : ''}>買 ${price}</button>
+              </li>`;
+            }).join('')}</ul>
+          </li>`).join('')}</ol>
         <h3>我的田</h3>
         <ul class="owned">${PLOTS.map(p => `<li style="--type:${p.rules.colour}">
           <span class="type-chip">${p.rules.name}</span><span class="owned-name">${escape(p.name)}</span>
           <span class="owned-where">${isPlaced(state, p.id) ? '在盤面上' : '在倉庫'}</span>
           <button class="console-button danger-outline" data-sell="${p.id}">賣掉 +${refundOf(state, p.id)}</button></li>`).join('')}</ul>
+        <p class="shop-note">賣掉田會退回一半的錢；作物會消失，但腳本與星等留在關卡裡，之後再買同關同難度的田會自動套用。</p>
       </div>
     </div>`;
 }
+// levelStars 需要田的定義（哪幾份腳本）；選關畫面上還沒擁有的關卡用一個臨時的定義
+const makeProbe = (shape, type) => ({ rules: PLOT_TYPES[type], shape, type });
 
 function openShop() { closeCard(); buildShop(); $('#shop').hidden = false; $('#shop').querySelector('[data-close]').focus(); }
 function closeShop() { $('#shop').hidden = true; }
@@ -454,6 +484,7 @@ async function start() {
   }
   cropNames = Object.fromEntries(assets.manifest.crops.map(c => [c.id, c.name]));
   applyScreenAssets(assets);
+  assetsRef = assets;
   const valley = !!assets.manifest.valleyFarm;
   renderer = valley ? createValleyRenderer($('#farm'), assets) : createBoardRenderer($('#farm'), assets, { background: false });
   $('.greenhouse').classList.toggle('valley', valley);
@@ -466,6 +497,12 @@ async function start() {
       saveGame(state);
       toast(`${plotById.get(plot).name}的${STAGE_LABEL[stage]}已儲存，機器人下一輪開始照新腳本做。`);
       if (selected) refreshCard();
+    },
+    onStars(plot, stage, stars) {
+      const before = levelOf(state, plot).stars[stage] || 0;
+      recordStars(state, plot, stage, stars);
+      saveGame(state);
+      if (stars > before) toast(`${STAGE_LABEL[stage]}拿到 ${'★'.repeat(stars)}，已記錄到關卡。`);
     },
   });
   buildExchange();
@@ -510,6 +547,9 @@ async function start() {
     const k = Math.min(fw / farm.width, fh / farm.height);
     farm.style.width = Math.floor(farm.width * k) + 'px';
     farm.style.height = Math.floor(farm.height * k) + 'px';
+    // 山谷版的 canvas 是絕對定位（鏡頭用），俯瞰時置中
+    farm.style.left = (floor.clientWidth - farm.width * k) / 2 + 'px';
+    farm.style.top = (floor.clientHeight - farm.height * k) / 2 + 'px';
     // 地磚大小與位置對齊盤面格子：每塊石板就是一個格位（溫室版）
     if (floor.classList.contains('has-art')) {
       const cell = renderer.cell * k, left = (floor.clientWidth - farm.width * k) / 2, top = (floor.clientHeight - farm.height * k) / 2 + renderer.top * k;
@@ -526,6 +566,7 @@ async function start() {
   // play.html#plot=T-high 直接打開該塊田的卡片
   const linked = new URLSearchParams(location.hash.slice(1)).get('plot');
   if (plotById.has(linked)) select(linked);
+  if (location.hash === '#shop') openShop();   // play.html#shop 直接打開選關畫面
   requestAnimationFrame(frame);
 }
 

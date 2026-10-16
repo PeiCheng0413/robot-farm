@@ -5,7 +5,7 @@ import { PLOTS, plotById, stagesOf } from './plots.js';
 import { newGame, loadGame, saveGame, autosave } from './session.js';
 import {
   update, drainEvents, resetPlot, exchange, upgradeCapacity, setCrop, setProgram,
-  capacityOf, nextCapacityCost, canGrow, CRASH_REASONS,
+  capacityOf, nextCapacityCost, canGrow, levelOf, recordStars, CRASH_REASONS,
 } from './sim.js';
 import { loadAssets, createBoardRenderer } from './render.js';
 import { defineBlocks } from './blocks.js';
@@ -90,7 +90,7 @@ function renderPanel() {
   if (!plotById.has(selected)) selected = PLOTS[0]?.id || null;   // 選中的田被賣掉了
   if (!selected) return;
   const plot = plotById.get(selected), ps = state.plots[selected];
-  const stages = stagesOf(plot), cap = capacityOf(selected, ps);
+  const stages = stagesOf(plot), cap = capacityOf(state, selected);
   const crops = Object.keys(CROPS).filter(id => canGrow(plot, id));
   const cells = Object.values(ps.cells);
   const mature = cells.filter(c => c.crop && c.growth >= 1).length, growing = cells.filter(c => c.crop && c.growth < 1).length;
@@ -111,7 +111,7 @@ function renderPanel() {
     <div class="scripts">
       ${stages.map(stage => `<button class="primary" data-edit="${stage}">編輯${STAGE_LABEL[stage]}（${blockCountOf(stage)} / ${cap} 積木）</button>`).join('')}
     </div>
-    <button id="upgrade" ${state.money < nextCapacityCost(ps) ? 'disabled' : ''}>擴充積木上限 +4（${nextCapacityCost(ps)} 金錢）</button>`;
+    <button id="upgrade" ${state.money < nextCapacityCost(state, selected) ? 'disabled' : ''}>擴充積木上限 +4（${nextCapacityCost(state, selected)} 金錢）</button>`;
   const panel = $('#panel');
   if (panel.dataset.html === html) return;
   // 下拉選單打開時不要重畫，否則會被關掉。
@@ -122,7 +122,7 @@ function renderPanel() {
 
 function blockCountOf(stage) {
   const ps = state.plots[selected];
-  const json = ps.workspaces[stage];
+  const json = levelOf(state, selected).workspaces[stage];
   const count = blocks => blocks.reduce((n, b) => n + 1 + Object.values(b.inputs || {}).reduce((m, i) => m + (i.block ? count([i.block]) : 0), 0) + (b.next ? count([b.next.block]) : 0), 0);
   // 與 blocks.js 的 countBlocks 相同：開始下面的積木＋每個函式定義。
   const tops = json?.blocks?.blocks || [];
@@ -196,6 +196,7 @@ async function start() {
       panelDirty = true;
       log(`${plotById.get(plot).name}的${STAGE_LABEL[stage]}已更新，下一輪生效`);
     },
+    onStars(plot, stage, stars) { recordStars(state, plot, stage, stars); save(); },
   });
   buildControls();
   autosave(() => state);
