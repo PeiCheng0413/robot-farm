@@ -49,9 +49,6 @@ export function createSceneRenderer(canvas, assets) {
   // 開放範圍（加一圈）投影後的外框，放進畫面的安全區：上方留給遠景、下方留給前景樹叢。
   function fitCamera(state) {
     const cells = state.land.map(k => k.split(',').map(Number));
-    // 斜角時把農舍也框進來（在北側），畫面才有「農舍旁的田」的感覺
-    const house = world?.environment.zones.find(z => z.kind === 'farmhouse-service');
-    if (mode === 'angled' && house) cells.push([house.bounds[0] + house.bounds[2] * .45, house.bounds[1] + house.bounds[3] - 1.4]);
     const m = mode === 'top' ? .6 : 1.2;
     const xs = cells.map(c => c[0]), ys = cells.map(c => c[1]);
     const x0 = Math.min(...xs) - m, x1 = Math.max(...xs) + 1 + m, y0 = Math.min(...ys) - m, y1 = Math.max(...ys) + 1 + m;
@@ -60,7 +57,7 @@ export function createSceneRenderer(canvas, assets) {
     const by0 = Math.min(...corners.map(c => c[1])) - T * 1.1, by1 = Math.max(...corners.map(c => c[1])) + T * .5;   // 上方留名牌與作物高度
     const safe = mode === 'top' ? [.04, .04, .96, .96] : [.1, .3, .9, .84];
     const sw = W * (safe[2] - safe[0]), sh = H * (safe[3] - safe[1]);
-    const k = Math.min(sw / (bx1 - bx0), sh / (by1 - by0), mode === 'top' ? 2 : 1.6);
+    const k = Math.min(sw / (bx1 - bx0), sh / (by1 - by0), mode === 'top' ? 2 : 1.8);
     cam = { k, ox: W * (safe[0] + safe[2]) / 2 - (bx0 + bx1) / 2 * k, oy: H * (safe[1] + safe[3]) / 2 - (by0 + by1) / 2 * k };
   }
 
@@ -131,6 +128,12 @@ export function createSceneRenderer(canvas, assets) {
     p.fillStyle = scene.rendering.skyColor; p.fillRect(0, 0, W, Math.max(0, lakeY + lakeH * .45));
     drawImg('skyClouds', 0, Math.min(0, lakeY), W, Math.max(H * .28, lakeY + lakeH * .5));
     drawImg('valleyLake', 0, lakeY, W, lakeH);
+    // 湖景底部是一排不透明的深色樹，會在畫面上切出一條水平線：沿線補一排林下灌木蓋住接縫
+    const under = asset('forestUnderstory');
+    if (under) {
+      const [, , uw, uh] = under.sourceRect, tw = Math.max(120, W / 7), th = tw * uh / uw;
+      for (let x = -tw * .3, i = 0; x < W; x += tw * .82, i++) drawImg(i % 2 ? 'flowerUnderstory' : 'forestUnderstory', x, lakeBottom - th * .55, tw, th, i % 3 === 0);
+    }
     // 後方直立物：北邊與兩側的樹、農舍（都在盤面外，機器人不會走到它們後面）
     for (const s of sortedProps(false)) uprightProp(s);
   }
