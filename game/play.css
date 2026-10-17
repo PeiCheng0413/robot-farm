@@ -253,7 +253,7 @@ body:not(.loading) .loading-screen { display: none; }
 .loading-screen.error .loading-text { color: #8d2d1e; }
 
 /* ---------- 斜角場景（scene.js）：畫布填滿整個場景，自己畫背景與鏡頭 ---------- */
-.greenhouse.scene { grid-template-rows: 0 minmax(0, 1fr); background: #69965b; }
+.greenhouse.scene { grid-template-rows: minmax(0, 1fr); background: #69965b; }   /* 玻璃窗藏起來後只剩地板一列 */
 .greenhouse.scene .glass, .greenhouse.scene .valley-bg { display: none; }
 .greenhouse.scene .floor { background: none !important; padding: 0; position: relative; z-index: 1; }
 .greenhouse.scene #farm { position: absolute; inset: 0; width: 100% !important; height: 100% !important; box-shadow: none; border: 0; }
