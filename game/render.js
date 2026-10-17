@@ -28,10 +28,11 @@ export async function loadAssets(onProgress) {
     ...(manifest.thoughtBubbles ? [manifest.thoughtBubbles.atlas] : []),
     ...Object.values(manifest.effectClips || {}).map(e => e.atlas),
     ...(manifest.landBoundary ? [manifest.landBoundary.atlas] : [])]);
-  // 有新版斜角場景（valleyScene）時，只載它與俯瞰地圖；舊版溫室窗框、石板地與第一版山谷大圖不再下載（約 5MB）。
+  // 有新版斜角場景（valleyScene）時，只載它與俯瞰地圖；舊版溫室窗框、石板地與第一版山谷大圖不再下載（約 5.5MB）。
   const scene = manifest.valleyScene;
   for (const item of manifest.mainScreenAssets?.items || []) if (!scene || !item.layer.startsWith('environment')) files.add(item.file);
-  for (const [id, a] of Object.entries(manifest.valleyFarm?.assets || {})) if (!scene || id === 'soilFront') files.add(a.file);
+  // 斜角場景已取消田的土壁，第一版山谷的圖（含土壁）只在沒有 valleyScene 時才載
+  for (const a of Object.values(manifest.valleyFarm?.assets || {})) if (!scene) files.add(a.file);
   for (const a of Object.values(scene?.assets || {})) files.add(a.file);
   for (const a of Object.values(manifest.farmWorld?.assets || {})) files.add(a.file);
   // 圖片失敗會重試一次（網路不穩時偶爾有大圖載入失敗）。每張圖成功載入都會通知 onImage，
