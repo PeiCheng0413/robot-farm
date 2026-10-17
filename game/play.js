@@ -585,6 +585,7 @@ async function start() {
   const linked = new URLSearchParams(location.hash.slice(1)).get('plot');
   if (plotById.has(linked)) select(linked);
   if (location.hash === '#shop') openShop();   // play.html#shop 直接打開選關畫面
+  if (location.hash === '#arrange') setArranging(true);   // play.html#arrange 直接進排列（俯瞰）
   document.body.classList.remove('loading');   // 素材到齊，收起載入畫面
   requestAnimationFrame(frame);
 }
