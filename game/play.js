@@ -237,7 +237,13 @@ function confirmSell(plotId) {
 // 平常是山谷斜角；排列時換成正上方俯瞰的格子盤面，拖曳、吸附、擴地都在格子上一目了然。
 function useRenderer(topDown) {
   // 新版場景：同一個渲染器切換斜角／俯瞰；俯瞰時不畫機器人
-  if (renderer.scene) { renderer.setMode(topDown ? 'top' : 'angled'); $('.greenhouse').classList.toggle('top-down', topDown); return; }
+  if (renderer.scene) {
+    renderer.setMode(topDown ? 'top' : 'angled');
+    $('.greenhouse').classList.toggle('top-down', topDown);
+    // 面板出現後才量得到高度
+    requestAnimationFrame(() => renderer.setInsetBottom(topDown ? $('.greenhouse').getBoundingClientRect().bottom - $('#arrange-banner').getBoundingClientRect().top : 0));
+    return;
+  }
   const valley = !!assetsRef.manifest.valleyFarm;
   renderer = valley && !topDown ? createValleyRenderer($('#farm'), assetsRef) : createBoardRenderer($('#farm'), assetsRef, { background: valley });
   $('.greenhouse').classList.toggle('top-down', valley && topDown);
@@ -308,7 +314,7 @@ function onPointerUp(e) {
 
 function renderTray() {
   const items = PLOTS.filter(p => !isPlaced(state, p.id));
-  $('#tray').innerHTML = items.length ? '' : '<p class="tray-empty">倉庫是空的。到「買賣田地」買新的田。</p>';
+  $('#tray').innerHTML = items.length ? '' : '<p class="tray-empty">倉庫是空的。到「選擇關卡」買新的田。</p>';
   for (const plot of items) {
     const el = document.createElement('div');
     el.className = 'tray-item';

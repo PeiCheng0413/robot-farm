@@ -22,7 +22,7 @@ export function createSceneRenderer(canvas, assets) {
   const ctx = canvas.getContext('2d');
   const asset = id => scene.assets[id];
 
-  let mode = 'angled';
+  let mode = 'angled', insetBottom = 0;
   let W = 0, H = 0, dpr = 1;
   let cam = { k: 1, ox: 0, oy: 0 };          // 螢幕 = k × 投影（邏輯像素）＋ (ox, oy)，單位是 CSS 像素
   let camKey = '', cacheBack = null, cacheFront = null;
@@ -49,13 +49,14 @@ export function createSceneRenderer(canvas, assets) {
   // 開放範圍（加一圈）投影後的外框，放進畫面的安全區：上方留給遠景、下方留給前景樹叢。
   function fitCamera(state) {
     const cells = state.land.map(k => k.split(',').map(Number));
-    const m = mode === 'top' ? .6 : 1.2;
+    const m = mode === 'top' ? 1.4 : 1.2;
     const xs = cells.map(c => c[0]), ys = cells.map(c => c[1]);
     const x0 = Math.min(...xs) - m, x1 = Math.max(...xs) + 1 + m, y0 = Math.min(...ys) - m, y1 = Math.max(...ys) + 1 + m;
     const corners = [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].map(([x, y]) => project(x, y));
     const bx0 = Math.min(...corners.map(c => c[0])), bx1 = Math.max(...corners.map(c => c[0]));
     const by0 = Math.min(...corners.map(c => c[1])) - T * 1.1, by1 = Math.max(...corners.map(c => c[1])) + T * .5;   // 上方留名牌與作物高度
-    const safe = mode === 'top' ? [.04, .04, .96, .96] : [.1, .3, .9, .84];
+    // 俯瞰時下方有排列說明與倉庫面板（insetBottom，由頁面告知），鏡頭要避開
+    const safe = mode === 'top' ? [.04, .04, .96, Math.max(.4, 1 - (insetBottom + 12) / H)] : [.1, .3, .9, .84];
     const sw = W * (safe[2] - safe[0]), sh = H * (safe[3] - safe[1]);
     const k = Math.min(sw / (bx1 - bx0), sh / (by1 - by0), mode === 'top' ? 2 : 1.8);
     cam = { k, ox: W * (safe[0] + safe[2]) / 2 - (bx0 + bx1) / 2 * k, oy: H * (safe[1] + safe[3]) / 2 - (by0 + by1) / 2 * k };
@@ -479,5 +480,8 @@ export function createSceneRenderer(canvas, assets) {
   }
 
   resize();
-  return { draw, floatAt, plotAt, cellAt, setMode, get mode() { return mode; }, scene: true };
+  // 頁面下方被面板蓋住的高度（CSS 像素），俯瞰時鏡頭避開
+  function setInsetBottom(px) { if (Math.abs(px - insetBottom) > 1) { insetBottom = px; camKey = ''; } }
+
+  return { draw, floatAt, plotAt, cellAt, setMode, setInsetBottom, get mode() { return mode; }, scene: true };
 }
