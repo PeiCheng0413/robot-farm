@@ -154,19 +154,46 @@ export function createSceneRenderer(canvas, assets) {
     }
   }
 
-  // 場景裡的樹與農舍：放在盤面外，位置依 farmWorld 的分區（農舍在北側，西、北、東三邊是林緣）。
+  // 場景裡的樹與農舍：都在盤面外。林帶範圍對照俯瞰環境地圖（farmWorld.views.topDown 的地圖：
+  // 盤面四周一圈有厚度的森林，北側西邊是湖、東邊是農舍），斜角與俯瞰兩邊看到的地形才一致。
+  // 帶狀區域裡錯落種樹：位置、大小、種類、翻轉都用固定亂數，每次打開都一樣。
+  // 南側不種（鏡頭拉近時會投影到盤面上擋住田），畫面下緣交給框邊樹叢。
   let props = null;
   function sceneryProps() {
     if (props) return props;
     props = [];
-    const house = world?.environment.zones.find(z => z.kind === 'farmhouse-service');
+    const zones = world?.environment.zones || [];
+    const house = zones.find(z => z.kind === 'farmhouse-service');
+    const lake = zones.find(z => z.kind === 'lake-shore');
     if (house) props.push({ id: 'farmhouseAngled', gx: house.bounds[0] + house.bounds[2] / 2, gy: house.bounds[1] + house.bounds[3] - .6, scale: 1 });
-    const trees = ['conifers', 'sunlitTrees'];
-    let n = 0;
-    const tree = (gx, gy, scale, front) => props.push({ id: trees[n++ % 2], gx, gy, scale, flip: n % 3 === 0, front });
-    for (let x = -3; x <= 15; x += 2.2) tree(x, -7.6 + (n % 2) * .5, .8);          // 北邊林緣
-    for (let y = -5; y <= 8; y += 2.4) { tree(-3.4 - (n % 2) * .6, y, .95); tree(15.2 + (n % 2) * .6, y, .95); }   // 西、東
-    // 南邊不放樹：鏡頭拉近時會投影到盤面上擋住田；畫面下緣交給框邊樹叢
+    const inside = (z, x, y, pad = 0) => z && x > z.bounds[0] - pad && x < z.bounds[0] + z.bounds[2] + pad && y > z.bounds[1] - pad && y < z.bounds[1] + z.bounds[3] + pad;
+    // 固定亂數（同樣的格子永遠得到同樣的值）
+    const rand = (x, y, k) => { const v = Math.sin(x * 127.1 + y * 311.7 + k * 74.7) * 43758.5453; return v - Math.floor(v); };
+    // 林帶：[x0, x1, y0, y1]（格子座標），inner 是靠近空地那一側，種灌木當過渡
+    const bands = [
+      // 與盤面留 2 格以上：樹冠很寬，太近會被畫在後面的田面蓋住樹根
+      { rect: [-7, -2.2, -9, 9.5], inner: 'east' },       // 西側
+      { rect: [14.2, 19, -9, 9.5], inner: 'west' },       // 東側
+      { rect: [-2.2, 14.2, -10.5, -6.6], inner: 'south' }, // 北側（湖與農舍的後方）
+    ];
+    for (const band of bands) {
+      const [x0, x1, y0, y1] = band.rect;
+      for (let y = y0; y < y1; y += 1.3) for (let x = x0; x < x1; x += 1.5) {
+        const jx = x + rand(x, y, 1) * 1.2, jy = y + rand(x, y, 2) * 1.0;
+        if (inside(house, jx, jy, .8) || inside(lake, jx, jy, -.3)) continue;
+        if (rand(x, y, 3) < .18) continue;   // 留一些空隙，邊緣不會像一堵牆
+        props.push({ id: rand(x, y, 4) < .55 ? 'conifers' : 'sunlitTrees', gx: jx, gy: jy, scale: .62 + rand(x, y, 5) * .45, flip: rand(x, y, 6) < .5 });
+      }
+      // 靠空地那一側的灌木：森林到草地的過渡
+      const edge = band.inner === 'east' ? x1 : band.inner === 'west' ? x0 : y1;
+      const along = band.inner === 'south' ? [x0, x1] : [y0, y1];
+      for (let t = along[0]; t < along[1]; t += 1.7) {
+        const j = t + rand(t, edge, 7) * 1.1, off = (rand(t, edge, 8) - .5) * .6;
+        const [gx, gy] = band.inner === 'south' ? [j, edge + .2 + off] : [edge + (band.inner === 'east' ? .3 : -.3) + off, j];
+        if (inside(house, gx, gy, .6)) continue;
+        props.push({ id: rand(t, edge, 9) < .5 ? 'forestUnderstory' : 'flowerUnderstory', gx, gy, scale: .8 + rand(t, edge, 10) * .4, flip: rand(t, edge, 11) < .5 });
+      }
+    }
     return props;
   }
 
