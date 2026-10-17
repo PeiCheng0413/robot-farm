@@ -1,0 +1,41 @@
+{
+  "method": "Built-in image_gen; user-authorized nearest-neighbor resize, alpha threshold128, no-dither palette reduction",
+  "prompts": [
+    {
+      "id": "farmhouseAngled"
+    },
+    {
+      "id": "transitions"
+    }
+  ],
+  "outputs": [
+    {
+      "file": "farmhouse-angled-v01.png",
+      "source": "/Users/peicheng/.codex/generated_images/01a144e0-b127-78e2-a5c3-b015e472ac15/exec-c38df4c6-4f2a-4bf2-9bfe-04b398ff5ed9.png",
+      "originalSize": [
+        1433,
+        1098
+      ],
+      "size": [
+        768,
+        588
+      ],
+      "colors": 48,
+      "bytes": 54386
+    },
+    {
+      "file": "valley-transition-atlas-v01.png",
+      "source": "/Users/peicheng/.codex/generated_images/01a144e0-b127-78e2-a5c3-b015e472ac15/exec-e0df7796-8f4d-43fc-8a59-5d6fdc405e60.png",
+      "originalSize": [
+        1536,
+        1024
+      ],
+      "size": [
+        768,
+        512
+      ],
+      "colors": 32,
+      "bytes": 56664
+    }
+  ]
+}

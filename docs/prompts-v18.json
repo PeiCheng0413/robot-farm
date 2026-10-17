@@ -1,0 +1,119 @@
+{
+  "method": "內建 image_gen",
+  "prompts": [
+    {
+      "id": "foreground",
+      "prompt": "Use case: stylized-concept. Asset type: pixel-art FOREGROUND TREE FRAME ATLAS for Floating Leaf Farm. Generate a 1536x1024 PNG, maximum dimension 2048. TRUE transparent alpha background. Three SEPARATE, NONOVERLAPPING sprites in one atlas: upper left rectangular zone x=0..735,y=0..650 contains a tall LEFT EDGE group of 2-3 dark forest trees and leafy bushes, straight vertical tree trunks, foliage dense on left, tapering toward right. Outer LEFT side of that group should be a vertical cut intended to touch the screen left edge. Upper right zone x=800..1535,y=0..650 contains a different tall RIGHT EDGE tree and bush group, dense on right tapering toward left, vertical cut at outer RIGHT. Lower zone x=40..1496,y=740..1000 contains ONE broad low BOTTOM EDGE tree/bush grouping, tops of near trees rise from bottom, no upper canopy overhang, broad horizontal silhouette to align with bottom screen edge. Keep at least 60px fully transparent separation between all groups, no visible cell dividers, no text labels. These are upright sprites at shallow elevated ORTHOGRAPHIC three-quarter view, not diagonally tilted with floor. Refer to the supplied mountain image for dark teal forest colors and pixel style, not its composition. Cozy muted chunky crisp square PIXEL ART, coarse pixels, hard outlines #263f3c, dark forest #254c42 #35665b, desaturated mint #8fc7a3 sparse upper-left highlights, only three flat shades per material, no gradients. Groups must feel natural and lush but economical simple flat clusters. No farm, no ground plane, no sky, no lake, no characters, no glow, no bloom, no blur, no shadows outside silhouettes. EVERYTHING outside tree and bush silhouettes fully transparent. One atlas only."
+    },
+    {
+      "id": "backdrop",
+      "prompt": "Use case: stylized-concept. Pixel-art game background asset, one mountain valley with a distant LAKE. 1536x1024 transparent PNG, maximum side 2048. Make a WIDE HORIZONTAL LANDSCAPE BAND with transparent empty sky above its jagged ridgeline, and straight horizontal lower boundary near y=950. Tall forested mountains rise at both left and right sides, overlapping muted mint and teal mountain layers recede toward a low central saddle. A clearly visible serene turquoise LAKE in the CENTRAL DISTANT VALLEY, lake lower edge visible, dark pine forest slopes frame both banks. Lower foreground of this backdrop is dark forest edge, NO farmland, buildings, paths or characters. Scene atmosphere: secluded farm would be in a forest clearing immediately in front of this backdrop. Use reference image for warm quiet valley palette and square pixel style. Crisp low-resolution chunky PIXEL ART with flat hard-edged color regions, dark teal forest outlines #263f3c #35665b, muted green #8fc7a3, water #75bdd0, warm cream upper-left ridge highlights. Three discrete flat shades per material. Draw as a genuine low color sprite with large square pixel clusters and NO high-frequency pixel noise. Sky outside the mountain silhouette must be TRUE alpha0 TRANSPARENT, no painted sky. No atmospheric blur, no semitransparent halo around ridges, no gradients, no glow, no soft edges, no text, no labels, no watermarks. This is one static distant panorama with lake, NOT a full main screen, NOT tiles, no foreground tree frame."
+    },
+    {
+      "id": "sky",
+      "prompt": "Use case: stylized-concept. Asset type: one SKY AND CLOUDS horizontal strip for a pixel-art forest valley farming game. Canvas 1536x1024, TRUE transparent alpha PNG, maximum edge 2048. Draw ONLY a wide rectangular horizontal band spanning x=0..1535 and y=240..780, leave everything above and below fully transparent. The band contains 3 broad FLAT HARD-EDGED horizontal color zones: desaturated blue teal #75bdd0 at top, pale mint #b8d9c5 at middle, warm pale cream #e3e6c9 near horizon bottom. Boundaries subtly stepped by large square pixels. These are discrete solid colors, NOT a gradient. Place a few simple chunky cream-white pixel CLOUDS inside the band: asymmetric small clusters toward either side, spacious mostly open center. Clouds have crisp square stair-step silhouettes, 2 flat warm cream tones, completely contained in band. Same quiet warm low-saturation game pixel style as Floating Leaf Farm. Large color areas, clean economical low color art, no grain or microtexture. The outside of rectangle must be alpha0. NO mountains, no trees, no lake, no sun disk, no text, no labels, no visible grid, no soft haze, no glow, no bloom, no blur, no gradient anywhere. One sky layer, not a scene or atlas of clouds."
+    },
+    {
+      "id": "ground",
+      "prompt": "Use case: stylized-concept. Asset type: TWO TOP-DOWN SQUARE GROUND TEXTURE SPRITES in ONE 1536x1024 transparent PNG atlas. For a 64x64 logical cell forest valley farming game. Top-down orthographic 90 degree overhead view ONLY, no sidewalls, no diagonal angle, no isometric perspective, no 3D edge. Left square zone x=128..640,y=256..768: a small sparse scatter of flat warm brown dirt-grain pixel flecks and tiny pebbles distributed through the INTERIOR, no border, no mound, no grass, no cast shadow. This is a seamless DIRT PATH TEXTURE OVERLAY to be drawn on uniform solid earth color #b29163; all 4 edges and an outer 32-pixel border MUST be entirely alpha0 with no marks so repeated cells on shared baseColor have no seam, no outlined square. Right square zone x=896..1408,y=256..768: several irregular FLAT stepping stones seen straight from above, muted warm gray and cream, arranged as a casual walking stone cluster, clean discrete 3-tone pixel facets inside each stone, no upright rock face. Leave transparent gap and 32-pixel transparent border all around its square, all stones entirely inside. Everything outside the dirt flecks and stone shapes is genuinely transparent alpha0, including interiors between flecks. Each square will be sampled as a 512x512 tile and displayed exactly64x64. Tiles are unrotated squares since game code rotates the ground by18degrees and compresses later. Coarse low-resolution crisp square PIXEL ART, few flat colors, dark muted teal accents #263f3c, warm earthy #a67950 #c6a376 #b29163, upper-left light only on stone details. NO text, NO labels, NO grid, NO background color square, NO glowing outline, NO haze, NO gradients, NO blur, NO ambient shadow, NO extra objects. Dirt tile must not be a solid floating island: only scattered texture marks on transparent canvas."
+    },
+    {
+      "id": "props",
+      "prompt": "Use case: stylized-concept. Asset type: SEVEN SMALL UPRIGHT FARM PROP SPRITES in ONE transparent PNG atlas, 1536x1024 maximum side2048. Clean 4 COLUMNS x 2 ROWS conceptual grid, cells384x512; sprites centered with generous transparent margins; keep each complete silhouette inside its own cell, NO visible grid. Top row left to right: 1 ONE wooden produce crate filled with carrots and tomatoes, 2 ONE tall slender wooden lantern post with a small hanging brass lantern, lantern glass is flat cream pixels NO GLOW, 3 ONE squat irregular natural rock, 4 ONE modest flowering bush with white and yellow small flowers. Bottom row left to right: 5 ONE neatly stacked cut firewood pile, 6 ONE single wooden water bucket with visible water and handle, 7 ONE small OPEN SIDED WOODEN WORK SHELTER with teal simple sloped roof supported by timber posts, workbench beneath; 8 EMPTY TRANSPARENT cell. All seven sprites are UPRIGHT at shallow elevated ORTHOGRAPHIC THREE-QUARTER angle, see top and front, verticals stay vertical, no diagonal floor tilt. No ground slabs, no landscape. Match supplied farmhouse reference style and materials: cream #f0e4bb, dark teal #263f3c #35665b, warm timber brown #a67950, ochre #d7a44b, mint #8fc7a3, water #75bdd0. Cozy muted coarse crisp square PIXEL ART, simple three-flat-tone shading, upper-left light, large hard-edged pixel clusters, economical limited colors. Crop crate/water bucket fill about half cell width, lantern tall narrow, work shelter wide within its cell. Entire canvas outside actual object silhouettes TRUE alpha0 TRANSPARENT; no ground shadows, no glow, no halo, no fog, no haze, no blur, no gradients, no text, no numbers, no labels, no outlines of cells. Each object independent, never touching neighboring cells. One atlas only. All static."
+    }
+  ],
+  "note": "原始圖由內建 image_gen 生成；所有來源框按實際輸出量測，不假設等分。原始來源保留於 Codex generated_images。",
+  "processing": {
+    "authorization": "使用者於 2026-10-17 明確允許 Python 最近鄰縮小、清除近透明雜點、限制色階，另製精簡遊戲版；原始生成圖保留供比對。",
+    "method": "Pillow：1536×1024 → 768×512 最近鄰；Alpha >=128 設為255，否則0；MEDIANCUT 限色、不抖色；索引0全透明，其他色全不透明。未重新構圖或重畫。",
+    "originals": "原始檔保留於 Codex generated_images，並另存本對話 outputs/valley-scene-originals；不加入遊戲載入。",
+    "files": [
+      {
+        "file": "foreground-forest-atlas-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "fileBytes": 74327,
+        "originalFile": "foreground-forest-atlas-v01.png",
+        "originalBytes": 1683579,
+        "originalSource": "exec-d372932e-17f4-48c1-9698-25378723dba5.png",
+        "maxOpaquePaletteColors": 32,
+        "withinTarget": true
+      },
+      {
+        "file": "valley-lake-backdrop-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "fileBytes": 48547,
+        "originalFile": "valley-lake-backdrop-v01.png",
+        "originalBytes": 1197513,
+        "originalSource": "exec-2f0e8dc9-6d64-4a54-a52d-7ef5ffc3a109.png",
+        "maxOpaquePaletteColors": 32,
+        "withinTarget": true
+      },
+      {
+        "file": "sky-cloud-strip-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "fileBytes": 14326,
+        "originalFile": "sky-cloud-strip-v01.png",
+        "originalBytes": 934673,
+        "originalSource": "exec-bca50e8a-1801-4c11-95a0-19c13c6e8ed6.png",
+        "maxOpaquePaletteColors": 8,
+        "withinTarget": true
+      },
+      {
+        "file": "valley-path-atlas-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "fileBytes": 13996,
+        "originalFile": "valley-path-atlas-v01.png",
+        "originalBytes": 1288668,
+        "originalSource": "exec-4098ce93-5c21-4169-b083-8a7d96e08cb5.png",
+        "maxOpaquePaletteColors": 16,
+        "withinTarget": true
+      },
+      {
+        "file": "valley-props-atlas-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "fileBytes": 49318,
+        "originalFile": "valley-props-atlas-v01.png",
+        "originalBytes": 1625067,
+        "originalSource": "exec-7cedc44e-3fce-4613-889b-20ffb1158d3f.png",
+        "maxOpaquePaletteColors": 48,
+        "withinTarget": true
+      }
+    ]
+  },
+  "runtimeOutputs": [
+    "foreground-forest-atlas-v02.png",
+    "valley-lake-backdrop-v02.png",
+    "sky-cloud-strip-v02.png",
+    "valley-path-atlas-v02.png",
+    "valley-props-atlas-v02.png"
+  ],
+  "originalSources": {
+    "foreground-forest-atlas-v01.png": "exec-d372932e-17f4-48c1-9698-25378723dba5.png",
+    "valley-lake-backdrop-v01.png": "exec-2f0e8dc9-6d64-4a54-a52d-7ef5ffc3a109.png",
+    "sky-cloud-strip-v01.png": "exec-bca50e8a-1801-4c11-95a0-19c13c6e8ed6.png",
+    "valley-path-atlas-v01.png": "exec-4098ce93-5c21-4169-b083-8a7d96e08cb5.png",
+    "valley-props-atlas-v01.png": "exec-7cedc44e-3fce-4613-889b-20ffb1158d3f.png"
+  },
+  "outputs": {
+    "foreground-forest-atlas-v02.png": "exec-d372932e-17f4-48c1-9698-25378723dba5.png",
+    "valley-lake-backdrop-v02.png": "exec-2f0e8dc9-6d64-4a54-a52d-7ef5ffc3a109.png",
+    "sky-cloud-strip-v02.png": "exec-bca50e8a-1801-4c11-95a0-19c13c6e8ed6.png",
+    "valley-path-atlas-v02.png": "exec-4098ce93-5c21-4169-b083-8a7d96e08cb5.png",
+    "valley-props-atlas-v02.png": "exec-7cedc44e-3fce-4613-889b-20ffb1158d3f.png"
+  }
+}

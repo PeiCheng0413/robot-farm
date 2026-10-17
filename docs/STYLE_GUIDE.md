@@ -1,10 +1,20 @@
-# 浮葉農場｜美術風格規範 v0.4
+# 浮葉農場｜美術風格規範 v0.18
 
 這是素材與動作的初期驗證版。先確定畫面、角色與農作物，之後再開發增量玩法。所有使用者介面使用繁體中文。
 
 ## 視覺方向
 
-目前方向：溫暖、安靜、低飽和的山谷農田，以遠山、林緣與草地包圍空地；溫室素材保留為舊版資源。使用可辨識方形色塊、深色輪廓與三階明暗的像素風。禁止寫實材質、模糊邊緣、漸層、發光濾鏡與不同方向的光源。視角為略俯視的正交三分之四視角，田地不是等角菱形。光線固定從左上方來。
+目前方向：溫暖、安靜、低飽和的山谷農田，以遠山、林緣與草地包圍空地；溫室素材保留為舊版資源。使用可辨識方形色塊、深色輪廓與三階明暗的像素風。禁止寫實材質、模糊邊緣、漸層、發光濾鏡與不同方向的光源。直立素材採略俯視的正交三分之四視角；遊戲斜角由程式投影地面，規範見下方視角章節。光線固定從左上方來。
+
+## 視角與地面投影（目前規格・v0.18）
+
+斜角場景先將整片「正方形俯視地面」在程式裡順時針旋轉約 18°，再把畫面 Y 壓為 40/64。這取代「田地不旋轉」作為通用規則；舊 `valleyFarm.projection` 仍保留其歷史比較視角與全部原值，不改動 `slight`。新增規格放在 `valleyScene.projection.views.game`，未旋轉的田面基準為 64×40，外露土壁向畫面下方延伸 13px；旋轉後的格子外框不等於 64×40。
+
+地面素材（田土、草地、泥土步道、踏腳石）依然製作成正上方俯視的 64×64 邏輯方格，不在圖片裡預先畫斜、旋轉或壓扁。先合成地面圖層，再套同一個旋轉與 Y 縮放；相鄰格共用格線。地面點擊反算須按相反順序處理：扣原點、解除 Y 壓縮、反向旋轉，再換回田格。
+
+直立素材（樹、作物、機器人、貨物、泡泡、名牌、農舍、裝飾）仍採略俯視正交三分之四，所有垂直線保持站直。只將落地錨點送進地面投影，圖片本身維持等比與朝上，禁止把整個場景一起 CSS scaleY、rotateX 或平面旋轉。機器人與貨物／泡泡為同一組直立顯示。前景樹叢按畫面邊緣定位，不跟地面轉。
+
+所有直立物依投影後 groundY、groundX、kindOrder 全域排序，不能按田區分組。框邊樹叢為明確的前景遮罩，最後畫；一般樹與裝飾仍應依落地點排序。土壁只沿佔地聯集沒有鄰格且朝畫面前方的外露邊畫，跨田區不能長出內牆。背景的山、湖、天空在畫面座標定位。現有素材全部照常使用，不重做。
 
 ## 固定色票
 
@@ -238,7 +248,7 @@ Token 為薄荷／青綠多邊形閃電代幣，金錢為黃銅色圓幣，皆�
 
 新增 mountain-backdrop-v01.png、forest-edge-v01.png、grass-ground-tile-v01.png、soil-front-edges-v01.png，原樣保存內建 image_gen 的選定 RGBA 輸出。前兩張分層組成遠山與林緣，中央留出山谷視野；草地是稀疏透明草叢，需疊在 manifest 指定底色。前緣最初兩版有背景／柔光，不採用；選定四條矩形土面版本，以 sourceRect 只取實心條帶，排除邊緣生成雜點。提示詞與來源在 prompts-v15.json。
 
-manifest 僅新增 valleyFarm，保留原始 version 與所有舊欄位。assets 列出四份檔案的尺寸與來源框；environment 的 rect 是相對 viewport 的比例、z 是背景內部順序。projection 的 slight 田面為 64 × 48、前緣 4px，topDown 比較為 64 × 64、前緣 0；正交、無旋轉、無 X 斜切，並非等角菱形。gridToScreen／screenToGrid 定義前後向投影與反算，裝飾前緣不算入格子點擊範圍。不要對整個場景做 CSS scaleY 或 rotateX，否則角色與像素也會壓扁。
+manifest 僅新增 valleyFarm，保留原始 version 與所有舊欄位。assets 列出四份檔案的尺寸與來源框；environment 的 rect 是相對 viewport 的比例、z 是背景內部順序。projection 的 slight 田面為 64 × 48、前緣 4px，topDown 比較為 64 × 64、前緣 0；這是 v0.15 的舊比較視角（無旋轉、無 X 斜切），不是對新場景的限制；目前斜角使用上方 v0.18 視角章節與新增 valleyScene 數據。gridToScreen／screenToGrid 定義前後向投影與反算，裝飾前緣不算入格子點擊範圍。不要對整個場景做 CSS scaleY 或 rotateX，否則角色與像素也會壓扁。
 
 terrain.frontNeighbor=[0,1]，所有田區佔用格子的聯集內只要正南方有鄰格，就不畫該格土面前緣；跨田區邊界同樣檢查。田面沿同一格線接續，不加每格空隙或圓角。uprightSprites 提供植株、機器人與名牌尺寸及落地錨點；它們維持原圖比例。機器人整組包含貨物與想法泡泡，不可單獨再壓縮。depthOrder 依 projected groundY、groundX、kindOrder 全域排序，不按田區分組排序，讓前排植物能遮住後排角色。
 
@@ -261,3 +271,50 @@ manifest 只新增 landBoundary，包含 atlas／parts、geometry.sides、placem
 橫繩與直繩分別使用獨立來源框，不旋轉木樁。endpointRatios 對應兩端接點；端點沿格線投影再上移 ropeElevation，只有繩索長軸隨格寬／格深伸展，厚度與木樁高度固定。木樁依 groundAnchor 落地；繩索使用未上移的線段中點排序，木樁使用原頂點排序，與作物、角色、名牌共用 groundY／groundX／kindOrder，全組不得一律蓋在作物上方。後方細繩可被前排作物遮住。無新增動畫。
 
 試驗室新增主山谷邊界開關、T／L／I／O 帶作物拼接預覽。它是範圍呈現範例，不是擴地機制；game.html、play.html、game/、vendor/、alignment.js 均不修改。
+
+## v0.18 森林山谷斜角場景素材
+
+新增五張 PNG：foreground-forest-atlas-v02.png（左／右／下三組框邊樹叢）、valley-lake-backdrop-v02.png（山與湖）、sky-cloud-strip-v02.png（天空與硬邊雲帶）、valley-path-atlas-v02.png（泥土紋理與踏腳石）、valley-props-atlas-v02.png（作物木箱、燈籠柱、石頭、花叢、木頭堆、水桶、小工作棚）。皆由內建 image_gen 生成，完整提示詞與來源見 docs/prompts-v18.json。使用者於 2026-10-17 授權另製精簡遊戲版：原始 1536×1024 圖以最近鄰縮小為 768×512，Alpha >=128 轉為255，其餘轉為0，再不抖色限色為 8–48 色。原始生成圖保留於 generated_images 與本對話 outputs/valley-scene-originals，供比對；遊戲只載入精簡 v02，不覆蓋任何既有素材。
+
+manifest 只新增 valleyScene 根欄位，十四個 assets 項目各自列出 file、sourceRect、groundAnchor、footprint、recommendedDisplaySize、layer。來源框以實際圖像量測，不能將裝飾圖集四等分：工作棚屋頂超出名義格線。groundAnchor 相對來源框左上角，等比 contain 時與圖片套相同縮放；footprint 是美術占格建議，不是碰撞或購地規則。背景與框邊占格 [0,0]，依 viewportRect 定位。前景另列 edge、viewportRatio 和貼齊側。
+
+泥土步道是共用底色 #b29163 加透明紋理，先填滿 64×64，再把紋理畫進 destinationRect=[2,2,60,60]；外圈只保留底色，使四邊相鄰接續一致。踏腳石使用相同內縮框疊在泥土或草地上，並跟著整片地面投影，與直立石頭不同。試驗室提供 3×3 拼接檢視；不宣稱原始生成紋理本身已是逐像素週期貼圖。
+
+五張遊戲用 PNG 皆為 768×512、全透明／全不透明兩種 Alpha。大小依序為 74,327／48,547／14,326／13,996／49,318 bytes，總計 200,514 bytes；每張都小於 500KB，長邊亦小於 2048px。前景／遠景／天空／步道／小物分別限制為 32／32／8／16／48 個不透明色，不宣稱是逐物件手工三階明暗清稿。實際尺寸、大小與處理方法記錄在 valleyScene.performance 與 prompts-v18.json。所有新增素材 animated=false；沒有水波、樹搖或燈籠閃爍。靜態播放規則放在 valleyScene.rendering.animation；既有角色動畫與 alignment 數據完整保留。
+
+試驗室新增獨立 game 斜角預覽與前景／裝飾／格線開關，原 slight 與 topDown 不變。預覽用原版作物、機器人、農舍與名牌檢查落點、比例及遮擋；沒有加入遊戲機制。本次不修改 game.html、play.html、game/、vendor/ 或 alignment.js。
+
+
+## v0.19 山谷主畫面構圖
+
+以使用者提供的山谷農場參考圖調整素材試驗室：右後方放大農舍，五個矩形種植區占據前半部，中景日照闊葉樹／針葉樹群包住不規則空地，中央保留遠湖視線。新增 meadow-ground-tile-v01.png（512×512／16色）及 valley-midground-trees-v01.png（768×512／48色）；由內建 image_gen 生成，沿用已授權最近鄰縮圖、Alpha 128 閾值與無抖色量化。提示詞見 prompts-v19.json。草地在方形內不透明；樹群輪廓外透明。草地採交替水平／垂直鏡像鋪排，避免依賴原圖的週期接縫。
+
+manifest.valleyScene.composition 保存構圖畫布、投影原點、草地裁切多邊形、材質重複尺度、步道折線、五區田格、植株偏移、裝飾落點、框邊範圍與靜態角色尺寸。這是可拆分素材合成的美術示範，不是將整張概念圖當遊戲底圖。原 game 視角與 slight 完整保留；新構圖只另用自己的原點。田面仍先旋轉18°再縮放Y至0.625，田格64×40，土壁13px。直立物按落地點全域排序，繩索端點隨地面投影、木樁保持站直。
+
+所有新素材與此構圖均為靜態，frameOrder=[0]、loop=false、clock=none，無樹搖／燈光／水波動畫；現有角色動畫資料不變。原田格測試可用勾選框切回。未修改遊戲本體，尚需由 Claude 依 manifest 接入。現有作物與農舍繼續使用，與參考插畫的精細度、密度仍有差異。
+
+
+## v0.20 農舍視角與自然過渡重製
+
+依使用者要求縮小機器人並重製部分遊戲貼圖。新增 farmhouse-angled-v01.png（768×588、54,386 bytes）與 valley-transition-atlas-v01.png（768×512、56,664 bytes），使用內建 image_gen，完整提示詞與來源見 prompts-v20.json。兩張均沿用授權的最近鄰縮小、Alpha>=128 二值化與無抖色限色；48色農舍、32色過渡圖集。原始生成另保留，舊檔不覆蓋。
+
+農舍直接重畫斜向正面基座、可見屋頂與側牆、右側薪柴棚；垂直柱仍站直，不旋轉或壓扁整張圖片。groundAnchor 校準到門前台階落地處。建築是繪製的三分之四視角，側牆與屋頂仍有美術透視近似，不宣稱是數學精準的三維投影；footprint 為建議占格，不能當精確碰撞範圍。
+
+四項過渡素材共用一張圖集：forestUnderstory／flowerUnderstory 為直立低灌木，納入全場落點排序；grassTransition／pathTransition 為俯視草土碎片，依 groundDecals 的邏輯格落點與大小鋪設後，隨地面統一旋轉18°、縮放Y。這兩種是透明邊緣貼花，非單獨無縫地磚，不可當完全填滿的基底使用。
+
+新增 valleyScene.compositionV20，保留 composition 及所有既有資料。staticRobot.canvasSize=116，相較前版160縮小27.5%，centerOffset=[0,-22]，沿用idle第一格與alignment定位；frameOrder=[0]、loop=false、clock=none。本場景不新增角色動畫；其他工作台既有動畫資料完整保留。所有新素材 animated=false。
+
+試驗室預設顯示新構圖，可勾「比較上一版構圖」或「切換原田格測試」。最大寬度960px避免放大像素；地面、土壁、直立物與框邊順序不變。本批只修改素材／manifest／試驗室，遊戲本體由 Claude 接入。
+
+
+## v0.21 擴地世界規劃與俯視地圖
+
+唯讀分析 game/config.js／plots.js／sim.js／play.js／render.js／valley.js／session.js：目前盤面12×7，開局中央5×3，購地一次一格且四鄰相接。田塊的局部座標與腳本不隨排列旋轉改變；田塊不互相連通，也無場景道路尋路。安排模式換成96×96方格，不會暫停模擬；普通畫面目前只有96×60壓扁，尚未使用18°旋轉。不要把試驗室的五區展示田當成遊戲開局資料。
+
+新增 farmWorld 根欄位，完整保留全部既有 manifest 數據。board 保留84格，不設內部永久道路／建築禁用格。expansion.phases建議15→35→70→84格，僅空間引導，不新增遊戲門檻；額外69格的建議購地順序與現行價格都記錄成資料，總價22,612。以原遊戲canBuyLand／buyLand逐次驗證通過。後段價格漲幅大，是否調平衡由Claude機制層另議，本次不改動價格。
+
+valley-overhead-map-v01.png由內建image_gen生成後修正成完全俯視：屋頂取代可見立面、樹冠朝上，北側湖岸與農舍、道路走盤面外，中心留空草地。完整提示詞及兩輪來源見prompts-v21.json。使用已授權的最近鄰縮放至1280×1280、Alpha128閾值與無抖色48色限色，檔案365,353 bytes；量化後再次將色盤Alpha二值化，避免出現254的近不透明項。外輪廓外透明、84格範圍全不透明。原始生成保留供比對。
+
+最終盤面校準為boardOrigin=[224,576]，每格64×64，boardRect=[224,576,768,448]，確保全部84格在純草地上。零起算x向東、y向南；PNG不畫格線、購地狀態、田塊、作物、角色或文字。地圖中的樹、農舍與路是靜態背景；遊戲必須依state.land與state.layout另外疊加。圖片本身不是碰撞／購地資料。斜角與俯視沿用同一份世界格座標，只切換投影；俯視使用屋頂圖，不把斜角農舍壓扁。
+
+試驗室新增純圖／四階段範圍、格線與開局直線田的唯讀預覽。所有圖、規劃與切換均為靜態，frameOrder=[0]、loop=false、clock=none、transitionMs=0，既有角色動畫完整保留。遊戲載圖器目前不會自動讀farmWorld或valleyScene，需要Claude接入載入器、鏡頭與滑鼠反算；不得聲稱遊戲已整合。game/、game.html、play.html、alignment.js未修改。

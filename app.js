@@ -1,6 +1,6 @@
 
 (async function(){
-  const response=await fetch('assets/manifest.json?v=17');
+  const response=await fetch('assets/manifest.json?v=21');
   if(!response.ok)throw new Error('素材數據讀取失敗：'+response.status);
   const manifest=await response.json(),rendering=manifest.rendering,clips=manifest.animationClips;
   const $=s=>document.querySelector(s),alignment=spriteAlignment;
@@ -30,7 +30,7 @@
   function imageSource(file){
     if(images.has(file))return images.get(file);
     const image=new Image();images.set(file,image);
-    image.onload=()=>{robotViews.forEach(drawRobot);plantViews.forEach(drawPlant);itemViews.forEach(drawItem);soilViews.forEach(drawSoil);effectViews.forEach((view,canvas)=>drawEffect(canvas,view));updateEffects();thoughtViews.forEach((index,canvas)=>drawThought(canvas,index));updateThought(true);mainAssetViews.forEach((item,canvas)=>drawMainAsset(canvas,item));drawValley();boundaryViews.forEach((sample,canvas)=>drawBoundarySample(canvas,sample));};
+    image.onload=()=>{robotViews.forEach(drawRobot);plantViews.forEach(drawPlant);itemViews.forEach(drawItem);soilViews.forEach(drawSoil);effectViews.forEach((view,canvas)=>drawEffect(canvas,view));updateEffects();thoughtViews.forEach((index,canvas)=>drawThought(canvas,index));updateThought(true);mainAssetViews.forEach((item,canvas)=>drawMainAsset(canvas,item));drawValley();drawAngledScene();drawFarmWorld();angledSamples.forEach((asset,canvas)=>drawAngledSample(canvas,asset));boundaryViews.forEach((sample,canvas)=>drawBoundarySample(canvas,sample));};
     image.onerror=()=>{$('#status').textContent='素材載入失敗，請重新整理頁面。';};
     image.src='assets/'+file+'?v='+encodeURIComponent(manifest.version);
     return image;
@@ -478,6 +478,205 @@
     sprites.sort((a,b)=>{for(const key of valley.depthOrder.sortKey){const d=a[key]-b[key];if(d)return d;}return 0;}).forEach(sprite=>sprite.draw());
     $('#valley-view-note').textContent=view.label+' ／ 田面 '+tw+' × '+th+' ／ 前緣 '+view.frontDepth+' 像素・'+soil.label;
   }
+  // Static angled-scene art preview. Projection, anchors and layout all come from manifest.
+  const angled=manifest.valleyScene,angledCanvas=$('#angled-preview'),angledSamples=new Map();
+  const angledLab=angled.lab,angledView=angled.projection.views[angledLab.initialView];
+  [angledCanvas.width,angledCanvas.height]=angledLab.canvas;
+  function angledProjection(x,y){
+    const t=angledView.rotationDegrees*Math.PI/180,[tw,th]=angledView.logicalTileSize,[ox,oy]=angledView.previewOrigin;
+    return [ox+x*tw*Math.cos(t)-y*th*Math.sin(t),oy+angledView.scaleY*(x*tw*Math.sin(t)+y*th*Math.cos(t))];
+  }
+  function angledSprite(ctx,asset,gx,gy){
+    const source=imageSource(asset.file);if(!source.complete||!source.naturalWidth)return;
+    const [sw,sh]=asset.sourceRect.slice(2),[dw,dh]=asset.recommendedDisplaySize;
+    const scale=Math.min(dw/sw,dh/sh),[ax,ay]=asset.groundAnchor;
+    ctx.drawImage(source,...asset.sourceRect,gx-ax*scale,gy-ay*scale,sw*scale,sh*scale);
+  }
+  function angledTile(ctx,asset,x,y,size=angled.logicalTileSize){
+    const source=imageSource(asset.file),[w,h]=size;
+    if(asset.baseColor){ctx.fillStyle=asset.baseColor;ctx.fillRect(x,y,w,h);}
+    if(source.complete&&source.naturalWidth){
+      const [dx,dy,dw,dh]=asset.destinationRect,[cw,ch]=asset.logicalCanvas;
+      ctx.drawImage(source,...asset.sourceRect,x+dx/cw*w,y+dy/ch*h,dw/cw*w,dh/ch*h);
+    }
+  }
+  function drawAngledSample(canvas,asset){
+    const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;
+    if(asset.layer==='ground-tile'&&asset.repeatMode!=='scattered-decal-not-seamless'){
+      for(let y=0;y<3;y++)for(let x=0;x<3;x++){
+        angledTile(ctx,angled.assets.dirtPath,x*64,y*64);
+        if(asset!==angled.assets.dirtPath)angledTile(ctx,asset,x*64,y*64);
+      }
+    }else{
+      const image=imageSource(asset.file);if(!image.complete||!image.naturalWidth)return;
+      const [sw,sh]=asset.sourceRect.slice(2),scale=Math.min(canvas.width/sw,canvas.height/sh);
+      ctx.drawImage(image,...asset.sourceRect,(canvas.width-sw*scale)/2,(canvas.height-sh*scale)/2,sw*scale,sh*scale);
+    }
+  }
+  function drawAngledTechnical(){
+    const ctx=angledCanvas.getContext('2d'),[cw,ch]=angledLab.canvas,assets=angled.assets;
+    ctx.clearRect(0,0,cw,ch);ctx.imageSmoothingEnabled=false;ctx.fillStyle=angled.rendering.skyColor;ctx.fillRect(0,0,cw,ch);
+    for(const asset of Object.values(assets).filter(a=>a.layer==='backdrop').sort((a,b)=>a.z-b.z)){
+      const img=imageSource(asset.file);if(img.complete&&img.naturalWidth)ctx.drawImage(img,...asset.sourceRect,...asset.viewportRect.map((n,i)=>n*(i%2?ch:cw)));
+    }
+    ctx.fillStyle=angled.rendering.groundColor;ctx.fillRect(0,ch*angledLab.groundStartY,cw,ch*(1-angledLab.groundStartY));
+    const [fx,fy]=angledLab.fieldOffset,cells=valley.preview.fields.flatMap(f=>f.cells.map(([x,y],i)=>({x:x+fx,y:y+fy,i,field:f}))),occupied=new Set(cells.map(c=>c.x+','+c.y));
+    const t=angledView.rotationDegrees*Math.PI/180,s=angledView.scaleY,[ox,oy]=angledView.previewOrigin;
+    ctx.save();ctx.setTransform(Math.cos(t),s*Math.sin(t),-Math.sin(t),s*Math.cos(t),ox,oy);
+    const [tw,th]=angledView.logicalTileSize;
+    const soil=soilData.states.find(v=>v.soilIndex===valleyState.soil).variants.find(v=>v.id==='plain');
+    for(const cell of cells)for(const layer of [...soil.layers].sort((a,b)=>a.z-b.z)){
+      const source=imageSource(layer.atlas);if(!source.complete||!source.naturalWidth)continue;
+      const [dx,dy,w,h]=layer.destinationRect,[sw,sh]=soilData.canvas;
+      ctx.drawImage(source,...layer.sourceRect,cell.x*tw+dx/sw*tw,cell.y*th+dy/sh*th,w/sw*tw,h/sh*th);
+    }
+    for(const [x,y] of angledLab.pathCells)if(!occupied.has(x+','+y))angledTile(ctx,assets.dirtPath,x*tw,y*th);
+    for(const [x,y] of angledLab.stoneCells)if(!occupied.has(x+','+y))angledTile(ctx,assets.steppingStones,x*tw,y*th);
+    if($('#angled-grid').checked){
+      ctx.strokeStyle='#f0e4bb';ctx.lineWidth=1;
+      for(const cell of cells)ctx.strokeRect(cell.x*tw,cell.y*th,tw,th);
+    }
+    ctx.restore();
+    const wallData=angled.rendering.frontWalls,wallAsset=valley.assets.soilFront,wallImage=imageSource(wallAsset.file),wallFrame=wallAsset.frames.find(f=>f.soilIndex===valleyState.soil);
+    const faces=[];
+    for(const cell of cells)for(const side of wallData.sides){
+      const [nx,ny]=side.neighbor;if(occupied.has((cell.x+nx)+','+(cell.y+ny)))continue;
+      const a=angledProjection(cell.x+side.start[0],cell.y+side.start[1]),b=angledProjection(cell.x+side.end[0],cell.y+side.end[1]);
+      if(-(b[0]-a[0])<=0)continue;faces.push({a,b,y:(a[1]+b[1])/2});
+    }
+    if(wallImage.complete&&wallImage.naturalWidth)for(const {a,b} of faces.sort((a,b)=>a.y-b.y)){
+      const [sw,sh]=wallFrame.sourceRect.slice(2);ctx.save();ctx.transform((b[0]-a[0])/sw,(b[1]-a[1])/sw,0,wallData.frontDepth/sh,a[0],a[1]);
+      ctx.drawImage(wallImage,...wallFrame.sourceRect,0,0,sw,sh);ctx.restore();
+    }
+    const sprites=[],kinds=angled.rendering.depthOrder.kindOrder;
+    function add(asset,cell,kind){const [gx,gy]=angledProjection(...cell);sprites.push({groundX:gx,groundY:gy,kindOrder:kinds[kind],draw:()=>angledSprite(ctx,asset,gx,gy)});}
+    add(valley.assets.farmhouse,angledLab.farmhouseCell,'building');
+    if($('#angled-props').checked)for(const prop of angledLab.props)add(assets[prop.asset],prop.cell,'prop');
+    cells.forEach((cell,i)=>{
+      const crop=cropById.get(valley.preview.cropCycle[i%valley.preview.cropCycle.length]),sample=crop.frames[angledLab.cropStage];
+      const [gx,gy]=angledProjection(cell.x+valley.uprightSprites.plantGroundAnchor[0],cell.y+valley.uprightSprites.plantGroundAnchor[1]);
+      sprites.push({groundX:gx,groundY:gy,kindOrder:kinds.plant,draw:()=>{
+        const img=imageSource(crop.atlas);if(!img.complete||!img.naturalWidth)return;
+        const scale=sample.scale*valley.uprightSprites.plantCanvasDisplaySize[0]/rendering.plantCanvas[0],[sw,sh]=sample.sourceRect.slice(2);
+        ctx.drawImage(img,...sample.sourceRect,gx-sample.root[0]*scale,gy-sample.root[1]*scale,sw*scale,sh*scale);
+      }});
+    });
+    const clip=clips[angledLab.robotClip],pose=rendering.robotPoses[clip.poseRows[0]],sample=pose.frames[clip.frameOrder[angledLab.robotStep]];
+    for(const cell of angledLab.robotCells){
+      const [gx,gy]=angledProjection(...cell);sprites.push({groundX:gx,groundY:gy,kindOrder:kinds.robot,draw:()=>{
+        const img=imageSource(pose.atlas);if(!img.complete||!img.naturalWidth)return;
+        const [x,y,w,h]=sample.sourceRect,[cx,cy,height]=lookup(sample.alignmentPath),scale=alignment.bodyHeight/height*valley.uprightSprites.robotCanvasDisplaySize[0]/alignment.canvas,[dx,dy]=valley.uprightSprites.robotCenterOffset;
+        ctx.drawImage(img,x,y,w,h,gx+dx+(x-cx)*scale,gy+dy+(y-cy)*scale,w*scale,h*scale);
+      }});
+    }
+    for(const field of valley.preview.fields){
+      const sign=mainAssets.items.find(i=>i.typeId===field.signType),[dx,dy]=valley.preview.signOffset;
+      add({...sign,recommendedDisplaySize:angledLab.signDisplaySize},[Math.min(...field.cells.map(c=>c[0]))+fx+dx,Math.max(...field.cells.map(c=>c[1]))+fy+dy],'sign');
+    }
+    sprites.sort((a,b)=>{for(const key of angled.rendering.depthOrder.sortKey){const d=a[key]-b[key];if(d)return d;}return 0;}).forEach(v=>v.draw());
+    if($('#angled-frame').checked)for(const asset of Object.values(assets).filter(a=>a.layer==='foreground-frame')){
+      const img=imageSource(asset.file);if(!img.complete||!img.naturalWidth)continue;
+      const [x,y,w,h]=asset.viewportRect.map((n,i)=>n*(i%2?ch:cw)),[sw,sh]=asset.sourceRect.slice(2),scale=asset.fit==='cover-width'?w/sw:Math.min(w/sw,h/sh),dw=sw*scale,dh=sh*scale;
+      const dx=asset.edge==='right'?x+w-dw:asset.edge==='bottom'?x+(w-dw)/2:x,dy=y+h-dh;
+      ctx.drawImage(img,...asset.sourceRect,dx,dy,dw,dh);
+    }
+    $('#angled-view-note').textContent=angledView.label+' ／ 地面旋轉 '+angledView.rotationDegrees+'° ／ 田面基準 '+angledView.tileSize.join(' × ')+' ／ 土壁 '+angledView.frontDepth+'px';
+  }
+  function drawAngledScene(){
+    if(!angled.composition||$('#angled-technical')?.checked)return drawAngledTechnical();
+    const c=(!$('#angled-previous')?.checked&&angled.compositionV20)||angled.composition,ctx=angledCanvas.getContext('2d'),[cw,ch]=c.canvas,A=angled.assets,v=angled.projection.views[c.view],t=v.rotationDegrees*Math.PI/180,cs=Math.cos(t),sn=Math.sin(t),s=v.scaleY,[ox,oy]=c.origin;
+    const project=(x,y)=>[ox+64*(x*cs-y*sn),oy+64*s*(x*sn+y*cs)];
+    const ground=()=>ctx.setTransform(cs,s*sn,-sn,s*cs,ox,oy);
+    ctx.clearRect(0,0,cw,ch);ctx.imageSmoothingEnabled=false;ctx.fillStyle=angled.rendering.skyColor;ctx.fillRect(0,0,cw,ch);
+    for(const b of c.backgrounds){const a=A[b.asset],im=imageSource(a.file);if(im.complete&&im.naturalWidth)ctx.drawImage(im,...a.sourceRect,...b.rect);}
+    ctx.save();ctx.beginPath();c.clearing.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.clip();ground();
+    const meadow=A.meadow,mi=imageSource(meadow.file),repeat=c.meadowRepeatSize,[minX,maxX,minY,maxY]=c.meadowRange;
+    if(mi.complete&&mi.naturalWidth)for(let y=minY;y<maxY;y++)for(let x=minX;x<maxX;x++){
+      ctx.save();ctx.translate(x*repeat,y*repeat);ctx.translate(x%2?repeat:0,y%2?repeat:0);ctx.scale(x%2?-1:1,y%2?-1:1);ctx.drawImage(mi,...meadow.sourceRect,0,0,repeat,repeat);ctx.restore();
+    }
+    for(const path of c.paths){
+      ctx.save();ctx.beginPath();for(let i=1;i<path.length;i++){
+        const a=path[i-1].map(n=>n*64),b=path[i].map(n=>n*64),length=Math.hypot(b[0]-a[0],b[1]-a[1]),dx=-(b[1]-a[1])/length*c.pathWidth*32,dy=(b[0]-a[0])/length*c.pathWidth*32;
+        ctx.moveTo(a[0]+dx,a[1]+dy);ctx.lineTo(b[0]+dx,b[1]+dy);ctx.lineTo(b[0]-dx,b[1]-dy);ctx.lineTo(a[0]-dx,a[1]-dy);ctx.closePath();
+      }ctx.clip();for(let y=-2;y<8;y++)for(let x=-5;x<10;x++)angledTile(ctx,A.dirtPath,x*64,y*64);ctx.restore();
+    }ctx.restore();
+    const cells=c.fields.flatMap(f=>f.cells.map(([x,y])=>({x,y,crop:f.crop}))),occupied=new Set(cells.map(p=>p.x+','+p.y)),soil=soilData.states.find(v=>v.soilIndex===valleyState.soil).variants.find(v=>v.id==='plain');
+    ctx.save();ground();for(const cell of cells){for(const layer of [...soil.layers].sort((a,b)=>a.z-b.z)){
+      const im=imageSource(layer.atlas);if(!im.complete||!im.naturalWidth)continue;const [dx,dy,w,h]=layer.destinationRect,[sw,sh]=soilData.canvas;
+      ctx.drawImage(im,...layer.sourceRect,cell.x*64+dx/sw*64,cell.y*64+dy/sh*64,w/sw*64,h/sh*64);
+    }if($('#angled-grid').checked){ctx.strokeStyle='#f0e4bb';ctx.strokeRect(cell.x*64,cell.y*64,64,64);}}
+    for(const d of c.groundDecals||[]){
+      const a=A[d.asset],im=imageSource(a.file);if(!im.complete||!im.naturalWidth)continue;
+      ctx.save();ctx.translate(d.center[0]*64,d.center[1]*64);ctx.scale(d.mirrorX?-1:1,d.mirrorY?-1:1);
+      ctx.drawImage(im,...a.sourceRect,-d.size[0]*32,-d.size[1]*32,d.size[0]*64,d.size[1]*64);ctx.restore();
+    }ctx.restore();
+    const wall=valley.assets.soilFront,wi=imageSource(wall.file),wf=wall.frames.find(f=>f.soilIndex===valleyState.soil),faces=[];
+    for(const cell of cells)for(const side of angled.rendering.frontWalls.sides){if(occupied.has((cell.x+side.neighbor[0])+','+(cell.y+side.neighbor[1])))continue;const a=project(cell.x+side.start[0],cell.y+side.start[1]),b=project(cell.x+side.end[0],cell.y+side.end[1]);if(b[0]<a[0])faces.push({a,b});}
+    if(wi.complete&&wi.naturalWidth)for(const {a,b} of faces.sort((a,b)=>(a.a[1]+a.b[1])-(b.a[1]+b.b[1]))){const [w,h]=wf.sourceRect.slice(2);ctx.save();ctx.transform((b[0]-a[0])/w,(b[1]-a[1])/w,0,v.frontDepth/h,a[0],a[1]);ctx.drawImage(wi,...wf.sourceRect,0,0,w,h);ctx.restore();}
+    const sprites=[],push=(p,draw,kindOrder=4)=>sprites.push({groundX:p[0],groundY:p[1],kindOrder,draw});
+    for(const p of c.sprites){if(!$('#angled-props').checked&&!(c.essentialSprites||['conifers','sunlitTrees','farmhouse']).includes(p.asset))continue;const a=p.asset==='farmhouse'?valley.assets.farmhouse:A[p.asset];push(p.anchor,()=>angledSprite(ctx,{...a,recommendedDisplaySize:p.displaySize},...p.anchor));}
+    for(const cell of cells)for(const offset of c.plantOffsets){const p=project(cell.x+offset[0],cell.y+offset[1]),crop=cropById.get(cell.crop),f=crop.frames[c.cropStage];push(p,()=>{const im=imageSource(crop.atlas);if(!im.complete||!im.naturalWidth)return;const sc=f.scale*c.plantSize/rendering.plantCanvas[0];ctx.drawImage(im,...f.sourceRect,p[0]-f.root[0]*sc,p[1]-f.root[1]*sc,f.sourceRect[2]*sc,f.sourceRect[3]*sc);},1);}
+    for(const field of c.fields){const geometry=boundaryGeometry(field.cells),post={...boundary.parts.post,file:boundary.atlas,recommendedDisplaySize:c.boundary.postSize};
+      for(const vertex of geometry.vertices){const p=project(...vertex);push(p,()=>angledSprite(ctx,post,...p),3);}
+      for(const edge of geometry.edges){const a=project(...edge.start),b=project(...edge.end),p=[(a[0]+b[0])/2,(a[1]+b[1])/2];push(p,()=>{const im=imageSource(boundary.atlas),r=boundary.parts.horizontal.sourceRect;if(!im.complete||!im.naturalWidth)return;ctx.save();ctx.translate(a[0],a[1]-c.boundary.elevation);ctx.rotate(Math.atan2(b[1]-a[1],b[0]-a[0]));ctx.drawImage(im,...r,0,0,Math.hypot(b[0]-a[0],b[1]-a[1]),c.boundary.ropeThickness);ctx.restore();},0);}
+    }
+    const robot=c.staticRobot||{clip:angledLab.robotClip,step:angledLab.robotStep,canvasSize:c.robotSize,centerOffset:valley.uprightSprites.robotCenterOffset};
+    const clip=clips[robot.clip],pose=rendering.robotPoses[clip.poseRows[0]],sample=pose.frames[clip.frameOrder[robot.step]];
+    for(const cell of c.robots){const p=project(...cell);push(p,()=>{const im=imageSource(pose.atlas);if(!im.complete||!im.naturalWidth)return;const [x,y,w,h]=sample.sourceRect,[cx,cy,height]=lookup(sample.alignmentPath),scale=alignment.bodyHeight/height*robot.canvasSize/alignment.canvas,[dx,dy]=robot.centerOffset;ctx.drawImage(im,x,y,w,h,p[0]+dx+(x-cx)*scale,p[1]+dy+(y-cy)*scale,w*scale,h*scale);},2);}
+    sprites.sort((a,b)=>a.groundY-b.groundY||a.groundX-b.groundX||a.kindOrder-b.kindOrder).forEach(p=>p.draw());
+    if($('#angled-frame').checked)for(const [id,rect] of Object.entries(c.frameRects)){const a=A[id],im=imageSource(a.file);if(!im.complete||!im.naturalWidth)continue;const [x,y,w,h]=rect,[sw,sh]=a.sourceRect.slice(2),sc=Math.min(w/sw,h/sh),dw=sw*sc,dh=sh*sc;ctx.drawImage(im,...a.sourceRect,a.edge==='right'?x+w-dw:a.edge==='bottom'?x+(w-dw)/2:x,y+h-dh,dw,dh);}
+    $('#angled-view-note').textContent=c.label+' ／ 18° 地面投影・64 × 40・13px 土壁 ／ 靜態美術預覽';
+  }
+
+  $('#angled-technical').onchange=drawAngledScene;
+  $('#angled-previous').onchange=drawAngledScene;
+  for(const [id,key] of [['angled-frame','initialFrameVisible'],['angled-props','initialPropsVisible'],['angled-grid','initialGroundGridVisible']]){
+    $(('#'+id)).checked=angledLab[key];$(('#'+id)).onchange=drawAngledScene;
+  }
+  for(const id of [...angledLab.assetOrder,...(angledLab.additionalAssetOrderV20||[])]){
+    const asset=angled.assets[id],card=document.createElement('figure'),title=document.createElement('figcaption'),canvas=document.createElement('canvas'),note=document.createElement('p'),link=document.createElement('a');
+    const isTile=asset.layer==='ground-tile'&&asset.repeatMode!=='scattered-decal-not-seamless';[canvas.width,canvas.height]=isTile?[192,192]:asset.layer==='backdrop'?[320,160]:[192,160];
+    canvas.setAttribute('role','img');canvas.setAttribute('aria-label',asset.label+(isTile?'・三乘三拼接':''));
+    title.textContent=asset.label+(asset.edge?'・貼齊'+({left:'左',right:'右',bottom:'下'}[asset.edge])+'側':'');
+    note.textContent=(isTile?'64 × 64／3 × 3 鋪排':asset.recommendedDisplaySize.join(' × ')+'px')+'・'+Math.round(asset.fileBytes/1024)+' KiB'+(asset.footprint[0]?'・占 '+asset.footprint.join(' × ')+' 格':'・畫面定位');
+    link.href='assets/'+asset.file;link.textContent='查看透明圖集 ↗';card.append(title,canvas,note,link);$('#angled-samples').append(card);angledSamples.set(canvas,asset);drawAngledSample(canvas,asset);
+  }
+  drawAngledScene();
+
+  // Static world/land plan: the game keeps its own economy, save and arrangement code.
+  function drawFarmWorld(){
+    const world=manifest.farmWorld,canvas=$('#world-preview');if(!world||!canvas)return;
+    const ctx=canvas.getContext('2d'),v=world.views.topDown,[cw,ch]=v.canvas,a=world.assets.overheadMap;
+    ctx.clearRect(0,0,cw,ch);ctx.imageSmoothingEnabled=false;
+    const im=imageSource(a.file);if(im.complete&&im.naturalWidth)ctx.drawImage(im,...a.sourceRect,0,0,cw,ch);
+    const id=$('#world-phase').value,phase=world.expansion.phases.find(p=>p.id===id);
+    if(!phase){$('#world-note').textContent='純俯視地圖・沒有烘焙田塊、圍欄或購地狀態';return;}
+    const [ox,oy]=v.boardOrigin,[tw,th]=v.tileSize,[bx,by,bw,bh]=v.boardRect,open=new Set(phase.cells.map(p=>p.join(','))),lab=world.lab;
+    for(const cell of world.board.cells){const [x,y]=cell;ctx.fillStyle=open.has(cell.join(','))?lab.ownedOverlay:lab.unownedOverlay;ctx.fillRect(ox+x*tw,oy+y*th,tw,th);}
+    if($('#world-starter').checked){
+      const soil=soilData.states.find(p=>p.soilIndex===lab.initialSoilIndex).variants.find(p=>p.id==='plain');
+      for(const [x,y] of lab.starterPlotCells)for(const layer of [...soil.layers].sort((a,b)=>a.z-b.z)){
+        const img=imageSource(layer.atlas);if(!img.complete||!img.naturalWidth)continue;
+        const [dx,dy,w,h]=layer.destinationRect,[sw,sh]=soilData.canvas;ctx.drawImage(img,...layer.sourceRect,ox+x*tw+dx/sw*tw,oy+y*th+dy/sh*th,w/sw*tw,h/sh*th);
+      }
+    }
+    if($('#world-grid').checked){ctx.lineWidth=1;ctx.strokeStyle=lab.gridColor;ctx.beginPath();for(let x=0;x<=world.board.columns;x++){ctx.moveTo(ox+x*tw,oy);ctx.lineTo(ox+x*tw,oy+bh);}for(let y=0;y<=world.board.rows;y++){ctx.moveTo(ox,oy+y*th);ctx.lineTo(ox+bw,oy+y*th);}ctx.stroke();}
+    if($('#world-zones').checked){
+      for(const p of world.expansion.phases){const [x,y,w,h]=p.rect;ctx.lineWidth=3;ctx.strokeStyle=lab.colors[p.id];ctx.strokeRect(ox+x*tw,oy+y*th,w*tw,h*th);}
+      const neighbors=[[1,0],[-1,0],[0,1],[0,-1]];ctx.strokeStyle=lab.nextCellStroke;ctx.lineWidth=2;ctx.setLineDash([6,5]);
+      for(const [x,y] of world.board.cells){if(open.has(x+','+y)||!neighbors.some(([dx,dy])=>open.has((x+dx)+','+(y+dy))))continue;ctx.strokeRect(ox+x*tw+5,oy+y*th+5,tw-10,th-10);}ctx.setLineDash([]);
+    }
+    $('#world-note').textContent=phase.label+'：'+phase.totalCells+' / 84 格・累計購地 '+phase.cumulativeCost.toLocaleString('zh-TW')+' 金錢・白色虛線為相鄰可擴格（示意）';
+  }
+  if(manifest.farmWorld){
+    const w=manifest.farmWorld,canvas=$('#world-preview');[canvas.width,canvas.height]=w.lab.canvas;
+    for(const phase of w.expansion.phases){const option=document.createElement('option');option.value=phase.id;option.textContent=phase.label+'・'+phase.totalCells+' 格';$('#world-phase').append(option);}
+    $('#world-phase').value=w.lab.defaultPhase;
+    for(const [id,value] of [['world-grid',w.lab.showGridInitially],['world-zones',w.lab.showZonesInitially],['world-starter',w.lab.showStarterInitially]]){$('#'+id).checked=value;$('#'+id).onchange=drawFarmWorld;}
+    $('#world-phase').onchange=drawFarmWorld;$('#world-map-link').href='assets/'+w.assets.overheadMap.file;
+    drawFarmWorld();
+  }
+
   function syncValleyControls(){
     document.querySelectorAll('#valley-views button').forEach(button=>{const active=button.dataset.view===valleyState.view;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
     buttons('#valley-soils',valleyState.soil);
@@ -486,7 +685,7 @@
     const button=document.createElement('button');button.dataset.view=id;button.textContent=view.label;$('#valley-views').append(button);
   });
   $('#valley-views').onclick=e=>{if(!e.target.matches('button'))return;valleyState.view=e.target.dataset.view;drawValley();syncValleyControls();};
-  $('#valley-soils').onclick=e=>{if(!e.target.matches('button'))return;valleyState.soil=+e.target.dataset.value;drawValley();syncValleyControls();};
+  $('#valley-soils').onclick=e=>{if(!e.target.matches('button'))return;valleyState.soil=+e.target.dataset.value;drawValley();drawAngledScene();syncValleyControls();};
 
   $('#boundary-visible').checked=boundary.lab.initialVisible;
   $('#boundary-visible').onchange=()=>drawValley();

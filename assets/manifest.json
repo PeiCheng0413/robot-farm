@@ -4830,5 +4830,6482 @@
       ]
     },
     "note": "Opaque narrow sprites over transparent alpha; no wide fence panels, floor, mesh or animation. Land area state and game integration remain Claude responsibilities."
+  },
+  "valleyScene": {
+    "version": "v02",
+    "label": "森林山谷・斜角場景",
+    "logicalTileSize": [
+      64,
+      64
+    ],
+    "assets": {
+      "frameLeft": {
+        "label": "左側框邊樹叢",
+        "file": "foreground-forest-atlas-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          7,
+          4,
+          318,
+          350
+        ],
+        "groundAnchor": [
+          159.0,
+          350
+        ],
+        "footprint": [
+          0,
+          0
+        ],
+        "recommendedDisplaySize": [
+          224,
+          226
+        ],
+        "layer": "foreground-frame",
+        "animated": false,
+        "preserveAspect": true,
+        "edge": "left",
+        "viewportRatio": [
+          0.24,
+          0.4
+        ],
+        "edgeAlignment": "source-left-to-viewport-left",
+        "viewportRect": [
+          0,
+          0.6,
+          0.24,
+          0.4
+        ],
+        "fileBytes": 74327,
+        "processing": "nearest-neighbor-half-size; alpha>=128 becomes255 otherwise0; palette reduction without dithering"
+      },
+      "frameRight": {
+        "label": "右側框邊樹叢",
+        "file": "foreground-forest-atlas-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          464,
+          4,
+          296,
+          353
+        ],
+        "groundAnchor": [
+          148.0,
+          353
+        ],
+        "footprint": [
+          0,
+          0
+        ],
+        "recommendedDisplaySize": [
+          224,
+          226
+        ],
+        "layer": "foreground-frame",
+        "animated": false,
+        "preserveAspect": true,
+        "edge": "right",
+        "viewportRatio": [
+          0.24,
+          0.4
+        ],
+        "edgeAlignment": "source-right-to-viewport-right",
+        "viewportRect": [
+          0.76,
+          0.6,
+          0.24,
+          0.4
+        ],
+        "fileBytes": 74327,
+        "processing": "nearest-neighbor-half-size; alpha>=128 becomes255 otherwise0; palette reduction without dithering"
+      },
+      "frameBottom": {
+        "label": "下方框邊樹叢",
+        "file": "foreground-forest-atlas-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          9,
+          379,
+          749,
+          125
+        ],
+        "groundAnchor": [
+          374.5,
+          125
+        ],
+        "footprint": [
+          0,
+          0
+        ],
+        "recommendedDisplaySize": [
+          960,
+          175
+        ],
+        "layer": "foreground-frame",
+        "animated": false,
+        "preserveAspect": true,
+        "edge": "bottom",
+        "viewportRatio": [
+          1,
+          0.14
+        ],
+        "edgeAlignment": "source-bottom-to-viewport-bottom",
+        "viewportRect": [
+          0,
+          0.86,
+          1,
+          0.14
+        ],
+        "fileBytes": 74327,
+        "processing": "nearest-neighbor-half-size; alpha>=128 becomes255 otherwise0; palette reduction without dithering",
+        "fit": "contain"
+      },
+      "valleyLake": {
+        "label": "山谷與湖泊遠景",
+        "file": "valley-lake-backdrop-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          0,
+          124,
+          768,
+          356
+        ],
+        "groundAnchor": [
+          384.0,
+          348.0
+        ],
+        "footprint": [
+          0,
+          0
+        ],
+        "recommendedDisplaySize": [
+          960,
+          445
+        ],
+        "layer": "backdrop",
+        "animated": false,
+        "preserveAspect": true,
+        "viewportRect": [
+          0,
+          -0.02,
+          1,
+          0.54
+        ],
+        "fit": "stretch",
+        "z": 1,
+        "integrationModes": [
+          "replace-mountain-backdrop",
+          "overlay-in-front-of-mountain-backdrop"
+        ],
+        "fileBytes": 48547,
+        "processing": "nearest-neighbor-half-size; alpha>=128 becomes255 otherwise0; palette reduction without dithering"
+      },
+      "skyClouds": {
+        "label": "天空與雲帶",
+        "file": "sky-cloud-strip-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          0,
+          145,
+          768,
+          222
+        ],
+        "groundAnchor": [
+          384.0,
+          221.5
+        ],
+        "footprint": [
+          0,
+          0
+        ],
+        "recommendedDisplaySize": [
+          960,
+          276
+        ],
+        "layer": "backdrop",
+        "animated": false,
+        "preserveAspect": true,
+        "viewportRect": [
+          0,
+          0,
+          1,
+          0.5
+        ],
+        "fit": "stretch",
+        "z": 0,
+        "fileBytes": 14326,
+        "processing": "nearest-neighbor-half-size; alpha>=128 becomes255 otherwise0; palette reduction without dithering"
+      },
+      "dirtPath": {
+        "label": "泥土步道",
+        "file": "valley-path-atlas-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          0,
+          64,
+          384,
+          384
+        ],
+        "groundAnchor": [
+          192.0,
+          192.0
+        ],
+        "footprint": [
+          1,
+          1
+        ],
+        "recommendedDisplaySize": [
+          64,
+          64
+        ],
+        "layer": "ground-tile",
+        "animated": false,
+        "preserveAspect": true,
+        "perspective": "top-down",
+        "baseColor": "#b29163",
+        "destinationRect": [
+          2,
+          2,
+          60,
+          60
+        ],
+        "logicalCanvas": [
+          64,
+          64
+        ],
+        "repeat": {
+          "x": true,
+          "y": true,
+          "step": [
+            64,
+            64
+          ]
+        },
+        "composition": "Fill the entire 64×64 cell with baseColor, then draw sourceRect into destinationRect. The 2px base-only margin guarantees identical shared edges. Apply ground projection AFTER composition.",
+        "fileBytes": 13996,
+        "processing": "nearest-neighbor-half-size; alpha>=128 becomes255 otherwise0; palette reduction without dithering"
+      },
+      "steppingStones": {
+        "label": "踏腳石",
+        "file": "valley-path-atlas-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          384,
+          64,
+          384,
+          384
+        ],
+        "groundAnchor": [
+          192.0,
+          192.0
+        ],
+        "footprint": [
+          1,
+          1
+        ],
+        "recommendedDisplaySize": [
+          64,
+          64
+        ],
+        "layer": "ground-tile",
+        "animated": false,
+        "preserveAspect": true,
+        "perspective": "top-down",
+        "destinationRect": [
+          2,
+          2,
+          60,
+          60
+        ],
+        "logicalCanvas": [
+          64,
+          64
+        ],
+        "repeat": {
+          "x": true,
+          "y": true,
+          "step": [
+            64,
+            64
+          ]
+        },
+        "composition": "Transparent top-down overlay on dirtPath or existing grass; draw inside destinationRect before ground projection. Not an upright rock prop.",
+        "fileBytes": 13996,
+        "processing": "nearest-neighbor-half-size; alpha>=128 becomes255 otherwise0; palette reduction without dithering"
+      },
+      "produceCrate": {
+        "label": "作物木箱",
+        "file": "valley-props-atlas-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          20,
+          107,
+          180,
+          151
+        ],
+        "groundAnchor": [
+          90.0,
+          144.5
+        ],
+        "footprint": [
+          1,
+          1
+        ],
+        "recommendedDisplaySize": [
+          56,
+          48
+        ],
+        "layer": "prop",
+        "animated": false,
+        "preserveAspect": true,
+        "perspective": "upright-orthographic-three-quarter",
+        "fileBytes": 49318,
+        "processing": "nearest-neighbor-half-size; alpha>=128 becomes255 otherwise0; palette reduction without dithering"
+      },
+      "lanternPost": {
+        "label": "燈籠柱",
+        "file": "valley-props-atlas-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          252,
+          34,
+          95,
+          221
+        ],
+        "groundAnchor": [
+          25.0,
+          214.0
+        ],
+        "footprint": [
+          1,
+          1
+        ],
+        "recommendedDisplaySize": [
+          40,
+          96
+        ],
+        "layer": "prop",
+        "animated": false,
+        "preserveAspect": true,
+        "perspective": "upright-orthographic-three-quarter",
+        "fileBytes": 49318,
+        "processing": "nearest-neighbor-half-size; alpha>=128 becomes255 otherwise0; palette reduction without dithering"
+      },
+      "rock": {
+        "label": "石頭",
+        "file": "valley-props-atlas-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          398,
+          142,
+          156,
+          110
+        ],
+        "groundAnchor": [
+          77.5,
+          103.5
+        ],
+        "footprint": [
+          1,
+          1
+        ],
+        "recommendedDisplaySize": [
+          56,
+          40
+        ],
+        "layer": "prop",
+        "animated": false,
+        "preserveAspect": true,
+        "perspective": "upright-orthographic-three-quarter",
+        "fileBytes": 49318,
+        "processing": "nearest-neighbor-half-size; alpha>=128 becomes255 otherwise0; palette reduction without dithering"
+      },
+      "flowers": {
+        "label": "花叢",
+        "file": "valley-props-atlas-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          584,
+          105,
+          168,
+          147
+        ],
+        "groundAnchor": [
+          83.0,
+          139.5
+        ],
+        "footprint": [
+          1,
+          1
+        ],
+        "recommendedDisplaySize": [
+          56,
+          48
+        ],
+        "layer": "prop",
+        "animated": false,
+        "preserveAspect": true,
+        "perspective": "upright-orthographic-three-quarter",
+        "fileBytes": 49318,
+        "processing": "nearest-neighbor-half-size; alpha>=128 becomes255 otherwise0; palette reduction without dithering"
+      },
+      "logs": {
+        "label": "木頭堆",
+        "file": "valley-props-atlas-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          18,
+          329,
+          181,
+          149
+        ],
+        "groundAnchor": [
+          90.5,
+          141.5
+        ],
+        "footprint": [
+          1,
+          1
+        ],
+        "recommendedDisplaySize": [
+          64,
+          56
+        ],
+        "layer": "prop",
+        "animated": false,
+        "preserveAspect": true,
+        "perspective": "upright-orthographic-three-quarter",
+        "fileBytes": 49318,
+        "processing": "nearest-neighbor-half-size; alpha>=128 becomes255 otherwise0; palette reduction without dithering"
+      },
+      "waterBucket": {
+        "label": "水桶",
+        "file": "valley-props-atlas-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          226,
+          332,
+          107,
+          142
+        ],
+        "groundAnchor": [
+          53.5,
+          134.0
+        ],
+        "footprint": [
+          1,
+          1
+        ],
+        "recommendedDisplaySize": [
+          36,
+          48
+        ],
+        "layer": "prop",
+        "animated": false,
+        "preserveAspect": true,
+        "perspective": "upright-orthographic-three-quarter",
+        "fileBytes": 49318,
+        "processing": "nearest-neighbor-half-size; alpha>=128 becomes255 otherwise0; palette reduction without dithering"
+      },
+      "workShelter": {
+        "label": "小工作棚",
+        "file": "valley-props-atlas-v02.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          344,
+          283,
+          265,
+          196
+        ],
+        "groundAnchor": [
+          145.5,
+          188.5
+        ],
+        "footprint": [
+          2,
+          1
+        ],
+        "recommendedDisplaySize": [
+          160,
+          128
+        ],
+        "layer": "prop",
+        "animated": false,
+        "preserveAspect": true,
+        "perspective": "upright-orthographic-three-quarter",
+        "fileBytes": 49318,
+        "processing": "nearest-neighbor-half-size; alpha>=128 becomes255 otherwise0; palette reduction without dithering"
+      },
+      "meadow": {
+        "label": "日照草地",
+        "file": "meadow-ground-tile-v01.png",
+        "imageSize": [
+          512,
+          512
+        ],
+        "sourceRect": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "groundAnchor": [
+          256.0,
+          512
+        ],
+        "footprint": [
+          1,
+          1
+        ],
+        "recommendedDisplaySize": [
+          64,
+          64
+        ],
+        "layer": "ground-tile",
+        "animated": false,
+        "fileBytes": 63729,
+        "logicalCanvas": [
+          64,
+          64
+        ],
+        "destinationRect": [
+          0,
+          0,
+          64,
+          64
+        ],
+        "repeatMode": "alternating-mirror-xy"
+      },
+      "conifers": {
+        "label": "中景針葉樹群",
+        "file": "valley-midground-trees-v01.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          13,
+          14,
+          376,
+          478
+        ],
+        "groundAnchor": [
+          188.0,
+          478
+        ],
+        "footprint": [
+          2,
+          1
+        ],
+        "recommendedDisplaySize": [
+          220,
+          270
+        ],
+        "layer": "prop",
+        "animated": false,
+        "fileBytes": 115399
+      },
+      "sunlitTrees": {
+        "label": "中景日照闊葉樹群",
+        "file": "valley-midground-trees-v01.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          411,
+          48,
+          346,
+          443
+        ],
+        "groundAnchor": [
+          173.0,
+          443
+        ],
+        "footprint": [
+          2,
+          1
+        ],
+        "recommendedDisplaySize": [
+          220,
+          270
+        ],
+        "layer": "prop",
+        "animated": false,
+        "fileBytes": 115399
+      },
+      "farmhouseAngled": {
+        "label": "斜角科技農舍",
+        "file": "farmhouse-angled-v01.png",
+        "imageSize": [
+          768,
+          588
+        ],
+        "sourceRect": [
+          61,
+          57,
+          688,
+          465
+        ],
+        "groundAnchor": [
+          210,
+          440
+        ],
+        "footprint": [
+          4,
+          3
+        ],
+        "recommendedDisplaySize": [
+          315,
+          245
+        ],
+        "layer": "prop",
+        "animated": false,
+        "fileBytes": 54386,
+        "anchorDescription": "Front doorstep ground contact; local sourceRect pixels. Footprint is approximate art occupancy, not collision geometry.",
+        "cameraNote": "Illustrated elevated three-quarter view with sloping front foundation. Hand-drawn roof and side-wall perspective is approximate, not a mathematically projected mesh."
+      },
+      "forestUnderstory": {
+        "label": "林下蕨葉與石頭",
+        "file": "valley-transition-atlas-v01.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          11,
+          39,
+          364,
+          185
+        ],
+        "groundAnchor": [
+          182.0,
+          183
+        ],
+        "footprint": [
+          2,
+          1
+        ],
+        "recommendedDisplaySize": [
+          150,
+          60
+        ],
+        "layer": "prop",
+        "animated": false,
+        "fileBytes": 56664
+      },
+      "flowerUnderstory": {
+        "label": "林緣花草",
+        "file": "valley-transition-atlas-v01.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          392,
+          27,
+          366,
+          205
+        ],
+        "groundAnchor": [
+          183.0,
+          203
+        ],
+        "footprint": [
+          2,
+          1
+        ],
+        "recommendedDisplaySize": [
+          150,
+          60
+        ],
+        "layer": "prop",
+        "animated": false,
+        "fileBytes": 56664
+      },
+      "grassTransition": {
+        "label": "草土交界碎片",
+        "file": "valley-transition-atlas-v01.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          25,
+          258,
+          350,
+          232
+        ],
+        "groundAnchor": [
+          175.0,
+          116.0
+        ],
+        "footprint": [
+          1,
+          1
+        ],
+        "recommendedDisplaySize": [
+          64,
+          64
+        ],
+        "layer": "ground-tile",
+        "animated": false,
+        "fileBytes": 56664,
+        "logicalCanvas": [
+          64,
+          64
+        ],
+        "destinationRect": [
+          0,
+          0,
+          64,
+          64
+        ],
+        "repeatMode": "scattered-decal-not-seamless"
+      },
+      "pathTransition": {
+        "label": "碎石步道交界",
+        "file": "valley-transition-atlas-v01.png",
+        "imageSize": [
+          768,
+          512
+        ],
+        "sourceRect": [
+          409,
+          261,
+          337,
+          229
+        ],
+        "groundAnchor": [
+          168.5,
+          114.5
+        ],
+        "footprint": [
+          1,
+          1
+        ],
+        "recommendedDisplaySize": [
+          64,
+          64
+        ],
+        "layer": "ground-tile",
+        "animated": false,
+        "fileBytes": 56664,
+        "logicalCanvas": [
+          64,
+          64
+        ],
+        "destinationRect": [
+          0,
+          0,
+          64,
+          64
+        ],
+        "repeatMode": "scattered-decal-not-seamless"
+      }
+    },
+    "coordinateSpaces": {
+      "sourceRect": "Full PNG [x,y,width,height] pixels.",
+      "groundAnchor": "Pixels relative to sourceRect top-left; scale with the same contain scale as the source sprite. Ground tiles use cell center. Backdrops/frames carry a reference anchor but are positioned in viewport space.",
+      "footprint": "Grid-cell extents for art placement only, not collision/purchase rules. [0,0] means viewport decoration independent of the grid.",
+      "recommendedDisplaySize": "Unprojected logical pixel contain box at 64px per grid cell. Ground tiles are exactly 64×64 before rotation/compression.",
+      "viewportRatio": "[width,height] fractions of the viewport; these are independent frame suggestions, not a game UI safe area guarantee."
+    },
+    "projection": {
+      "defaultView": "game",
+      "views": {
+        "game": {
+          "label": "遊戲斜角",
+          "tileSize": [
+            64,
+            40
+          ],
+          "logicalTileSize": [
+            64,
+            64
+          ],
+          "rotationDegrees": 18,
+          "scaleY": 0.625,
+          "frontDepth": 13,
+          "previewOrigin": [
+            414,
+            340
+          ]
+        }
+      },
+      "transformOrder": [
+        "grid-to-square-ground-pixels",
+        "rotate-clockwise",
+        "compress-screen-y",
+        "translate-to-origin"
+      ],
+      "gridToScreen": "u=64*gridX; v=64*gridY; screenX=originX+u*cos(theta)-v*sin(theta); screenY=originY+scaleY*(u*sin(theta)+v*cos(theta)); theta=rotationDegrees*PI/180",
+      "screenToGrid": "dx=screenX-originX; dy=(screenY-originY)/scaleY; gridX=(dx*cos(theta)+dy*sin(theta))/64; gridY=(-dx*sin(theta)+dy*cos(theta))/64; floor only for cell picking",
+      "note": "tileSize=[64,40] is the unrotated compressed baseline, not the rotated cell screen bounds. Apply R(18deg) to square ground then S(1,40/64); no whole-scene CSS transform. Existing valleyFarm.projection and its views stay unchanged.",
+      "uprightRule": "Project only the ground anchor. Draw the entire upright sprite at original aspect and screen-vertical orientation. Robot/cargo/thought bubble remain one unflattened draw group."
+    },
+    "rendering": {
+      "layerOrder": [
+        "backdrop",
+        "ground-tile",
+        "prop",
+        "foreground-frame"
+      ],
+      "groundColor": "#69965b",
+      "skyColor": "#cfe3d3",
+      "depthOrder": {
+        "sortKey": [
+          "groundY",
+          "groundX",
+          "kindOrder"
+        ],
+        "kindOrder": {
+          "plant": 1,
+          "robot": 2,
+          "sign": 3,
+          "prop": 4,
+          "building": 5
+        }
+      },
+      "uprightRule": "Merge all props, crops, robots, signs, buildings and boundary posts into ONE global list sorted by projected anchors across plots. Foreground-frame is the only intentional final overlay.",
+      "frontWalls": {
+        "source": "valleyFarm.assets.soilFront",
+        "frontDepth": 13,
+        "extrudeDirection": [
+          0,
+          1
+        ],
+        "rule": "Use exposed sides of the union of occupied cells. For each clockwise projected side a→b, screen outward normal is [b.y-a.y, -(b.x-a.x)]. Draw only if neighbor absent AND normal.y>0. Extrude that screen edge vertically down by frontDepth. Do not draw internal walls or flatten the upright sprites.",
+        "sides": [
+          {
+            "id": "north",
+            "neighbor": [
+              0,
+              -1
+            ],
+            "start": [
+              0,
+              0
+            ],
+            "end": [
+              1,
+              0
+            ]
+          },
+          {
+            "id": "east",
+            "neighbor": [
+              1,
+              0
+            ],
+            "start": [
+              1,
+              0
+            ],
+            "end": [
+              1,
+              1
+            ]
+          },
+          {
+            "id": "south",
+            "neighbor": [
+              0,
+              1
+            ],
+            "start": [
+              1,
+              1
+            ],
+            "end": [
+              0,
+              1
+            ]
+          },
+          {
+            "id": "west",
+            "neighbor": [
+              -1,
+              0
+            ],
+            "start": [
+              0,
+              1
+            ],
+            "end": [
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "repeatRule": "Build each ground tile in 64×64 square coordinates and project the shared ground plane once. No per-cell pre-rotation, no additional gap. drawImage smoothing disabled.",
+      "frameFit": "Contain inside viewportRect and align to specified edge; fit=cover-width uses full viewportRect width and clips at screen edges. All frame sprites keep their aspect. Backdrops may stretch to viewportRect.",
+      "animation": {
+        "animated": false,
+        "frameOrder": [
+          0
+        ],
+        "loop": false,
+        "note": "Every new asset is static. No light flicker, water animation, tree sway or separate animation clock. Existing robot animation rules remain in animationClips/alignment."
+      }
+    },
+    "performance": {
+      "maxPngEdge": 2048,
+      "targetFileBytes": 500000,
+      "atlasFiles": 5,
+      "loadPolicy": "Load each distinct file once and reuse for every sourceRect.",
+      "optimization": "User authorized on 2026-10-17: nearest-neighbor 50% resize, alpha threshold128, palette reduction without dithering. All new runtime PNGs binary-alpha indexed images. Original generated PNGs preserved separately.",
+      "files": [
+        {
+          "file": "foreground-forest-atlas-v02.png",
+          "imageSize": [
+            768,
+            512
+          ],
+          "fileBytes": 74327,
+          "originalFile": "foreground-forest-atlas-v01.png",
+          "originalBytes": 1683579,
+          "originalSource": "exec-d372932e-17f4-48c1-9698-25378723dba5.png",
+          "maxOpaquePaletteColors": 32,
+          "withinTarget": true
+        },
+        {
+          "file": "valley-lake-backdrop-v02.png",
+          "imageSize": [
+            768,
+            512
+          ],
+          "fileBytes": 48547,
+          "originalFile": "valley-lake-backdrop-v01.png",
+          "originalBytes": 1197513,
+          "originalSource": "exec-2f0e8dc9-6d64-4a54-a52d-7ef5ffc3a109.png",
+          "maxOpaquePaletteColors": 32,
+          "withinTarget": true
+        },
+        {
+          "file": "sky-cloud-strip-v02.png",
+          "imageSize": [
+            768,
+            512
+          ],
+          "fileBytes": 14326,
+          "originalFile": "sky-cloud-strip-v01.png",
+          "originalBytes": 934673,
+          "originalSource": "exec-bca50e8a-1801-4c11-95a0-19c13c6e8ed6.png",
+          "maxOpaquePaletteColors": 8,
+          "withinTarget": true
+        },
+        {
+          "file": "valley-path-atlas-v02.png",
+          "imageSize": [
+            768,
+            512
+          ],
+          "fileBytes": 13996,
+          "originalFile": "valley-path-atlas-v01.png",
+          "originalBytes": 1288668,
+          "originalSource": "exec-4098ce93-5c21-4169-b083-8a7d96e08cb5.png",
+          "maxOpaquePaletteColors": 16,
+          "withinTarget": true
+        },
+        {
+          "file": "valley-props-atlas-v02.png",
+          "imageSize": [
+            768,
+            512
+          ],
+          "fileBytes": 49318,
+          "originalFile": "valley-props-atlas-v01.png",
+          "originalBytes": 1625067,
+          "originalSource": "exec-7cedc44e-3fce-4613-889b-20ffb1158d3f.png",
+          "maxOpaquePaletteColors": 48,
+          "withinTarget": true
+        }
+      ],
+      "allWithinTarget": true
+    },
+    "lab": {
+      "canvas": [
+        960,
+        600
+      ],
+      "initialView": "game",
+      "initialFrameVisible": true,
+      "initialPropsVisible": true,
+      "initialGroundGridVisible": false,
+      "fieldOffset": [
+        -2,
+        0
+      ],
+      "fieldsSource": "valleyFarm.preview.fields",
+      "cropCycleSource": "valleyFarm.preview.cropCycle",
+      "cropStage": 3,
+      "groundStartY": 0.5,
+      "pathCells": [
+        [
+          -3,
+          2
+        ],
+        [
+          -2,
+          2
+        ],
+        [
+          -1,
+          2
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          6,
+          2
+        ]
+      ],
+      "stoneCells": [
+        [
+          -3,
+          2
+        ],
+        [
+          -1,
+          2
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          5,
+          2
+        ]
+      ],
+      "props": [
+        {
+          "asset": "produceCrate",
+          "cell": [
+            -2,
+            1.5
+          ]
+        },
+        {
+          "asset": "lanternPost",
+          "cell": [
+            0,
+            2.6
+          ]
+        },
+        {
+          "asset": "rock",
+          "cell": [
+            6.4,
+            0.5
+          ]
+        },
+        {
+          "asset": "flowers",
+          "cell": [
+            6,
+            3.8
+          ]
+        },
+        {
+          "asset": "logs",
+          "cell": [
+            -3.1,
+            0
+          ]
+        },
+        {
+          "asset": "waterBucket",
+          "cell": [
+            2.6,
+            2.6
+          ]
+        },
+        {
+          "asset": "workShelter",
+          "cell": [
+            6,
+            -0.2
+          ]
+        }
+      ],
+      "farmhouseCell": [
+        -3,
+        -0.1
+      ],
+      "robotCells": [
+        [
+          0,
+          1.4
+        ],
+        [
+          4.2,
+          3.6
+        ]
+      ],
+      "robotClip": "idle",
+      "robotStep": 0,
+      "assetOrder": [
+        "frameLeft",
+        "frameRight",
+        "frameBottom",
+        "valleyLake",
+        "skyClouds",
+        "dirtPath",
+        "steppingStones",
+        "produceCrate",
+        "lanternPost",
+        "rock",
+        "flowers",
+        "logs",
+        "waterBucket",
+        "workShelter",
+        "meadow",
+        "conifers",
+        "sunlitTrees"
+      ],
+      "note": "Static art preview only; no economy, placement interaction, inventory or gameplay rules. Game integration belongs to Claude.",
+      "signDisplaySize": [
+        48,
+        42
+      ],
+      "additionalAssetOrderV20": [
+        "farmhouseAngled",
+        "forestUnderstory",
+        "flowerUnderstory",
+        "grassTransition",
+        "pathTransition"
+      ]
+    },
+    "composition": {
+      "label": "山谷農場構圖",
+      "canvas": [
+        960,
+        600
+      ],
+      "origin": [
+        360,
+        260
+      ],
+      "view": "game",
+      "animated": false,
+      "animation": {
+        "frameOrder": [
+          0
+        ],
+        "loop": false,
+        "clock": "none"
+      },
+      "clearing": [
+        [
+          0,
+          360
+        ],
+        [
+          70,
+          325
+        ],
+        [
+          155,
+          290
+        ],
+        [
+          270,
+          270
+        ],
+        [
+          420,
+          248
+        ],
+        [
+          580,
+          245
+        ],
+        [
+          720,
+          260
+        ],
+        [
+          860,
+          300
+        ],
+        [
+          960,
+          350
+        ],
+        [
+          960,
+          600
+        ],
+        [
+          0,
+          600
+        ]
+      ],
+      "meadowRepeatSize": 256,
+      "meadowRange": [
+        -4,
+        5,
+        -3,
+        5
+      ],
+      "meadowRepeat": "alternating-mirror-xy",
+      "backgrounds": [
+        {
+          "asset": "skyClouds",
+          "rect": [
+            0,
+            -40,
+            960,
+            240
+          ]
+        },
+        {
+          "asset": "valleyLake",
+          "rect": [
+            0,
+            -65,
+            960,
+            345
+          ]
+        }
+      ],
+      "fields": [
+        {
+          "crop": "carrot",
+          "cells": [
+            [
+              -3,
+              1
+            ],
+            [
+              -2,
+              1
+            ],
+            [
+              -1,
+              1
+            ],
+            [
+              -3,
+              2
+            ],
+            [
+              -2,
+              2
+            ],
+            [
+              -1,
+              2
+            ]
+          ]
+        },
+        {
+          "crop": "tomato",
+          "cells": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              1
+            ]
+          ]
+        },
+        {
+          "crop": "watermelon",
+          "cells": [
+            [
+              5,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              7,
+              0
+            ],
+            [
+              5,
+              1
+            ],
+            [
+              6,
+              1
+            ],
+            [
+              7,
+              1
+            ]
+          ]
+        },
+        {
+          "crop": "lettuce",
+          "cells": [
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              4
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        },
+        {
+          "crop": "strawberry",
+          "cells": [
+            [
+              5,
+              3
+            ],
+            [
+              6,
+              3
+            ],
+            [
+              7,
+              3
+            ],
+            [
+              5,
+              4
+            ],
+            [
+              6,
+              4
+            ],
+            [
+              7,
+              4
+            ]
+          ]
+        }
+      ],
+      "plantOffsets": [
+        [
+          0.25,
+          0.4
+        ],
+        [
+          0.75,
+          0.8
+        ]
+      ],
+      "plantSize": 46,
+      "cropStage": 3,
+      "pathWidth": 0.52,
+      "paths": [
+        [
+          [
+            -3.8,
+            3
+          ],
+          [
+            -0.5,
+            3
+          ],
+          [
+            -0.5,
+            2.5
+          ],
+          [
+            4,
+            2.5
+          ],
+          [
+            4,
+            -1
+          ]
+        ],
+        [
+          [
+            4,
+            2.5
+          ],
+          [
+            8.3,
+            2.5
+          ]
+        ],
+        [
+          [
+            4,
+            2.5
+          ],
+          [
+            4,
+            6
+          ]
+        ]
+      ],
+      "sprites": [
+        {
+          "asset": "conifers",
+          "anchor": [
+            40,
+            345
+          ],
+          "displaySize": [
+            250,
+            310
+          ]
+        },
+        {
+          "asset": "sunlitTrees",
+          "anchor": [
+            180,
+            290
+          ],
+          "displaySize": [
+            190,
+            235
+          ]
+        },
+        {
+          "asset": "conifers",
+          "anchor": [
+            295,
+            268
+          ],
+          "displaySize": [
+            150,
+            180
+          ]
+        },
+        {
+          "asset": "sunlitTrees",
+          "anchor": [
+            430,
+            252
+          ],
+          "displaySize": [
+            130,
+            150
+          ]
+        },
+        {
+          "asset": "sunlitTrees",
+          "anchor": [
+            920,
+            325
+          ],
+          "displaySize": [
+            260,
+            320
+          ]
+        },
+        {
+          "asset": "conifers",
+          "anchor": [
+            850,
+            267
+          ],
+          "displaySize": [
+            180,
+            220
+          ]
+        },
+        {
+          "asset": "conifers",
+          "anchor": [
+            990,
+            450
+          ],
+          "displaySize": [
+            190,
+            255
+          ]
+        },
+        {
+          "asset": "farmhouse",
+          "anchor": [
+            685,
+            307
+          ],
+          "displaySize": [
+            320,
+            215
+          ]
+        },
+        {
+          "asset": "workShelter",
+          "anchor": [
+            475,
+            280
+          ],
+          "displaySize": [
+            100,
+            85
+          ]
+        },
+        {
+          "asset": "produceCrate",
+          "anchor": [
+            580,
+            302
+          ],
+          "displaySize": [
+            43,
+            40
+          ]
+        },
+        {
+          "asset": "logs",
+          "anchor": [
+            820,
+            329
+          ],
+          "displaySize": [
+            52,
+            40
+          ]
+        },
+        {
+          "asset": "waterBucket",
+          "anchor": [
+            550,
+            313
+          ],
+          "displaySize": [
+            26,
+            30
+          ]
+        },
+        {
+          "asset": "lanternPost",
+          "anchor": [
+            220,
+            342
+          ],
+          "displaySize": [
+            25,
+            65
+          ]
+        },
+        {
+          "asset": "lanternPost",
+          "anchor": [
+            845,
+            431
+          ],
+          "displaySize": [
+            25,
+            65
+          ]
+        },
+        {
+          "asset": "flowers",
+          "anchor": [
+            190,
+            380
+          ],
+          "displaySize": [
+            45,
+            35
+          ]
+        },
+        {
+          "asset": "flowers",
+          "anchor": [
+            837,
+            467
+          ],
+          "displaySize": [
+            45,
+            35
+          ]
+        },
+        {
+          "asset": "rock",
+          "anchor": [
+            130,
+            438
+          ],
+          "displaySize": [
+            50,
+            40
+          ]
+        },
+        {
+          "asset": "flowers",
+          "anchor": [
+            490,
+            530
+          ],
+          "displaySize": [
+            40,
+            30
+          ]
+        }
+      ],
+      "robots": [
+        [
+          -1.5,
+          3.2
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "robotSize": 160,
+      "frameRects": {
+        "frameLeft": [
+          -45,
+          220,
+          200,
+          380
+        ],
+        "frameRight": [
+          820,
+          210,
+          190,
+          390
+        ],
+        "frameBottom": [
+          0,
+          540,
+          960,
+          100
+        ]
+      },
+      "boundary": {
+        "postSize": [
+          8,
+          24
+        ],
+        "ropeThickness": 2,
+        "elevation": 16
+      },
+      "coordinateNotes": "fields/paths/robots are logical 64px grid units. clearing/backgrounds/sprite anchors/frameRects are composition pixels at canvas size. Screen anchors invert through the same ground projection when integrating. Upright sprites stay unrotated; all root anchors share global depth sort.",
+      "depthOrder": {
+        "sortKey": [
+          "groundY",
+          "groundX",
+          "kindOrder"
+        ],
+        "kindOrder": {
+          "plant": 1,
+          "robot": 2,
+          "sign": 3,
+          "prop": 4,
+          "building": 5
+        }
+      },
+      "kindOrder": {
+        "rope": 0,
+        "plant": 1,
+        "robot": 2,
+        "post": 3,
+        "prop": 4
+      },
+      "pathMaterial": "dirtPath",
+      "groundTileSize": 64,
+      "robotClip": "idle",
+      "robotStep": 0,
+      "robotCenterOffsetSource": "valleyFarm.uprightSprites.robotCenterOffset"
+    },
+    "compositionV20": {
+      "label": "山谷農場・視角統一版",
+      "canvas": [
+        960,
+        600
+      ],
+      "origin": [
+        360,
+        260
+      ],
+      "view": "game",
+      "animated": false,
+      "animation": {
+        "frameOrder": [
+          0
+        ],
+        "loop": false,
+        "clock": "none"
+      },
+      "clearing": [
+        [
+          0,
+          360
+        ],
+        [
+          70,
+          325
+        ],
+        [
+          155,
+          290
+        ],
+        [
+          270,
+          270
+        ],
+        [
+          420,
+          248
+        ],
+        [
+          580,
+          245
+        ],
+        [
+          720,
+          260
+        ],
+        [
+          860,
+          300
+        ],
+        [
+          960,
+          350
+        ],
+        [
+          960,
+          600
+        ],
+        [
+          0,
+          600
+        ]
+      ],
+      "meadowRepeatSize": 256,
+      "meadowRange": [
+        -4,
+        5,
+        -3,
+        5
+      ],
+      "meadowRepeat": "alternating-mirror-xy",
+      "backgrounds": [
+        {
+          "asset": "skyClouds",
+          "rect": [
+            0,
+            -40,
+            960,
+            240
+          ]
+        },
+        {
+          "asset": "valleyLake",
+          "rect": [
+            0,
+            -65,
+            960,
+            345
+          ]
+        }
+      ],
+      "fields": [
+        {
+          "crop": "carrot",
+          "cells": [
+            [
+              -3,
+              1
+            ],
+            [
+              -2,
+              1
+            ],
+            [
+              -1,
+              1
+            ],
+            [
+              -3,
+              2
+            ],
+            [
+              -2,
+              2
+            ],
+            [
+              -1,
+              2
+            ]
+          ]
+        },
+        {
+          "crop": "tomato",
+          "cells": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              1
+            ]
+          ]
+        },
+        {
+          "crop": "watermelon",
+          "cells": [
+            [
+              5,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              7,
+              0
+            ],
+            [
+              5,
+              1
+            ],
+            [
+              6,
+              1
+            ],
+            [
+              7,
+              1
+            ]
+          ]
+        },
+        {
+          "crop": "lettuce",
+          "cells": [
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              4
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        },
+        {
+          "crop": "strawberry",
+          "cells": [
+            [
+              5,
+              3
+            ],
+            [
+              6,
+              3
+            ],
+            [
+              7,
+              3
+            ],
+            [
+              5,
+              4
+            ],
+            [
+              6,
+              4
+            ],
+            [
+              7,
+              4
+            ]
+          ]
+        }
+      ],
+      "plantOffsets": [
+        [
+          0.25,
+          0.4
+        ],
+        [
+          0.75,
+          0.8
+        ]
+      ],
+      "plantSize": 46,
+      "cropStage": 3,
+      "pathWidth": 0.52,
+      "paths": [
+        [
+          [
+            -3.8,
+            3
+          ],
+          [
+            -0.5,
+            3
+          ],
+          [
+            -0.5,
+            2.5
+          ],
+          [
+            4,
+            2.5
+          ],
+          [
+            4,
+            -1
+          ]
+        ],
+        [
+          [
+            4,
+            2.5
+          ],
+          [
+            8.3,
+            2.5
+          ]
+        ],
+        [
+          [
+            4,
+            2.5
+          ],
+          [
+            4,
+            6
+          ]
+        ]
+      ],
+      "sprites": [
+        {
+          "asset": "conifers",
+          "anchor": [
+            40,
+            345
+          ],
+          "displaySize": [
+            250,
+            310
+          ]
+        },
+        {
+          "asset": "sunlitTrees",
+          "anchor": [
+            180,
+            290
+          ],
+          "displaySize": [
+            190,
+            235
+          ]
+        },
+        {
+          "asset": "conifers",
+          "anchor": [
+            295,
+            268
+          ],
+          "displaySize": [
+            150,
+            180
+          ]
+        },
+        {
+          "asset": "sunlitTrees",
+          "anchor": [
+            430,
+            252
+          ],
+          "displaySize": [
+            130,
+            150
+          ]
+        },
+        {
+          "asset": "sunlitTrees",
+          "anchor": [
+            920,
+            325
+          ],
+          "displaySize": [
+            260,
+            320
+          ]
+        },
+        {
+          "asset": "conifers",
+          "anchor": [
+            850,
+            267
+          ],
+          "displaySize": [
+            180,
+            220
+          ]
+        },
+        {
+          "asset": "conifers",
+          "anchor": [
+            990,
+            450
+          ],
+          "displaySize": [
+            190,
+            255
+          ]
+        },
+        {
+          "asset": "farmhouseAngled",
+          "anchor": [
+            640,
+            302
+          ],
+          "displaySize": [
+            315,
+            245
+          ]
+        },
+        {
+          "asset": "workShelter",
+          "anchor": [
+            475,
+            280
+          ],
+          "displaySize": [
+            100,
+            85
+          ]
+        },
+        {
+          "asset": "produceCrate",
+          "anchor": [
+            580,
+            302
+          ],
+          "displaySize": [
+            43,
+            40
+          ]
+        },
+        {
+          "asset": "logs",
+          "anchor": [
+            820,
+            329
+          ],
+          "displaySize": [
+            52,
+            40
+          ]
+        },
+        {
+          "asset": "waterBucket",
+          "anchor": [
+            550,
+            313
+          ],
+          "displaySize": [
+            26,
+            30
+          ]
+        },
+        {
+          "asset": "lanternPost",
+          "anchor": [
+            220,
+            342
+          ],
+          "displaySize": [
+            25,
+            65
+          ]
+        },
+        {
+          "asset": "lanternPost",
+          "anchor": [
+            845,
+            431
+          ],
+          "displaySize": [
+            25,
+            65
+          ]
+        },
+        {
+          "asset": "flowers",
+          "anchor": [
+            190,
+            380
+          ],
+          "displaySize": [
+            45,
+            35
+          ]
+        },
+        {
+          "asset": "flowers",
+          "anchor": [
+            837,
+            467
+          ],
+          "displaySize": [
+            45,
+            35
+          ]
+        },
+        {
+          "asset": "rock",
+          "anchor": [
+            130,
+            438
+          ],
+          "displaySize": [
+            50,
+            40
+          ]
+        },
+        {
+          "asset": "flowers",
+          "anchor": [
+            490,
+            530
+          ],
+          "displaySize": [
+            40,
+            30
+          ]
+        },
+        {
+          "asset": "forestUnderstory",
+          "anchor": [
+            72,
+            347
+          ],
+          "displaySize": [
+            165,
+            63
+          ]
+        },
+        {
+          "asset": "flowerUnderstory",
+          "anchor": [
+            183,
+            303
+          ],
+          "displaySize": [
+            140,
+            54
+          ]
+        },
+        {
+          "asset": "forestUnderstory",
+          "anchor": [
+            305,
+            285
+          ],
+          "displaySize": [
+            120,
+            46
+          ]
+        },
+        {
+          "asset": "flowerUnderstory",
+          "anchor": [
+            453,
+            280
+          ],
+          "displaySize": [
+            100,
+            40
+          ]
+        },
+        {
+          "asset": "forestUnderstory",
+          "anchor": [
+            904,
+            343
+          ],
+          "displaySize": [
+            158,
+            60
+          ]
+        },
+        {
+          "asset": "flowerUnderstory",
+          "anchor": [
+            868,
+            404
+          ],
+          "displaySize": [
+            105,
+            44
+          ]
+        },
+        {
+          "asset": "forestUnderstory",
+          "anchor": [
+            106,
+            488
+          ],
+          "displaySize": [
+            126,
+            48
+          ]
+        },
+        {
+          "asset": "flowerUnderstory",
+          "anchor": [
+            405,
+            562
+          ],
+          "displaySize": [
+            150,
+            58
+          ]
+        },
+        {
+          "asset": "flowerUnderstory",
+          "anchor": [
+            858,
+            532
+          ],
+          "displaySize": [
+            130,
+            50
+          ]
+        }
+      ],
+      "robots": [
+        [
+          -1.5,
+          3.2
+        ],
+        [
+          4.15,
+          2.65
+        ]
+      ],
+      "robotSize": 116,
+      "frameRects": {
+        "frameLeft": [
+          -45,
+          220,
+          200,
+          380
+        ],
+        "frameRight": [
+          820,
+          210,
+          190,
+          390
+        ],
+        "frameBottom": [
+          0,
+          540,
+          960,
+          100
+        ]
+      },
+      "boundary": {
+        "postSize": [
+          8,
+          24
+        ],
+        "ropeThickness": 2,
+        "elevation": 16
+      },
+      "coordinateNotes": "fields/paths/robots are logical 64px grid units. clearing/backgrounds/sprite anchors/frameRects are composition pixels at canvas size. Screen anchors invert through the same ground projection when integrating. Upright sprites stay unrotated; all root anchors share global depth sort.",
+      "depthOrder": {
+        "sortKey": [
+          "groundY",
+          "groundX",
+          "kindOrder"
+        ],
+        "kindOrder": {
+          "plant": 1,
+          "robot": 2,
+          "sign": 3,
+          "prop": 4,
+          "building": 5
+        }
+      },
+      "kindOrder": {
+        "rope": 0,
+        "plant": 1,
+        "robot": 2,
+        "post": 3,
+        "prop": 4
+      },
+      "pathMaterial": "dirtPath",
+      "groundTileSize": 64,
+      "robotClip": "idle",
+      "robotStep": 0,
+      "robotCenterOffsetSource": "valleyFarm.uprightSprites.robotCenterOffset",
+      "essentialSprites": [
+        "conifers",
+        "sunlitTrees",
+        "farmhouseAngled"
+      ],
+      "staticRobot": {
+        "clip": "idle",
+        "step": 0,
+        "canvasSize": 116,
+        "centerOffset": [
+          0,
+          -22
+        ],
+        "animated": false,
+        "frameOrder": [
+          0
+        ],
+        "loop": false,
+        "clock": "none"
+      },
+      "groundDecals": [
+        {
+          "asset": "grassTransition",
+          "center": [
+            -2.5,
+            0.96
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            -3.04,
+            1.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            -1.5,
+            0.96
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            -0.5,
+            0.96
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            0.040000000000000036,
+            1.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            -2.5,
+            3.04
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            -3.04,
+            2.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            -1.5,
+            3.04
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            0.040000000000000036,
+            2.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            -0.5,
+            3.04
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            0.5,
+            -0.040000000000000036
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            -0.040000000000000036,
+            0.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            1.5,
+            -0.040000000000000036
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            2.5,
+            -0.040000000000000036
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            3.04,
+            0.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            0.5,
+            2.04
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            -0.040000000000000036,
+            1.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            1.5,
+            2.04
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            3.04,
+            1.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            2.5,
+            2.04
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            5.5,
+            -0.040000000000000036
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            4.96,
+            0.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            6.5,
+            -0.040000000000000036
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            7.5,
+            -0.040000000000000036
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            8.04,
+            0.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            5.5,
+            2.04
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            4.96,
+            1.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            6.5,
+            2.04
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            8.04,
+            1.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            7.5,
+            2.04
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            1.5,
+            2.96
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            0.96,
+            3.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            2.5,
+            2.96
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            3.5,
+            2.96
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            4.04,
+            3.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            1.5,
+            5.04
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            0.96,
+            4.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            2.5,
+            5.04
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            4.04,
+            4.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            3.5,
+            5.04
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            5.5,
+            2.96
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            4.96,
+            3.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            6.5,
+            2.96
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            7.5,
+            2.96
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            8.04,
+            3.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            5.5,
+            5.04
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            4.96,
+            4.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            6.5,
+            5.04
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            8.04,
+            4.5
+          ],
+          "size": [
+            0.38,
+            0.65
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "grassTransition",
+          "center": [
+            7.5,
+            5.04
+          ],
+          "size": [
+            0.65,
+            0.38
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -3.525,
+            2.74
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -3.525,
+            3.26
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -2.975,
+            2.74
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -2.975,
+            3.26
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -2.425,
+            2.74
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -2.425,
+            3.26
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -1.875,
+            2.74
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -1.875,
+            3.26
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -1.3249999999999997,
+            2.74
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -1.3249999999999997,
+            3.26
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -0.7749999999999999,
+            2.74
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -0.7749999999999999,
+            3.26
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -0.76,
+            2.75
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -0.24,
+            2.75
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -0.21875,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            -0.21875,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            0.34375,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            0.34375,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            0.90625,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            0.90625,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            1.46875,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            1.46875,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            2.03125,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            2.03125,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            2.59375,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            2.59375,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.15625,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.15625,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.71875,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.71875,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.74,
+            2.2083333333333335
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.26,
+            2.2083333333333335
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.74,
+            1.625
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.26,
+            1.625
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.74,
+            1.0416666666666667
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.26,
+            1.0416666666666667
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.74,
+            0.4583333333333335
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.26,
+            0.4583333333333335
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.74,
+            -0.125
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.26,
+            -0.125
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.74,
+            -0.7083333333333335
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.26,
+            -0.7083333333333335
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.26875,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.26875,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.80625,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.80625,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            5.34375,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            5.34375,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            5.8812500000000005,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            5.8812500000000005,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            6.41875,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            6.41875,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            6.956250000000001,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            6.956250000000001,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            7.49375,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            7.49375,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            8.03125,
+            2.24
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            8.03125,
+            2.76
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.26,
+            2.7916666666666665
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.74,
+            2.7916666666666665
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.26,
+            3.375
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.74,
+            3.375
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.26,
+            3.958333333333333
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.74,
+            3.958333333333333
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.26,
+            4.541666666666666
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.74,
+            4.541666666666666
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.26,
+            5.125
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.74,
+            5.125
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": true,
+          "mirrorY": false
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            4.26,
+            5.708333333333334
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": true
+        },
+        {
+          "asset": "pathTransition",
+          "center": [
+            3.74,
+            5.708333333333334
+          ],
+          "size": [
+            0.5,
+            0.45
+          ],
+          "mirrorX": false,
+          "mirrorY": false
+        }
+      ],
+      "decalRule": "Source patches are top-down; draw centered in logical grid, mirror per item, then apply shared ground projection once. Paint after ground surfaces and before walls/upright sprites. No random per-frame placement."
+    }
+  },
+  "farmWorld": {
+    "label": "山谷農場・可擴地世界規劃",
+    "status": "art-and-layout-proposal-not-game-integration",
+    "sourceCommit": "9edee0da04f01d869a4fe5990e05f841d5455aad",
+    "logicalTileSize": [
+      64,
+      64
+    ],
+    "board": {
+      "columns": 12,
+      "rows": 7,
+      "coordinateConvention": "zero-based x east, y south; integer cells; vertices extend to x12/y7",
+      "cells": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          11,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          7,
+          1
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          11,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          7,
+          2
+        ],
+        [
+          8,
+          2
+        ],
+        [
+          9,
+          2
+        ],
+        [
+          10,
+          2
+        ],
+        [
+          11,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          8,
+          3
+        ],
+        [
+          9,
+          3
+        ],
+        [
+          10,
+          3
+        ],
+        [
+          11,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          7,
+          4
+        ],
+        [
+          8,
+          4
+        ],
+        [
+          9,
+          4
+        ],
+        [
+          10,
+          4
+        ],
+        [
+          11,
+          4
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          5
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          5
+        ],
+        [
+          8,
+          5
+        ],
+        [
+          9,
+          5
+        ],
+        [
+          10,
+          5
+        ],
+        [
+          11,
+          5
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          1,
+          6
+        ],
+        [
+          2,
+          6
+        ],
+        [
+          3,
+          6
+        ],
+        [
+          4,
+          6
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          7,
+          6
+        ],
+        [
+          8,
+          6
+        ],
+        [
+          9,
+          6
+        ],
+        [
+          10,
+          6
+        ],
+        [
+          11,
+          6
+        ]
+      ],
+      "maximumPlaceableCells": 84,
+      "reservedCellsInsideBoard": [],
+      "startLand": {
+        "x": 4,
+        "y": 2,
+        "width": 5,
+        "height": 3
+      },
+      "startPlots": [
+        {
+          "shape": "line3",
+          "type": "novice",
+          "at": [
+            5,
+            4
+          ]
+        }
+      ]
+    },
+    "expansion": {
+      "existingRules": {
+        "adjacency": "four-neighbor",
+        "perPurchaseCells": 1,
+        "diagonalAllowed": false,
+        "basePrice": 15,
+        "growth": 1.07,
+        "priceFormula": "Math.round(15 * 1.07 ** state.landBought)",
+        "costScope": "land only; excludes plot purchases, robots, capacity and Token exchange"
+      },
+      "phaseSemantics": "Suggested spatial milestones only, not forced progression gates or a change to canBuyLand. Every cell in board remains eligible under existing adjacency rules.",
+      "phases": [
+        {
+          "id": "phase0",
+          "label": "開局核心",
+          "rect": [
+            4,
+            2,
+            5,
+            3
+          ],
+          "totalCells": 15,
+          "newCells": 0,
+          "landCost": 0,
+          "cumulativeCost": 0,
+          "cells": [
+            [
+              4,
+              2
+            ],
+            [
+              5,
+              2
+            ],
+            [
+              6,
+              2
+            ],
+            [
+              7,
+              2
+            ],
+            [
+              8,
+              2
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              5,
+              3
+            ],
+            [
+              6,
+              3
+            ],
+            [
+              7,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              4
+            ],
+            [
+              6,
+              4
+            ],
+            [
+              7,
+              4
+            ],
+            [
+              8,
+              4
+            ]
+          ],
+          "purchaseOrder": []
+        },
+        {
+          "id": "phase1",
+          "label": "近郊擴充",
+          "rect": [
+            3,
+            1,
+            7,
+            5
+          ],
+          "totalCells": 35,
+          "newCells": 20,
+          "landCost": 616,
+          "cumulativeCost": 616,
+          "cells": [
+            [
+              3,
+              1
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              5,
+              1
+            ],
+            [
+              6,
+              1
+            ],
+            [
+              7,
+              1
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              9,
+              1
+            ],
+            [
+              3,
+              2
+            ],
+            [
+              4,
+              2
+            ],
+            [
+              5,
+              2
+            ],
+            [
+              6,
+              2
+            ],
+            [
+              7,
+              2
+            ],
+            [
+              8,
+              2
+            ],
+            [
+              9,
+              2
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              5,
+              3
+            ],
+            [
+              6,
+              3
+            ],
+            [
+              7,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              9,
+              3
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              4
+            ],
+            [
+              6,
+              4
+            ],
+            [
+              7,
+              4
+            ],
+            [
+              8,
+              4
+            ],
+            [
+              9,
+              4
+            ],
+            [
+              3,
+              5
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              6,
+              5
+            ],
+            [
+              7,
+              5
+            ],
+            [
+              8,
+              5
+            ],
+            [
+              9,
+              5
+            ]
+          ],
+          "purchaseOrder": [
+            {
+              "cell": [
+                4,
+                1
+              ],
+              "price": 15
+            },
+            {
+              "cell": [
+                3,
+                1
+              ],
+              "price": 16
+            },
+            {
+              "cell": [
+                5,
+                1
+              ],
+              "price": 17
+            },
+            {
+              "cell": [
+                6,
+                1
+              ],
+              "price": 18
+            },
+            {
+              "cell": [
+                7,
+                1
+              ],
+              "price": 20
+            },
+            {
+              "cell": [
+                8,
+                1
+              ],
+              "price": 21
+            },
+            {
+              "cell": [
+                9,
+                1
+              ],
+              "price": 23
+            },
+            {
+              "cell": [
+                3,
+                2
+              ],
+              "price": 24
+            },
+            {
+              "cell": [
+                9,
+                2
+              ],
+              "price": 26
+            },
+            {
+              "cell": [
+                3,
+                3
+              ],
+              "price": 28
+            },
+            {
+              "cell": [
+                9,
+                3
+              ],
+              "price": 30
+            },
+            {
+              "cell": [
+                3,
+                4
+              ],
+              "price": 32
+            },
+            {
+              "cell": [
+                9,
+                4
+              ],
+              "price": 34
+            },
+            {
+              "cell": [
+                3,
+                5
+              ],
+              "price": 36
+            },
+            {
+              "cell": [
+                4,
+                5
+              ],
+              "price": 39
+            },
+            {
+              "cell": [
+                5,
+                5
+              ],
+              "price": 41
+            },
+            {
+              "cell": [
+                6,
+                5
+              ],
+              "price": 44
+            },
+            {
+              "cell": [
+                7,
+                5
+              ],
+              "price": 47
+            },
+            {
+              "cell": [
+                8,
+                5
+              ],
+              "price": 51
+            },
+            {
+              "cell": [
+                9,
+                5
+              ],
+              "price": 54
+            }
+          ]
+        },
+        {
+          "id": "phase2",
+          "label": "山谷主田區",
+          "rect": [
+            1,
+            0,
+            10,
+            7
+          ],
+          "totalCells": 70,
+          "newCells": 35,
+          "landCost": 8022,
+          "cumulativeCost": 8638,
+          "cells": [
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              5,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              7,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              9,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              5,
+              1
+            ],
+            [
+              6,
+              1
+            ],
+            [
+              7,
+              1
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              9,
+              1
+            ],
+            [
+              10,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              2
+            ],
+            [
+              4,
+              2
+            ],
+            [
+              5,
+              2
+            ],
+            [
+              6,
+              2
+            ],
+            [
+              7,
+              2
+            ],
+            [
+              8,
+              2
+            ],
+            [
+              9,
+              2
+            ],
+            [
+              10,
+              2
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              5,
+              3
+            ],
+            [
+              6,
+              3
+            ],
+            [
+              7,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              9,
+              3
+            ],
+            [
+              10,
+              3
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              4
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              4
+            ],
+            [
+              6,
+              4
+            ],
+            [
+              7,
+              4
+            ],
+            [
+              8,
+              4
+            ],
+            [
+              9,
+              4
+            ],
+            [
+              10,
+              4
+            ],
+            [
+              1,
+              5
+            ],
+            [
+              2,
+              5
+            ],
+            [
+              3,
+              5
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              6,
+              5
+            ],
+            [
+              7,
+              5
+            ],
+            [
+              8,
+              5
+            ],
+            [
+              9,
+              5
+            ],
+            [
+              10,
+              5
+            ],
+            [
+              1,
+              6
+            ],
+            [
+              2,
+              6
+            ],
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              6
+            ],
+            [
+              5,
+              6
+            ],
+            [
+              6,
+              6
+            ],
+            [
+              7,
+              6
+            ],
+            [
+              8,
+              6
+            ],
+            [
+              9,
+              6
+            ],
+            [
+              10,
+              6
+            ]
+          ],
+          "purchaseOrder": [
+            {
+              "cell": [
+                3,
+                0
+              ],
+              "price": 58
+            },
+            {
+              "cell": [
+                2,
+                0
+              ],
+              "price": 62
+            },
+            {
+              "cell": [
+                1,
+                0
+              ],
+              "price": 66
+            },
+            {
+              "cell": [
+                4,
+                0
+              ],
+              "price": 71
+            },
+            {
+              "cell": [
+                5,
+                0
+              ],
+              "price": 76
+            },
+            {
+              "cell": [
+                6,
+                0
+              ],
+              "price": 81
+            },
+            {
+              "cell": [
+                7,
+                0
+              ],
+              "price": 87
+            },
+            {
+              "cell": [
+                8,
+                0
+              ],
+              "price": 93
+            },
+            {
+              "cell": [
+                9,
+                0
+              ],
+              "price": 100
+            },
+            {
+              "cell": [
+                10,
+                0
+              ],
+              "price": 107
+            },
+            {
+              "cell": [
+                1,
+                1
+              ],
+              "price": 114
+            },
+            {
+              "cell": [
+                2,
+                1
+              ],
+              "price": 122
+            },
+            {
+              "cell": [
+                10,
+                1
+              ],
+              "price": 131
+            },
+            {
+              "cell": [
+                1,
+                2
+              ],
+              "price": 140
+            },
+            {
+              "cell": [
+                2,
+                2
+              ],
+              "price": 150
+            },
+            {
+              "cell": [
+                10,
+                2
+              ],
+              "price": 160
+            },
+            {
+              "cell": [
+                1,
+                3
+              ],
+              "price": 171
+            },
+            {
+              "cell": [
+                2,
+                3
+              ],
+              "price": 183
+            },
+            {
+              "cell": [
+                10,
+                3
+              ],
+              "price": 196
+            },
+            {
+              "cell": [
+                1,
+                4
+              ],
+              "price": 210
+            },
+            {
+              "cell": [
+                2,
+                4
+              ],
+              "price": 225
+            },
+            {
+              "cell": [
+                10,
+                4
+              ],
+              "price": 240
+            },
+            {
+              "cell": [
+                1,
+                5
+              ],
+              "price": 257
+            },
+            {
+              "cell": [
+                2,
+                5
+              ],
+              "price": 275
+            },
+            {
+              "cell": [
+                10,
+                5
+              ],
+              "price": 294
+            },
+            {
+              "cell": [
+                1,
+                6
+              ],
+              "price": 315
+            },
+            {
+              "cell": [
+                2,
+                6
+              ],
+              "price": 337
+            },
+            {
+              "cell": [
+                3,
+                6
+              ],
+              "price": 361
+            },
+            {
+              "cell": [
+                4,
+                6
+              ],
+              "price": 386
+            },
+            {
+              "cell": [
+                5,
+                6
+              ],
+              "price": 413
+            },
+            {
+              "cell": [
+                6,
+                6
+              ],
+              "price": 442
+            },
+            {
+              "cell": [
+                7,
+                6
+              ],
+              "price": 473
+            },
+            {
+              "cell": [
+                8,
+                6
+              ],
+              "price": 506
+            },
+            {
+              "cell": [
+                9,
+                6
+              ],
+              "price": 541
+            },
+            {
+              "cell": [
+                10,
+                6
+              ],
+              "price": 579
+            }
+          ]
+        },
+        {
+          "id": "phase3",
+          "label": "完整可擴範圍",
+          "rect": [
+            0,
+            0,
+            12,
+            7
+          ],
+          "totalCells": 84,
+          "newCells": 14,
+          "landCost": 13974,
+          "cumulativeCost": 22612,
+          "cells": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              5,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              7,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              9,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              11,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              5,
+              1
+            ],
+            [
+              6,
+              1
+            ],
+            [
+              7,
+              1
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              9,
+              1
+            ],
+            [
+              10,
+              1
+            ],
+            [
+              11,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              2
+            ],
+            [
+              4,
+              2
+            ],
+            [
+              5,
+              2
+            ],
+            [
+              6,
+              2
+            ],
+            [
+              7,
+              2
+            ],
+            [
+              8,
+              2
+            ],
+            [
+              9,
+              2
+            ],
+            [
+              10,
+              2
+            ],
+            [
+              11,
+              2
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              5,
+              3
+            ],
+            [
+              6,
+              3
+            ],
+            [
+              7,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              9,
+              3
+            ],
+            [
+              10,
+              3
+            ],
+            [
+              11,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              4
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              4
+            ],
+            [
+              6,
+              4
+            ],
+            [
+              7,
+              4
+            ],
+            [
+              8,
+              4
+            ],
+            [
+              9,
+              4
+            ],
+            [
+              10,
+              4
+            ],
+            [
+              11,
+              4
+            ],
+            [
+              0,
+              5
+            ],
+            [
+              1,
+              5
+            ],
+            [
+              2,
+              5
+            ],
+            [
+              3,
+              5
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              6,
+              5
+            ],
+            [
+              7,
+              5
+            ],
+            [
+              8,
+              5
+            ],
+            [
+              9,
+              5
+            ],
+            [
+              10,
+              5
+            ],
+            [
+              11,
+              5
+            ],
+            [
+              0,
+              6
+            ],
+            [
+              1,
+              6
+            ],
+            [
+              2,
+              6
+            ],
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              6
+            ],
+            [
+              5,
+              6
+            ],
+            [
+              6,
+              6
+            ],
+            [
+              7,
+              6
+            ],
+            [
+              8,
+              6
+            ],
+            [
+              9,
+              6
+            ],
+            [
+              10,
+              6
+            ],
+            [
+              11,
+              6
+            ]
+          ],
+          "purchaseOrder": [
+            {
+              "cell": [
+                0,
+                0
+              ],
+              "price": 620
+            },
+            {
+              "cell": [
+                11,
+                0
+              ],
+              "price": 663
+            },
+            {
+              "cell": [
+                0,
+                1
+              ],
+              "price": 710
+            },
+            {
+              "cell": [
+                11,
+                1
+              ],
+              "price": 759
+            },
+            {
+              "cell": [
+                0,
+                2
+              ],
+              "price": 812
+            },
+            {
+              "cell": [
+                11,
+                2
+              ],
+              "price": 869
+            },
+            {
+              "cell": [
+                0,
+                3
+              ],
+              "price": 930
+            },
+            {
+              "cell": [
+                11,
+                3
+              ],
+              "price": 995
+            },
+            {
+              "cell": [
+                0,
+                4
+              ],
+              "price": 1065
+            },
+            {
+              "cell": [
+                11,
+                4
+              ],
+              "price": 1139
+            },
+            {
+              "cell": [
+                0,
+                5
+              ],
+              "price": 1219
+            },
+            {
+              "cell": [
+                11,
+                5
+              ],
+              "price": 1304
+            },
+            {
+              "cell": [
+                0,
+                6
+              ],
+              "price": 1396
+            },
+            {
+              "cell": [
+                11,
+                6
+              ],
+              "price": 1493
+            }
+          ]
+        }
+      ],
+      "suggestedPurchaseOrder": [
+        {
+          "cell": [
+            4,
+            1
+          ],
+          "price": 15
+        },
+        {
+          "cell": [
+            3,
+            1
+          ],
+          "price": 16
+        },
+        {
+          "cell": [
+            5,
+            1
+          ],
+          "price": 17
+        },
+        {
+          "cell": [
+            6,
+            1
+          ],
+          "price": 18
+        },
+        {
+          "cell": [
+            7,
+            1
+          ],
+          "price": 20
+        },
+        {
+          "cell": [
+            8,
+            1
+          ],
+          "price": 21
+        },
+        {
+          "cell": [
+            9,
+            1
+          ],
+          "price": 23
+        },
+        {
+          "cell": [
+            3,
+            2
+          ],
+          "price": 24
+        },
+        {
+          "cell": [
+            9,
+            2
+          ],
+          "price": 26
+        },
+        {
+          "cell": [
+            3,
+            3
+          ],
+          "price": 28
+        },
+        {
+          "cell": [
+            9,
+            3
+          ],
+          "price": 30
+        },
+        {
+          "cell": [
+            3,
+            4
+          ],
+          "price": 32
+        },
+        {
+          "cell": [
+            9,
+            4
+          ],
+          "price": 34
+        },
+        {
+          "cell": [
+            3,
+            5
+          ],
+          "price": 36
+        },
+        {
+          "cell": [
+            4,
+            5
+          ],
+          "price": 39
+        },
+        {
+          "cell": [
+            5,
+            5
+          ],
+          "price": 41
+        },
+        {
+          "cell": [
+            6,
+            5
+          ],
+          "price": 44
+        },
+        {
+          "cell": [
+            7,
+            5
+          ],
+          "price": 47
+        },
+        {
+          "cell": [
+            8,
+            5
+          ],
+          "price": 51
+        },
+        {
+          "cell": [
+            9,
+            5
+          ],
+          "price": 54
+        },
+        {
+          "cell": [
+            3,
+            0
+          ],
+          "price": 58
+        },
+        {
+          "cell": [
+            2,
+            0
+          ],
+          "price": 62
+        },
+        {
+          "cell": [
+            1,
+            0
+          ],
+          "price": 66
+        },
+        {
+          "cell": [
+            4,
+            0
+          ],
+          "price": 71
+        },
+        {
+          "cell": [
+            5,
+            0
+          ],
+          "price": 76
+        },
+        {
+          "cell": [
+            6,
+            0
+          ],
+          "price": 81
+        },
+        {
+          "cell": [
+            7,
+            0
+          ],
+          "price": 87
+        },
+        {
+          "cell": [
+            8,
+            0
+          ],
+          "price": 93
+        },
+        {
+          "cell": [
+            9,
+            0
+          ],
+          "price": 100
+        },
+        {
+          "cell": [
+            10,
+            0
+          ],
+          "price": 107
+        },
+        {
+          "cell": [
+            1,
+            1
+          ],
+          "price": 114
+        },
+        {
+          "cell": [
+            2,
+            1
+          ],
+          "price": 122
+        },
+        {
+          "cell": [
+            10,
+            1
+          ],
+          "price": 131
+        },
+        {
+          "cell": [
+            1,
+            2
+          ],
+          "price": 140
+        },
+        {
+          "cell": [
+            2,
+            2
+          ],
+          "price": 150
+        },
+        {
+          "cell": [
+            10,
+            2
+          ],
+          "price": 160
+        },
+        {
+          "cell": [
+            1,
+            3
+          ],
+          "price": 171
+        },
+        {
+          "cell": [
+            2,
+            3
+          ],
+          "price": 183
+        },
+        {
+          "cell": [
+            10,
+            3
+          ],
+          "price": 196
+        },
+        {
+          "cell": [
+            1,
+            4
+          ],
+          "price": 210
+        },
+        {
+          "cell": [
+            2,
+            4
+          ],
+          "price": 225
+        },
+        {
+          "cell": [
+            10,
+            4
+          ],
+          "price": 240
+        },
+        {
+          "cell": [
+            1,
+            5
+          ],
+          "price": 257
+        },
+        {
+          "cell": [
+            2,
+            5
+          ],
+          "price": 275
+        },
+        {
+          "cell": [
+            10,
+            5
+          ],
+          "price": 294
+        },
+        {
+          "cell": [
+            1,
+            6
+          ],
+          "price": 315
+        },
+        {
+          "cell": [
+            2,
+            6
+          ],
+          "price": 337
+        },
+        {
+          "cell": [
+            3,
+            6
+          ],
+          "price": 361
+        },
+        {
+          "cell": [
+            4,
+            6
+          ],
+          "price": 386
+        },
+        {
+          "cell": [
+            5,
+            6
+          ],
+          "price": 413
+        },
+        {
+          "cell": [
+            6,
+            6
+          ],
+          "price": 442
+        },
+        {
+          "cell": [
+            7,
+            6
+          ],
+          "price": 473
+        },
+        {
+          "cell": [
+            8,
+            6
+          ],
+          "price": 506
+        },
+        {
+          "cell": [
+            9,
+            6
+          ],
+          "price": 541
+        },
+        {
+          "cell": [
+            10,
+            6
+          ],
+          "price": 579
+        },
+        {
+          "cell": [
+            0,
+            0
+          ],
+          "price": 620
+        },
+        {
+          "cell": [
+            11,
+            0
+          ],
+          "price": 663
+        },
+        {
+          "cell": [
+            0,
+            1
+          ],
+          "price": 710
+        },
+        {
+          "cell": [
+            11,
+            1
+          ],
+          "price": 759
+        },
+        {
+          "cell": [
+            0,
+            2
+          ],
+          "price": 812
+        },
+        {
+          "cell": [
+            11,
+            2
+          ],
+          "price": 869
+        },
+        {
+          "cell": [
+            0,
+            3
+          ],
+          "price": 930
+        },
+        {
+          "cell": [
+            11,
+            3
+          ],
+          "price": 995
+        },
+        {
+          "cell": [
+            0,
+            4
+          ],
+          "price": 1065
+        },
+        {
+          "cell": [
+            11,
+            4
+          ],
+          "price": 1139
+        },
+        {
+          "cell": [
+            0,
+            5
+          ],
+          "price": 1219
+        },
+        {
+          "cell": [
+            11,
+            5
+          ],
+          "price": 1304
+        },
+        {
+          "cell": [
+            0,
+            6
+          ],
+          "price": 1396
+        },
+        {
+          "cell": [
+            11,
+            6
+          ],
+          "price": 1493
+        }
+      ],
+      "totalNewCells": 69,
+      "totalLandCost": 22612
+    },
+    "environment": {
+      "boardArtPolicy": "All84 cells remain uncluttered; do not bake crops, plot shapes, fences, grid labels, trees, buildings, paths or purchase states into board image. Minor grass texture only.",
+      "zoneSpace": "logical board grid units; non-playable scenic zones outside board",
+      "zones": [
+        {
+          "id": "northLake",
+          "kind": "lake-shore",
+          "bounds": [
+            0.25,
+            -6.9,
+            6.3,
+            5.2
+          ]
+        },
+        {
+          "id": "northFarmhouse",
+          "kind": "farmhouse-service",
+          "bounds": [
+            8.06,
+            -6.18,
+            5.15,
+            4.84
+          ]
+        },
+        {
+          "id": "northServicePath",
+          "kind": "path",
+          "bounds": [
+            -1,
+            -0.875,
+            14.4,
+            0.625
+          ]
+        },
+        {
+          "id": "westEntrance",
+          "kind": "path",
+          "bounds": [
+            -1.23,
+            -0.56,
+            0.7,
+            10.94
+          ]
+        }
+      ],
+      "decorationCollision": "None added. Scene decoration stays outside board; existing simulation has no environmental blockers or cross-plot pathfinding."
+    },
+    "views": {
+      "topDown": {
+        "canvas": [
+          1280,
+          1280
+        ],
+        "mapWorldRect": [
+          -3.5,
+          -9,
+          20,
+          20
+        ],
+        "boardOrigin": [
+          224,
+          576
+        ],
+        "tileSize": [
+          64,
+          64
+        ],
+        "boardRect": [
+          224,
+          576,
+          768,
+          448
+        ],
+        "rotationDegrees": 0,
+        "scaleY": 1,
+        "frontDepth": 0,
+        "gridToPixel": "[224+64*x,576+64*y]",
+        "pixelToCell": "[floor((pixelX-224)/64),floor((pixelY-576)/64)]",
+        "buildingRule": "Use overhead roof art baked into environmental map; never flatten angled farmhouse sprite.",
+        "foregroundRule": "Do not overlay angled foreground frames in arrangement mode; keep all grid targets visible.",
+        "registrationNote": "Board calibrated against final generated art; planning overlay, not generated pixels, is authoritative. All84 cells are in uninterrupted grass."
+      },
+      "angledTarget": {
+        "boardOrigin": [
+          210,
+          265
+        ],
+        "rotationDegrees": 18,
+        "scaleY": 0.625,
+        "logicalTileSize": [
+          64,
+          64
+        ],
+        "frontDepth": 13,
+        "gridToPixel": "[ox+64*(x*cos18-y*sin18), oy+64*.625*(x*sin18+y*cos18)]",
+        "status": "Art target only. Current game/valley.js uses unrotated96x60 cells, not this formula. Existing valleyScene five demonstration beds are not a state.layout snapshot."
+      }
+    },
+    "compatibility": {
+      "gameBoardCellSize": 96,
+      "topDownRendererTop": 129.6,
+      "logicalToGameScale": 1.5,
+      "assetLoading": "Current game/render.js loadAssets enumerates valleyFarm etc.; Claude must add farmWorld assets explicitly. Existing game does not load this new root automatically.",
+      "ownership": "ChatGPT supplies assets, plan and lab; Claude integrates state.land/state.layout, renderer transforms, camera and input inverse.",
+      "savePolicy": "Preserve existing state.land and layout; phases do not reset or relocate existing player plots.",
+      "switchPolicy": "Keep board cell and rot unchanged when switching views; only project same world positions. Never derive land from PNG colors.",
+      "loopPolicy": "Arrangement currently does not pause simulation; this plan does not change it.",
+      "mapToGamePixel": "Map pixels → existing top-down renderer: [(mapX-224)*1.5,129.6+(mapY-576)*1.5]; combine with camera/viewport transform."
+    },
+    "animation": {
+      "animated": false,
+      "frameOrder": [
+        0
+      ],
+      "loop": false,
+      "clock": "none",
+      "transitionMs": 0,
+      "note": "Static planning/map only. Switching preview views is immediate; existing game robot clips remain unchanged."
+    },
+    "lab": {
+      "defaultPhase": "phase0",
+      "canvas": [
+        1280,
+        1280
+      ],
+      "showGridInitially": true,
+      "showZonesInitially": true,
+      "showStarterInitially": true,
+      "colors": {
+        "phase0": "#d7a44b",
+        "phase1": "#75bdd0",
+        "phase2": "#8fc7a3",
+        "phase3": "#c65f48"
+      },
+      "unownedOverlay": "rgba(38,63,60,.25)",
+      "ownedOverlay": "rgba(240,228,187,.12)",
+      "gridColor": "rgba(38,63,60,.5)",
+      "nextCellStroke": "#f0e4bb",
+      "initialSoilIndex": 1,
+      "starterPlotCells": [
+        [
+          5,
+          4
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          7,
+          4
+        ]
+      ],
+      "starterSoilSource": "soilVariants.states[soilIndex=1].variants[id=plain]",
+      "note": "Read-only art/land-layout preview. No purchasing, save access, economic simulation or real drag mode."
+    },
+    "assets": {
+      "overheadMap": {
+        "label": "山谷農場・完全俯視環境地圖",
+        "file": "valley-overhead-map-v01.png",
+        "imageSize": [
+          1280,
+          1280
+        ],
+        "sourceRect": [
+          0,
+          0,
+          1280,
+          1280
+        ],
+        "groundAnchor": [
+          224,
+          576
+        ],
+        "anchorMeaning": "board vertex(0,0), local sourceRect pixels; environmental-map registration, not building root",
+        "footprint": [
+          0,
+          0
+        ],
+        "recommendedDisplaySize": [
+          1280,
+          1280
+        ],
+        "layer": "backdrop",
+        "animated": false,
+        "fileBytes": 365353,
+        "opaqueColorLimit": 48,
+        "alphaRule": "threshold128 binary-alpha",
+        "boardClearRect": [
+          224,
+          576,
+          768,
+          448
+        ],
+        "processing": "nearest-neighbor resize to1280 square; alpha threshold128; FASTOCTREE palette reduction without dithering; original preserved"
+      }
+    },
+    "validation": {
+      "all69PurchasesPassActualCanBuyLand": true,
+      "eachPurchasePassesActualBuyLand": true,
+      "finalUniqueCells": 84,
+      "shapeLegalPlacementCounts": {
+        "line3": 260,
+        "L": 230,
+        "T": 230,
+        "U": 230
+      },
+      "doesNotReadOrWritePlayerSave": true
+    }
   }
 }

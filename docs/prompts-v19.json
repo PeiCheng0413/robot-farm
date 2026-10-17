@@ -1,0 +1,33 @@
+{
+  "method": "內建 image_gen；沿用使用者授權的 Python 最近鄰縮圖／Alpha 清理／無抖色限色",
+  "prompts": [
+    {
+      "id": "midgroundTrees",
+      "prompt": "Use case: stylized-concept. Create a GAME SPRITE ATLAS, not a full landscape. Reference is the provided secluded mountain farm illustration; match its sunlit warm green forest, crisp pixel-cluster style and dark teal outlines closely. ONE 1536x1024 transparent PNG containing TWO independent upright forest TREE GROUPS: left half a mixed group of tall dark conifers with one sunlit yellow-green deciduous tree, right half a group of sunlit birch-like deciduous trees with visible slim brown trunks and dark conifers behind. Each group occupies its own half with at least64px transparent gutter, all tips and roots complete inside canvas, no trees cut off. Full rooted upright trees, shallow elevated orthographic three-quarter camera, vertical trunks stay vertical. Group bases uneven with small shrubs/grass at roots, NO rectangular ground slab or baseline. Dense volumetric foliage in chunky hard-edge PIXEL ART, rich varied silhouettes, warm pale yellowgreen highlights from upper-left, moss greens and deep teal shadows. Use large discrete pixel clusters and 3-4 hard flat shades per material. Forest feels sunny and lush, NOT dark spooky. True transparent alpha outside silhouettes, NO scenery, mountains, lake, farmhouse, farming plots, characters, text, labels, cell borders, gradients, blur or glow. This is reusable middle-distance forest-edge foliage to surround a farm clearing, not a frame already assembled. Preserve feeling of supplied reference, not its entire composition."
+    },
+    {
+      "id": "meadow",
+      "prompt": "Use case: stylized-concept. Asset type: a SINGLE seamlessly repeatable TOP-DOWN SUNLIT MEADOW GRASS GROUND TILE for a warm pixel-art farm game. Make a square 1024x1024 PNG. Full-bleed square ground texture fills the canvas to all four straight edges, seen exactly from above, no perspective, no diagonal rotation, no side walls. Match the SUNLIT grassy clearing colors and hard square pixel clusters of the attached farm reference. Main color warm desaturated yellow-olive green #a4ad65, secondary grass #809a56, pale straw green #c3c380, small deep green #637f49 flecks. Moderately varied tiny grass-blade clusters, little irregular lighter and darker patches, lots of restful flat grass between details. Even texture density throughout, no vignette or central spotlight, avoid a clear repeat motif. The tile should read as a lived-in warm meadow at a display size64x64, not a dense lawn photograph. Simple limited palette pixel art, sharp pixel clusters, no smooth gradients, no blur, no glow, no noise grain. No objects, no trees, flowers, rocks, path, stones, crops, buildings, characters, fences, text, borders or grid lines. Seamless horizontally and vertically with color and texture continuity across opposite edges. Opaque texture inside square; no backdrop or surrounding scene."
+    }
+  ],
+  "outputs": [
+    {
+      "file": "valley-midground-trees-v01.png",
+      "source": "exec-da3e0d70-f5cb-4447-a674-617e6b613e4f.png",
+      "size": [
+        768,
+        512
+      ],
+      "colors": 48
+    },
+    {
+      "file": "meadow-ground-tile-v01.png",
+      "source": "exec-46808f1f-79a5-4b76-8b09-ff92edd750a3.png",
+      "size": [
+        512,
+        512
+      ],
+      "colors": 16
+    }
+  ]
+}
