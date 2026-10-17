@@ -3,15 +3,15 @@
 //
 // loadAssets()            載入 manifest、alignment 與圖片
 // createPainter(assets)   繪圖元件：每個函式都把要畫的 ctx 與格子大小當參數，盤面與單塊田特寫共用
-// createBoardRenderer()   農場盤面（遊戲機制測試畫面）
+// createBoardRenderer()   正上方的農場盤面（遊戲機制測試畫面 game.html）
 // createPlotView()        單塊田特寫（腳本編輯畫面）
+// 主畫面的斜角／俯瞰場景在 scene.js，共用這裡的 loadAssets 與 createPainter。
 
 import { PLOTS, BOARD, plotById, cellKey, rotation, toBoard, placedCells, rotateHeading } from './plots.js';
 import { VECTORS } from './sim.js';
 
 const C = { floor: '#e7dcb8', slot: '#ddd0a6', outline: '#263f3c', selected: '#8fc7a3', crash: '#c65f48', label: '#fffaf0' };
 const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif';
-const OUTSIDE = 'rgba(29, 47, 44, .78)';   // 盤面以外（主畫面）：比未開放格子更暗，表示不能用
 const ROBOT_SCALE = 1.4;   // 機器人 416 畫布的邊長＝格子邊長 × 這個倍數
 const ROBOT_LIFT = 0.32;   // 機身中心比格子中心高幾格
 
@@ -28,12 +28,10 @@ export async function loadAssets(onProgress) {
     ...(manifest.thoughtBubbles ? [manifest.thoughtBubbles.atlas] : []),
     ...Object.values(manifest.effectClips || {}).map(e => e.atlas),
     ...(manifest.landBoundary ? [manifest.landBoundary.atlas] : [])]);
-  // 有新版斜角場景（valleyScene）時，只載它與俯瞰地圖；舊版溫室窗框、石板地與第一版山谷大圖不再下載（約 5.5MB）。
-  const scene = manifest.valleyScene;
-  for (const item of manifest.mainScreenAssets?.items || []) if (!scene || !item.layer.startsWith('environment')) files.add(item.file);
-  // 斜角場景已取消田的土壁，第一版山谷的圖（含土壁）只在沒有 valleyScene 時才載
-  for (const a of Object.values(manifest.valleyFarm?.assets || {})) if (!scene) files.add(a.file);
-  for (const a of Object.values(scene?.assets || {})) files.add(a.file);
+  // 主畫面素材只取名牌與資源圖示（溫室窗框、石板地是舊版外觀，不再下載）；山谷場景與俯瞰地圖給 scene.js。
+  // 第一版山谷（valleyFarm）的大圖已不使用，manifest 裡的規格保留給 ChatGPT 的試驗室。
+  for (const item of manifest.mainScreenAssets?.items || []) if (!item.layer.startsWith('environment')) files.add(item.file);
+  for (const a of Object.values(manifest.valleyScene?.assets || {})) files.add(a.file);
   for (const a of Object.values(manifest.farmWorld?.assets || {})) files.add(a.file);
   // 圖片失敗會重試一次（網路不穩時偶爾有大圖載入失敗）。每張圖成功載入都會通知 onImage，
   // 讓只在大小改變時才重畫的背景，在晚到的圖載好後補畫。
@@ -307,55 +305,35 @@ export function createPainter({ manifest, align, images }) {
 // 名牌顏色已經表示類型，牌面只寫形狀，例如「T 形田」。
 const SHAPE_NAME = plot => plot.name.split('・')[0] + '田';
 
-// background:false 時不畫地板與格位線，讓頁面自己的溫室地磚透出來當格位（主畫面，地磚由 play.js 對齊格子）。
-export function createBoardRenderer(canvas, assets, { background = true } = {}) {
+export function createBoardRenderer(canvas, assets) {
   // TOP：盤面上方留白，第一排田的名牌與機器人的頭才不會被切掉。
   const P = createPainter(assets), CELL = 96, TOP = CELL * 1.35, SIGN_W = CELL * 1.6, list = [];
   canvas.width = BOARD.columns * CELL;
   canvas.height = BOARD.rows * CELL + TOP;
   const ctx = canvas.getContext('2d');
-  // 每格畫面都依 state.layout（排列模式拖曳中則用預覽位置）決定每塊田畫在哪、轉幾次。
+  // 每格畫面都依 state.layout 決定每塊田畫在哪、轉幾次（排列在主畫面做，這裡照著畫）。
   let layout = {};
   const toGrid = (plotId, x, y) => toBoard(plotById.get(plotId), layout[plotId], x, y);
   const turnOf = plotId => layout[plotId].rot;
   const board = (x, y) => [x * CELL, y * CELL];
 
-  // ghost：{ plotId, place, valid } 拖曳中的田塊（從盤面或倉庫拿起），吸附在格子上，可放為綠、放不下為紅。
-  // land：{ buyable: [[x, y]…], pending: [x, y] | null, price } 排列模式時標出可以買的格子。
-  function draw(state, { selected, ghost, land } = {}) {
+  function draw(state, { selected } = {}) {
     const time = state.time;
-    layout = ghost ? { ...state.layout, [ghost.plotId]: ghost.place } : state.layout;
+    layout = state.layout;
     const shownPlots = PLOTS.filter(p => layout[p.id]);
     ctx.imageSmoothingEnabled = false;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (background) { ctx.fillStyle = C.floor; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+    ctx.fillStyle = C.floor; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.translate(0, TOP);
     const boardH = BOARD.rows * CELL;
-    if (background) {
-      ctx.strokeStyle = C.slot; ctx.lineWidth = 2;
-      for (let x = 0; x <= BOARD.columns; x++) { ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, boardH); ctx.stroke(); }
-      for (let y = 0; y <= BOARD.rows; y++) { ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(canvas.width, y * CELL); ctx.stroke(); }
-    }
-
-    // 盤面上方留給名牌的那條不是農地，跟盤面外一樣壓暗（主畫面）
-    if (!background) { ctx.fillStyle = OUTSIDE; ctx.fillRect(0, -TOP, canvas.width, TOP); }
+    ctx.strokeStyle = C.slot; ctx.lineWidth = 2;
+    for (let x = 0; x <= BOARD.columns; x++) { ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, boardH); ctx.stroke(); }
+    for (let y = 0; y <= BOARD.rows; y++) { ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(canvas.width, y * CELL); ctx.stroke(); }
     // 還沒開放的格子：蓋一層深色，表示要花錢擴地
     const open = new Set(state.land);
     ctx.fillStyle = 'rgba(38, 63, 60, .62)';
     for (let y = 0; y < BOARD.rows; y++) for (let x = 0; x < BOARD.columns; x++) if (!open.has(cellKey(x, y))) ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
-    if (land) {
-      ctx.font = `bold 22px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      for (const [x, y] of land.buyable) {
-        const pending = land.pending && land.pending[0] === x && land.pending[1] === y;
-        ctx.strokeStyle = pending ? '#f0cf7e' : 'rgba(240, 207, 126, .55)'; ctx.lineWidth = pending ? 6 : 3;
-        ctx.setLineDash(pending ? [] : [8, 8]); ctx.strokeRect(x * CELL + 6, y * CELL + 6, CELL - 12, CELL - 12); ctx.setLineDash([]);
-        ctx.fillStyle = '#fffaf0';
-        ctx.fillText(pending ? `買 ${land.price}` : '+', x * CELL + CELL / 2, y * CELL + CELL / 2);
-        if (pending) { ctx.font = `bold 16px ${FONT}`; ctx.fillText('再點一下', x * CELL + CELL / 2, y * CELL + CELL * .78); ctx.font = `bold 22px ${FONT}`; }
-      }
-      ctx.textAlign = 'start';
-    }
 
     const views = state.robots.filter(r => r.plot && layout[r.plot]).map(r => ({ robot: r, view: P.robotView(r, r.act, time, toGrid, turnOf) }));
     const hidden = new Set(views.filter(v => P.hidesPlant(v.view)).map(v => v.robot.plot + '|' + v.view.cell));
@@ -368,18 +346,6 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
       P.outline(ctx, cells, board, CELL, C.outline, 6);
       P.outline(ctx, cells, board, CELL, plot.rules.colour, 3);   // 內框顏色代表田的類型
       if (selected === plot.id) P.outline(ctx, cells, board, CELL, C.selected, 5);
-      if (ghost?.plotId === plot.id) {
-        ctx.fillStyle = ghost.valid ? 'rgba(143, 199, 163, .45)' : 'rgba(198, 95, 72, .55)';
-        for (const [x, y] of cells) ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
-        P.outline(ctx, cells, board, CELL, ghost.valid ? '#2f7d4a' : '#9b2c1c', 6);
-      }
-    }
-    // 拖曳中：原本的位置留一圈虛線，知道田是從哪裡拿起來的
-    if (ghost && state.layout[ghost.plotId]) {
-      const plot = plotById.get(ghost.plotId), from = placedCells(plot, state.layout[ghost.plotId]);
-      ctx.setLineDash([12, 10]);
-      P.outline(ctx, from, board, CELL, 'rgba(38, 63, 60, .7)', 4);
-      ctx.setLineDash([]);
     }
     for (const plot of shownPlots) {
       const ps = state.plots[plot.id], origin = (x, y) => toGrid(plot.id, x, y).map(v => v * CELL);
@@ -432,8 +398,7 @@ export function createBoardRenderer(canvas, assets, { background = true } = {}) 
     return plot ? plot.id : null;
   }
 
-  // 格子在 canvas 原始像素中的大小與上方留白，給頁面對齊地磚用。
-  return { draw, floatAt, plotAt, cellAt, manifest: assets.manifest, cell: CELL, top: TOP };
+  return { draw, floatAt, plotAt, manifest: assets.manifest };
 }
 
 // ---------- 單塊田特寫 ----------

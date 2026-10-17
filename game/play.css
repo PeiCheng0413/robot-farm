@@ -2,11 +2,10 @@
    大膽只花在一處：頂端的黃銅環控面板（液晶數字顯示 Token 與金錢）。其餘靠溫室結構分區：窗框、玻璃、石板地。
    像素風規則沿用 STYLE_GUIDE：硬邊、三階明暗、深青綠輪廓、左上光源，不用漸層柔光與發光。 */
 :root {
-  --brass-hi: #f0cf7e; --brass-lo: #9c7428; --lcd: #1d2f2c; --glass: #cfe3d2; --glass-hi: #e6f1e4;
-  --stone: #d9cba3; --stone-joint: #c4b386; --console-h: 84px;
+  --brass-hi: #f0cf7e; --brass-lo: #9c7428; --lcd: #1d2f2c; --grass: #69965b; --console-h: 84px;
 }
 html, body { height: 100%; }
-body.play { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); min-height: 100dvh; background: var(--stone); overflow: hidden; }
+body.play { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); min-height: 100dvh; background: var(--grass); overflow: hidden; }
 
 /* ---------- 環控面板 ---------- */
 .console {
@@ -50,56 +49,23 @@ body.play { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-
 .exchange-menu[hidden] { display: none; }
 .exchange-menu button { border-radius: 0; text-align: left; }
 
-/* ---------- 溫室 ---------- */
-.greenhouse { position: relative; min-width: 0; display: grid; grid-template-rows: clamp(64px, 13vh, 125px) minmax(0, 1fr); min-height: 0; }
-/* 上方玻璃窗：深青綠窗框格出一片片玻璃，每片左上角一道硬邊反光 */
-.glass {
-  background-color: var(--glass);
-  background-image:
-    linear-gradient(90deg, var(--ink) 0 6px, transparent 6px),
-    linear-gradient(var(--ink) 0 6px, transparent 6px),
-    linear-gradient(135deg, var(--glass-hi) 0 18px, transparent 18px);
-  background-size: 120px 100%, 100% 50%, 120px 50%;
-  background-position: 0 0, 0 0, 10px 10px;
-  border-bottom: 10px solid var(--panel); box-shadow: inset 0 -4px 0 var(--ink);
-}
-/* 素材載入後由 play.js 換成 manifest 的窗框與地磚，這裡的漸層只是替代外觀 */
-.glass.has-art { background-color: var(--ink); background-position: 0 0; }
-.floor.has-art { background-position: 0 0; }
-/* 石板地：一格格接縫 */
-.floor {
-  position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; min-width: 0; overflow: hidden; padding: 18px;
-  background-color: var(--stone);
-  background-image: linear-gradient(90deg, var(--stone-joint) 0 3px, transparent 3px), linear-gradient(var(--stone-joint) 0 3px, transparent 3px);
-  background-size: 64px 64px;
-}
-#farm { display: block; flex: none; width: 0; height: 0; image-rendering: pixelated; cursor: pointer;
-  /* 盤面以外的地磚壓暗（與 render.js 的 OUTSIDE 同色），亮的地方才是能用的地 */
-  box-shadow: 0 0 0 100vmax rgba(29, 47, 44, .78); }
+/* ---------- 場景 ---------- */
+/* 畫布填滿整個場景，背景、鏡頭、斜角／俯瞰都由 scene.js 畫 */
+.stage { position: relative; min-width: 0; min-height: 0; background: var(--grass); }
+#farm { position: absolute; inset: 0; display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+body.hovering-plot #farm { cursor: pointer; }
 .farm-hint {
-  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); margin: 0; padding: 8px 16px;
+  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 6; margin: 0; padding: 8px 16px;
   background: rgba(38, 63, 60, .88); color: var(--paper); font-weight: 700; white-space: nowrap;
 }
 .farm-hint[hidden] { display: none; }
-
-/* ---------- 山谷（valleyFarm 素材存在時由 play.js 加上 .valley） ---------- */
-.valley-bg { display: none; }
-.greenhouse.valley { grid-template-rows: 34% minmax(0, 1fr); background: #69965b; }
-.greenhouse.valley .valley-bg { display: block; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
-.greenhouse.valley .glass { background: none !important; border: 0; box-shadow: none; position: relative; z-index: 1; }
-.greenhouse.valley .floor { background: none !important; position: relative; z-index: 1; }
-.greenhouse.valley #farm { box-shadow: none; position: absolute; }
-.greenhouse.valley .farm-hint, .greenhouse.valley .arrange-banner { z-index: 6; }
-/* 排列時的俯瞰盤面：像攤在桌上的規劃圖，背景山谷壓暗退後 */
-.greenhouse.valley.top-down .valley-bg { filter: brightness(.55) saturate(.7); }
-.greenhouse.valley.top-down #farm { border: 4px solid var(--ink); box-shadow: 8px 8px 0 rgba(29, 47, 44, .45); }
 
 /* ---------- 排列模式 ---------- */
 body.arranging #farm { cursor: grab; touch-action: none; }
 body.arranging #farm:active { cursor: grabbing; }
 .tools .console-button[aria-pressed="true"] { background: var(--ink); color: var(--paper); box-shadow: none; }
 .arrange-banner {
-  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 5;
+  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 6;
   display: flex; align-items: center; gap: 14px; width: min(860px, calc(100% - 32px)); padding: 10px 12px 10px 16px;
   background: var(--paper); border: 4px solid var(--ink); box-shadow: 6px 6px 0 rgba(38, 63, 60, .3);
 }
@@ -235,7 +201,6 @@ body.arranging #farm:active { cursor: grabbing; }
   .gauge-label { font-size: .9rem; }
   .exchange { width: 100%; }
   .exchange .console-button { width: 100%; min-height: 40px; }
-  .floor { padding: 10px; }
   .farm-hint { white-space: normal; width: calc(100% - 32px); text-align: center; }
   .plot-card { top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 68dvh; border-width: 4px 0 0; transform: translateY(105%); }
   .plot-card.open { transform: none; }
@@ -251,14 +216,6 @@ body:not(.loading) .loading-screen { display: none; }
 .loading-bar span { display: block; height: 100%; width: 0; background: var(--mint); box-shadow: inset -3px -3px 0 var(--panel); transition: width .2s; }
 .loading-note { margin: 12px 0 0; font-size: .9rem; color: var(--muted); }
 .loading-screen.error .loading-text { color: #8d2d1e; }
-
-/* ---------- 斜角場景（scene.js）：畫布填滿整個場景，自己畫背景與鏡頭 ---------- */
-.greenhouse.scene { grid-template-rows: minmax(0, 1fr); background: #69965b; }   /* 玻璃窗藏起來後只剩地板一列 */
-.greenhouse.scene .glass, .greenhouse.scene .valley-bg { display: none; }
-.greenhouse.scene .floor { background: none !important; padding: 0; position: relative; z-index: 1; }
-.greenhouse.scene #farm { position: absolute; inset: 0; width: 100% !important; height: 100% !important; box-shadow: none; border: 0; }
-.greenhouse.scene .farm-hint, .greenhouse.scene .arrange-banner { z-index: 6; }
-body.hovering-plot #farm { cursor: pointer; }
 
 /* 游標旁的田地提示：田名＋狀態 */
 .plot-tip {

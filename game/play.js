@@ -1,4 +1,5 @@
-// 主畫面：溫室農場。點田地滑出田地卡片，從卡片進入腳本編輯畫面。
+// 主畫面：山谷農場。平常是斜角場景，排列田地時切成俯瞰（scene.js）。
+// 滑鼠移到田上發光並顯示提示，點下去滑出田地卡片，從卡片進入腳本編輯畫面。
 // 模擬、存檔、編輯畫面都與機制測試畫面（game.html）共用。
 
 import { EXCHANGE_OPTIONS, TOKENS_PER_MONEY, CROPS, PLOT_TYPES, SHAPE_PRICE } from './config.js';
@@ -8,9 +9,8 @@ import {
   isPlaced, storePlot, buyPlot, sellPlot, plotPrice, refundOf, canBuyLand, buyLand, nextLandPrice,
   capacityOf, nextCapacityCost, canGrow, levelOf, levelKey, levelStars, plotsOfLevel, recordStars, CRASH_REASONS,
 } from './sim.js';
-import { loadAssets, createBoardRenderer, createPainter, screenAsset, spriteURL } from './render.js';
+import { loadAssets, createPainter, screenAsset, spriteURL } from './render.js';
 import { defineBlocks } from './blocks.js';
-import { createValleyRenderer, drawValleyBackdrop, landView } from './valley.js';
 import { createSceneRenderer } from './scene.js';
 import { createEditor, STAGE_LABEL } from './editor.js';
 import { loadGame, saveGame, autosave } from './session.js';
@@ -19,9 +19,8 @@ const $ = s => document.querySelector(s);
 const escape = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const TIER_TYPE = Object.fromEntries([1, 2, 3, 4].map(t => [t, Object.values(PLOT_TYPES).find(r => r.maxTier >= t).name]));
 
-let state, renderer, painter, editor, assetsRef, selected = null, cropNames = {};
-let arranging = false, drag = null, pendingLand = null;
-let fitFarm = () => {}, landCount = 0, hovered = null;
+let state, renderer, painter, editor, selected = null, cropNames = {};
+let arranging = false, drag = null, pendingLand = null, hovered = null;
 
 // ---------- 主迴圈 ----------
 
@@ -31,7 +30,6 @@ function frame(now) {
   last = now;
   update(state, dt);
   handleEvents();
-  if (state.land.length !== landCount) { landCount = state.land.length; fitFarm(); }   // 擴地後鏡頭拉遠
   renderer.draw(state, { selected: arranging ? null : selected, hovered: arranging || drag ? null : hovered, ghost: drag?.moved && drag.overBoard ? drag : null, land: arranging ? landHints() : null });
   setText('#tokens', Math.floor(state.tokens));
   setText('#money', Math.floor(state.money));
@@ -265,27 +263,18 @@ function confirmSell(plotId) {
 // 拖曳田塊：預覽位置吸附在游標所在的格子上（像棋盤），放開時能放就放、放不下就回原位。
 // 點一下（沒有拖動）轉 90°；拖曳中按 R 也能轉。機器人照常工作，田的局部座標不變。
 
-// 平常是山谷斜角；排列時換成正上方俯瞰的格子盤面，拖曳、吸附、擴地都在格子上一目了然。
-function useRenderer(topDown) {
-  // 新版場景：同一個渲染器切換斜角／俯瞰；俯瞰時不畫機器人
-  if (renderer.scene) {
-    renderer.setMode(topDown ? 'top' : 'angled');
-    $('.greenhouse').classList.toggle('top-down', topDown);
-    // 面板出現後才量得到高度
-    requestAnimationFrame(() => renderer.setInsetBottom(topDown ? $('.greenhouse').getBoundingClientRect().bottom - $('#arrange-banner').getBoundingClientRect().top : 0));
-    return;
-  }
-  const valley = !!assetsRef.manifest.valleyFarm;
-  renderer = valley && !topDown ? createValleyRenderer($('#farm'), assetsRef) : createBoardRenderer($('#farm'), assetsRef, { background: valley });
-  $('.greenhouse').classList.toggle('top-down', valley && topDown);
-  fitFarm();
+// 平常是山谷斜角；排列時換成正上方俯瞰的格子盤面，拖曳、吸附、擴地都在格子上一目了然。俯瞰時不畫機器人。
+function useTopDown(topDown) {
+  renderer.setMode(topDown ? 'top' : 'angled');
+  // 下方的說明面板出現後才量得到高度，俯瞰鏡頭要避開它
+  requestAnimationFrame(() => renderer.setInsetBottom(topDown ? $('.stage').getBoundingClientRect().bottom - $('#arrange-banner').getBoundingClientRect().top : 0));
 }
 
 function setArranging(on) {
   arranging = on;
   drag = null;
   pendingLand = null;
-  useRenderer(on);
+  useTopDown(on);
   if (on) { closeCard(); renderTray(); }
   document.body.classList.toggle('arranging', on);
   $('#arrange-toggle').setAttribute('aria-pressed', String(on));
@@ -312,8 +301,7 @@ function startDrag(e, plotId, grab, place, el) {
 }
 
 const overTray = e => { const r = $('#tray').getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; };
-// 山谷版的 canvas 會比地板大（鏡頭放大），所以用地板的範圍判斷「在盤面上」
-const overBoard = e => { if (overTray(e)) return false; const r = $('.floor').getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; };
+const overBoard = e => { if (overTray(e)) return false; const r = $('#farm').getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; };
 
 function onPointerMove(e) {
   if (!drag) return;
@@ -484,24 +472,8 @@ function buildExchange() {
 
 // ---------- 主畫面素材 ----------
 
-// 依 manifest.mainScreenAssets 把窗框、地磚、資源圖示套上去；素材缺少時保留 CSS 畫的替代外觀。
-function applyScreenAssets(assets) {
-  const tile = (id, el, repeat) => {
-    const item = screenAsset(assets, id), [w, h] = item?.recommendedDisplaySize || [];
-    const url = item && spriteURL(assets, item, w * 2, h * 2);   // 2 倍解析度，高密度螢幕也清楚
-    if (!url) return;
-    el.style.backgroundImage = `url(${url})`;
-    el.style.backgroundRepeat = repeat;
-    el.style.backgroundSize = repeat === 'repeat-x' ? 'auto 100%' : `${w}px ${h}px`;
-    el.classList.add('has-art');
-  };
-  // 有山谷素材就用山谷（背景由 drawValleyBackdrop 畫），溫室窗框與石板地是舊版備用外觀
-  if (!assets.manifest.valleyFarm) {
-    tile('greenhouseWindow', $('.glass'), 'repeat-x');
-    tile('stoneFloor', $('.floor'), 'repeat');
-  }
-  const grout = assets.manifest.mainScreenAssets?.lab?.groutColor;
-  if (grout && $('.floor').classList.contains('has-art')) $('.floor').style.backgroundColor = grout;
+// 面板上的 Token、金錢圖示（manifest.mainScreenAssets）
+function applyGaugeIcons(assets) {
   for (const [id, gauge] of [['token', '#tokens'], ['money', '#money']]) {
     const item = screenAsset(assets, id), url = item && spriteURL(assets, item, 96, 96);
     if (!url) continue;
@@ -524,17 +496,16 @@ async function start() {
   } catch (e) {
     $('#loading').classList.add('error');
     $('#loading-text').textContent = '素材載入失敗：' + e.message + '。請檢查網路後重新整理頁面。';
-    $('#farm-hint').textContent = '素材載入失敗：' + e.message + '。請重新整理頁面。';
     throw e;
   }
+  if (!assets.manifest.valleyScene || !assets.manifest.farmWorld) {
+    $('#loading').classList.add('error');
+    $('#loading-text').textContent = '素材數據缺少山谷場景（valleyScene／farmWorld），請確認 assets/manifest.json。';
+    return;
+  }
   cropNames = Object.fromEntries(assets.manifest.crops.map(c => [c.id, c.name]));
-  applyScreenAssets(assets);
-  assetsRef = assets;
-  // 優先用新版斜角場景（valleyScene）；沒有就退回第一版山谷，再沒有就是溫室
-  const sceneMode = !!assets.manifest.valleyScene, valley = !sceneMode && !!assets.manifest.valleyFarm;
-  renderer = sceneMode ? createSceneRenderer($('#farm'), assets) : valley ? createValleyRenderer($('#farm'), assets) : createBoardRenderer($('#farm'), assets, { background: false });
-  $('.greenhouse').classList.toggle('scene', sceneMode);
-  $('.greenhouse').classList.toggle('valley', valley);
+  applyGaugeIcons(assets);
+  renderer = createSceneRenderer($('#farm'), assets);
   painter = createPainter(assets);
   state = loadGame();
   editor = createEditor({
@@ -576,40 +547,6 @@ async function start() {
   const fitCard = () => document.documentElement.style.setProperty('--console-h', $('.console').offsetHeight + 'px');
   window.addEventListener('resize', fitCard);
   fitCard();
-  // 盤面等比縮放到放得進地板（CSS 的 max-height 對 canvas 在這個版面裡不生效）。
-  // 山谷版多一個鏡頭：只把「開放範圍＋一圈草地」放大到填滿地板，擴地後鏡頭自動拉遠。
-  const floor = $('.floor'), farm = $('#farm');
-  fitFarm = () => {
-    if (renderer.scene) return;   // 新版場景自己算鏡頭
-    const pad = parseFloat(getComputedStyle(floor).paddingLeft) * 2;
-    const fw = floor.clientWidth - pad, fh = floor.clientHeight - pad;
-    if (renderer.valley) {
-      const v = landView(state, renderer);
-      const k = Math.min(fw / v.width, fh / v.height, 1.6);
-      farm.style.width = farm.width * k + 'px';
-      farm.style.height = farm.height * k + 'px';
-      farm.style.left = floor.clientWidth / 2 - (v.x + v.width / 2) * k + 'px';
-      farm.style.top = floor.clientHeight / 2 - (v.y + v.height / 2) * k + 'px';
-      return;
-    }
-    const k = Math.min(fw / farm.width, fh / farm.height);
-    farm.style.width = Math.floor(farm.width * k) + 'px';
-    farm.style.height = Math.floor(farm.height * k) + 'px';
-    // 山谷版的 canvas 是絕對定位（鏡頭用），俯瞰時置中
-    farm.style.left = (floor.clientWidth - farm.width * k) / 2 + 'px';
-    farm.style.top = (floor.clientHeight - farm.height * k) / 2 + 'px';
-    // 地磚大小與位置對齊盤面格子：每塊石板就是一個格位（溫室版）
-    if (floor.classList.contains('has-art')) {
-      const cell = renderer.cell * k, left = (floor.clientWidth - farm.width * k) / 2, top = (floor.clientHeight - farm.height * k) / 2 + renderer.top * k;
-      floor.style.backgroundSize = `${cell}px ${cell}px`;
-      floor.style.backgroundPosition = `${left}px ${top}px`;
-    }
-  };
-  new ResizeObserver(() => {
-    if (renderer.valley) drawValleyBackdrop($('#valley-bg'), assets);
-    fitFarm();
-  }).observe($('.greenhouse'));
-  assets.onImage(() => { if (renderer.valley) drawValleyBackdrop($('#valley-bg'), assets); });
   // 滑鼠移到田上：田的形狀發光、游標變成手指
   $('#farm').addEventListener('pointermove', e => {
     if (arranging || drag) { showTip(null); return; }

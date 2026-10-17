@@ -1,13 +1,19 @@
 // 遊戲模擬：狀態、時間推進、機器人排程、動作效果、經濟。純邏輯，不碰 DOM 與畫面。
 // 同樣的狀態加上同樣的時間一定得到同樣的結果（docs/BACKLOG.md：排程必須是確定性的）。
-// 畫面層只讀 state 與 drainEvents()，格式見 docs/GAME_EVENTS.md。
+// 畫面層只讀 state 與 drainEvents(state)。事件（陣列，每筆都有 type 與 time）：
+//   runStart  { robot, plot, stage }                      機器人到一塊田、開始跑某份腳本
+//   actionStart { robot, plot, action, result, cost, from, to }   result：ok／bump（撞到邊界）／noop（白做）
+//   harvest   { robot, plot, cell, crop, money }           採收入帳
+//   runEnd    { robot, plot, stage, tokens, money, actions, ms, endedBy }   endedBy：done／left（離開這塊田）
+//   crash     { robot, plot, reason }                      reason 對應 CRASH_REASONS
+//   reset     { plot }                                     玩家重置當機的田
 
 import {
   START, SAVE_VERSION, TOKENS_PER_MONEY, ACTION_COST, ACTION_MS, TRAVEL_MS, IDLE_MS, ACTION_LIMIT, CALL_DEPTH,
   CAPACITY, capacityCost, MOISTURE_DECAY_MS, GROWTH_RATE_BY_MOISTURE, CROPS,
   START_PLOTS, SHAPE_PRICE, PLOT_TYPES, SELL_REFUND, START_LAND, landPrice,
 } from './config.js';
-import { PLOTS, plotById, cellKey, stagesOf, canPlace, syncPlots, makePlot, placedCells, BOARD } from './plots.js';
+import { PLOTS, plotById, cellKey, stagesOf, canPlace, syncPlots, makePlot, BOARD } from './plots.js';
 import { createRun, nextAction, evaluate, programBody } from './interpreter.js';
 
 // 朝向順序與左右轉方向和 manifest.movement 一致：右轉 +1、左轉 -1。

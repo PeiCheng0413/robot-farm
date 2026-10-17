@@ -270,7 +270,8 @@ export function createSceneRenderer(canvas, assets) {
     for (const k of state.land) { const [x, y] = k.split(',').map(Number); pen.fillRect(x * T, y * T, T, T); }
     if (mode === 'top') {
       pen.fillStyle = 'rgba(29, 47, 44, .42)';
-      for (let y = 0; y < BOARD.rows; y++) for (let x = 0; x < BOARD.columns; x++) if (!state.land.includes(cellKey(x, y))) pen.fillRect(x * T, y * T, T, T);
+      const open = new Set(state.land);
+      for (let y = 0; y < BOARD.rows; y++) for (let x = 0; x < BOARD.columns; x++) if (!open.has(cellKey(x, y))) pen.fillRect(x * T, y * T, T, T);
       pen.strokeStyle = 'rgba(255, 250, 240, .22)'; pen.lineWidth = 1.5 / cam.k;
       for (let x = 0; x <= BOARD.columns; x++) { pen.beginPath(); pen.moveTo(x * T, 0); pen.lineTo(x * T, BOARD.rows * T); pen.stroke(); }
       for (let y = 0; y <= BOARD.rows; y++) { pen.beginPath(); pen.moveTo(0, y * T); pen.lineTo(BOARD.columns * T, y * T); pen.stroke(); }
