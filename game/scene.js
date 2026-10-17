@@ -1,5 +1,6 @@
 // 主畫面場景：同一份 state.layout，兩種看法。
 //   斜角（平常）：依 manifest.valleyScene.projection（地面順時針轉 18°、垂直壓 0.625），直立物不轉不壓、依落地位置排序。
+//   田不畫土壁厚度（使用者 2026-10-17 決定），田面直接貼在草地上。
 //   俯瞰（排列田地）：依 manifest.farmWorld.views.topDown，底圖是俯瞰環境地圖，田畫在格子上；不畫機器人（沒有俯視素材）。
 // 畫布填滿地板，鏡頭自己算：把開放範圍放進畫面的安全區。不會動的背景、草地、樹、農舍先畫進快取，
 // 只有大小或鏡頭改變才重畫；每格只重畫田、作物、機器人、名牌、圍欄。
@@ -338,38 +339,6 @@ export function createSceneRenderer(canvas, assets) {
     }
   }
 
-  // 土壁：所有田格聯集的外露邊，轉完朝下（螢幕法向量 y > 0）就往下延伸 frontDepth
-  function walls(state) {
-    const occupied = new Map();
-    for (const plot of shownPlots()) {
-      const ps = state.plots[plot.id];
-      for (const [x, y] of plot.cells) { const [bx, by] = gridOf(plot, x, y); occupied.set(cellKey(bx, by), ps.cells[cellKey(x, y)].moisture); }
-    }
-    const f = valley?.assets.soilFront, img = f && images.get(f.file), depth = scene.rendering.frontWalls.frontDepth * cam.k;
-    setScreen();
-    for (const [key, moisture] of occupied) {
-      const [x, y] = key.split(',').map(Number);
-      for (const side of scene.rendering.frontWalls.sides) {
-        if (occupied.has(cellKey(x + side.neighbor[0], y + side.neighbor[1]))) continue;
-        let a = toScreen(x + side.start[0], y + side.start[1]), b = toScreen(x + side.end[0], y + side.end[1]);
-        // 順時針的邊 a→b，螢幕外法向量 [b.y-a.y, -(b.x-a.x)] 的 y > 0（朝下、朝向鏡頭）⇔ b.x < a.x，才露出土壁
-        if (b[0] - a[0] >= 0) continue;
-        [a, b] = [b, a];   // 改成由左到右畫，土壁貼圖才不會左右翻過來
-        const frame = f?.frames.find(fr => fr.soilIndex === moisture);
-        if (ready(img) && frame) {
-          const [, , w, h] = frame.sourceRect;
-          pen.save();
-          pen.setTransform(dpr * (b[0] - a[0]) / w, dpr * (b[1] - a[1]) / w, 0, dpr * depth / h, dpr * a[0], dpr * a[1]);
-          pen.drawImage(img, ...frame.sourceRect, 0, 0, w, h);
-          pen.restore();
-        } else {
-          pen.fillStyle = '#6b4a33';
-          pen.beginPath(); pen.moveTo(...a); pen.lineTo(...b); pen.lineTo(b[0], b[1] + depth); pen.lineTo(a[0], a[1] + depth); pen.fill();
-        }
-      }
-    }
-  }
-
   // 圍欄：已開放範圍的外緣，繩子沿著投影後的邊、架高 elevation，每個頂點一根樁
   function fenceItems(state) {
     if (!fence) return [];
@@ -409,7 +378,7 @@ export function createSceneRenderer(canvas, assets) {
     landLayer(state, null);
     soilLayer(state);
     overlays(state, opts);
-    walls(state);
+    // 田不畫厚度（2026-10-17 使用者決定取消土壁），田面直接貼在草地上
     // 直立物：收集後依落地位置排序，越前面越晚畫（valleyScene.rendering.depthOrder）
     const items = fenceItems(state);
     const views = state.robots.filter(r => r.plot && layout[r.plot])
