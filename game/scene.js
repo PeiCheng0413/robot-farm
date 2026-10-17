@@ -10,7 +10,7 @@ import { createPainter } from './render.js';
 
 const T = 64;                                  // 素材規格的邏輯格寬
 const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif';
-const KIND = { rope: 0, post: 0.5, plant: 1, robot: 2, sign: 3, prop: 4, building: 5 };
+const KIND = { rope: 0, post: 0.5, plant: 1, robot: 2, prop: 4, building: 5 };
 const GLOW = '#fff4b8';
 
 export function createSceneRenderer(canvas, assets) {
@@ -429,7 +429,8 @@ export function createSceneRenderer(canvas, assets) {
           } });
         }
       }
-      items.push(signItem(state, plot));
+      // 斜角不放名牌（2026-10-17 使用者決定：太大、不適合這個視角）；田名在滑鼠移上去的發光與田地卡片看得到，
+      // 當機時田面有紅色、機器人頭上有「！當機」
     }
     for (const { robot, view } of views) {
       const g = [view.pos[0] + .5, view.pos[1] + .5];
@@ -445,22 +446,6 @@ export function createSceneRenderer(canvas, assets) {
     items.sort((a, b) => a.sy - b.sy || a.gx - b.gx || KIND[a.kind] - KIND[b.kind]);
     setScreen();
     for (const it of items) it.draw();
-  }
-
-  // 名牌：插在田的左下外側（valleyFarm.preview.signAnchorRule：[最小 x, 最大 y] + signOffset）
-  function signItem(state, plot) {
-    const ps = state.plots[plot.id], cells = plotCells(plot);
-    const off = valley?.preview?.signOffset || [-.35, 1.1];
-    const gx = Math.min(...cells.map(c => c[0])) + off[0], gy = Math.max(...cells.map(c => c[1])) + off[1];
-    const text = plot.name.split('・')[0] + '田' + (ps.crashed ? '・當機' : '');
-    const size = (valley?.uprightSprites?.signDisplaySize || [80, 70])[0] * 1.15;
-    return { kind: 'sign', gx, gy, draw: () => {
-      const [ax, ay] = toScreen(gx, gy);
-      shadowAt(ax, ay, size * cam.k * .25);
-      if (!P.sign(pen, plot.rules.name, text, ax, ay, size * cam.k, ps.crashed ? '#9b2c1c' : null)) {
-        P.label(pen, text, ax - 20, ay - 30, 'rgba(38, 63, 60, .82)', 16);
-      }
-    } };
   }
 
   // 俯瞰：田面、作物（每格一株，直立素材照舊）、名牌標籤；不畫機器人
