@@ -313,6 +313,7 @@ function crash(state, robot, reason) {
   state.plots[robot.plot].crashed = { reason, time: state.time };
   robot.run = null;
   robot.phase = 'stuck';
+  robot.stuckAt = state.time;   // 當機動畫從這一刻開始播
   emit(state, 'crash', { robot: robot.id, plot: robot.plot, reason });
 }
 

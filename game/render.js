@@ -16,7 +16,8 @@ const ROBOT_SCALE = 1.4;   // 機器人 416 畫布的邊長＝格子邊長 × �
 const ROBOT_LIFT = 0.32;   // 機身中心比格子中心高幾格
 
 // onProgress(已完成, 總數)：給載入畫面顯示進度。
-export async function loadAssets(onProgress) {
+// scene 為 true（主畫面）：載入山谷場景、俯瞰地圖與圍欄，不載名牌；false（測試畫面）反過來。
+export async function loadAssets(onProgress, { scene = false } = {}) {
   const response = await fetch('assets/manifest.json', { cache: 'no-cache' });
   if (!response.ok) throw new Error('素材數據讀取失敗：' + response.status);
   const manifest = await response.json();
@@ -26,13 +27,18 @@ export async function loadAssets(onProgress) {
   const files = new Set([rendering.soil.atlas, ...manifest.crops.map(c => c.atlas), ...manifest.produce.map(p => p.file),
     ...Object.values(rendering.robotPoses).map(p => p.atlas),
     ...(manifest.thoughtBubbles ? [manifest.thoughtBubbles.atlas] : []),
-    ...Object.values(manifest.effectClips || {}).map(e => e.atlas),
-    ...(manifest.landBoundary ? [manifest.landBoundary.atlas] : [])]);
-  // 主畫面素材只取名牌與資源圖示（溫室窗框、石板地是舊版外觀，不再下載）；山谷場景與俯瞰地圖給 scene.js。
+    ...Object.values(manifest.effectClips || {}).map(e => e.atlas)]);
+  // 主畫面素材只取資源圖示與名牌（溫室窗框、石板地是舊版外觀，不再下載）；斜角主畫面不畫名牌（10-17）。
   // 第一版山谷（valleyFarm）的大圖已不使用，manifest 裡的規格保留給 ChatGPT 的試驗室。
-  for (const item of manifest.mainScreenAssets?.items || []) if (!item.layer.startsWith('environment')) files.add(item.file);
-  for (const a of Object.values(manifest.valleyScene?.assets || {})) files.add(a.file);
-  for (const a of Object.values(manifest.farmWorld?.assets || {})) files.add(a.file);
+  for (const item of manifest.mainScreenAssets?.items || []) {
+    if (item.layer.startsWith('environment') || scene && item.layer === 'plot-label') continue;
+    files.add(item.file);
+  }
+  if (scene) {
+    if (manifest.landBoundary) files.add(manifest.landBoundary.atlas);
+    for (const a of Object.values(manifest.valleyScene?.assets || {})) files.add(a.file);
+    for (const a of Object.values(manifest.farmWorld?.assets || {})) files.add(a.file);
+  }
   // 圖片失敗會重試一次（網路不穩時偶爾有大圖載入失敗）。每張圖成功載入都會通知 onImage，
   // 讓只在大小改變時才重畫的背景，在晚到的圖載好後補畫。
   const images = new Map(), listeners = new Set();
@@ -74,6 +80,7 @@ export function createPainter({ manifest, align, images }) {
   const ready = img => img && img.complete && img.naturalWidth;
   const movingClip = manifest.playback.directionalClips.empty;
   const decision = manifest.playback.decisionClips || {};
+  const stuckClip = clips[manifest.playback.statusClips?.stuck] ? manifest.playback.statusClips.stuck : null;
 
   // ---------- 動畫片段 ----------
 
@@ -199,9 +206,11 @@ export function createPainter({ manifest, align, images }) {
     ctx.stroke();
   }
 
-  function label(ctx, text, x, y, fill, size = 22, colour = C.label) {
+  // center 為 true 時 x 是標籤的水平中心。
+  function label(ctx, text, x, y, fill, size = 22, colour = C.label, center = false) {
     ctx.font = `bold ${size}px ${FONT}`;
     const w = ctx.measureText(text).width + size;
+    if (center) x -= w / 2;
     ctx.fillStyle = fill; ctx.beginPath(); ctx.roundRect(x, y, w, size * 1.55, 8); ctx.fill();
     ctx.fillStyle = colour; ctx.textBaseline = 'middle'; ctx.fillText(text, x + size / 2, y + size * .8);
   }
@@ -251,6 +260,8 @@ export function createPainter({ manifest, align, images }) {
   }
   function localView(robot, act, time, toGrid, H) {
     const here = toGrid(robot.plot, robot.x, robot.y);
+    // 當機：循環播當機片段直到重置（playback.statusClips.stuck）。
+    if (robot.phase === 'stuck' && stuckClip) return { pos: here, clip: stuckClip, heading: H(robot.heading), elapsed: Math.max(0, time - (robot.stuckAt ?? time)) };
     if (!act || act.kind === 'wait' || act.kind === 'pause' || time < act.start) return { pos: here, clip: 'idle', heading: H(robot.heading), elapsed: time };
     const elapsed = time - act.start, t = Math.min(1, elapsed / (act.end - act.start));
     switch (act.kind) {
@@ -371,7 +382,7 @@ export function createBoardRenderer(canvas, assets) {
     }
     for (const { robot, view } of views) {
       const box = P.robotAt(ctx, view, view.pos[0] * CELL + CELL / 2, view.pos[1] * CELL + CELL / 2, CELL);
-      if (robot.phase === 'stuck') P.label(ctx, '！當機', box.boxX + box.size * .2, box.boxY - 8, C.crash);
+      if (robot.phase === 'stuck') P.label(ctx, '！當機', box.boxX + box.size / 2, box.boxY + box.size * .8, C.crash, 22, undefined, true);   // 頭上是當機泡泡，標籤放腳下
     }
     P.floaters(ctx, list, 26);
   }

@@ -402,15 +402,16 @@ export function createSceneRenderer(canvas, assets) {
         }
       }
       // 斜角不放名牌（2026-10-17 使用者決定：太大、不適合這個視角）；田名在滑鼠移上去的發光與田地卡片看得到，
-      // 當機時田面有紅色、機器人頭上有「！當機」
+      // 當機時田面有紅色、機器人播當機動畫，腳下有「！當機」
     }
+    const labels = [];   // 文字標籤最後才畫，不被前排圍欄或作物擋住
     for (const { robot, view } of views) {
       const g = [view.pos[0] + .5, view.pos[1] + .5];
       items.push({ kind: 'robot', gx: g[0], gy: g[1], draw: () => {
         const [rx, ry] = toScreen(...g), cell = 83 * cam.k;
         shadowAt(rx, ry + 4 * cam.k, cell * .5);
         const box = P.robotAt(pen, view, rx, ry, cell);
-        if (robot.phase === 'stuck') P.label(pen, '！當機', box.boxX + box.size * .2, box.boxY - 8, '#c65f48', Math.round(16 * Math.min(1.4, cam.k)));
+        if (robot.phase === 'stuck') labels.push(() => P.label(pen, '！當機', box.boxX + box.size / 2, box.boxY + box.size * .8, '#c65f48', Math.round(16 * Math.min(1.4, cam.k)), undefined, true));   // 頭上是當機泡泡，標籤放腳下
       } });
     }
     // 以投影後的螢幕 y 排序（同樣的格子 y，旋轉後越東邊越低）
@@ -418,6 +419,7 @@ export function createSceneRenderer(canvas, assets) {
     items.sort((a, b) => a.sy - b.sy || a.gx - b.gx || KIND[a.kind] - KIND[b.kind]);
     setScreen();
     for (const it of items) it.draw();
+    for (const draw of labels) draw();
   }
 
   // 俯瞰：田面、作物（每格一株，直立素材照舊）、名牌標籤；不畫機器人

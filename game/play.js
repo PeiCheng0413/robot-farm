@@ -492,7 +492,7 @@ async function start() {
     assets = await loadAssets((done, total) => {
       $('#loading-text').textContent = `正在載入素材 ${done} / ${total}`;
       $('#loading-fill').style.width = (total ? done / total * 100 : 0) + '%';
-    });
+    }, { scene: true });
   } catch (e) {
     $('#loading').classList.add('error');
     $('#loading-text').textContent = '素材載入失敗：' + e.message + '。請檢查網路後重新整理頁面。';

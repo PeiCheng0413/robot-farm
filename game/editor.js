@@ -163,6 +163,7 @@ export function createEditor({ assets, getState, onSave, onStars }) {
 
   function crash(reason) {
     sandbox.status = 'crashed';
+    Object.assign(sandbox.robot, { phase: 'stuck', stuckAt: sandbox.clock });   // 播當機動畫，重置沙盒就恢復
     mode = 'paused';
     say('當機：' + CRASH_REASONS[reason], 'error');
     showCheck({ title: '沒有過關：腳本當機了', items: [CRASH_REASONS[reason]], ok: false });
