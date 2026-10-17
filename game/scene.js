@@ -124,8 +124,7 @@ export function createSceneRenderer(canvas, assets) {
     }
     // 天空與湖景從上方蓋下來：湖景底部那排樹壓在北邊林緣的位置，剛好遮住草地與遠景的接縫
     setScreen();
-    // 湖景底部接在地圖北緣，但至少落在畫面 30% 高度，鏡頭拉近時也看得到遠景
-    const lakeH = W * 345 / 960, lakeBottom = Math.max(toScreen(6, -8)[1], H * .3), lakeY = lakeBottom - lakeH;
+    const lakeH = W * 345 / 960, lakeBottom = horizonY(), lakeY = lakeBottom - lakeH;
     p.fillStyle = scene.rendering.skyColor; p.fillRect(0, 0, W, Math.max(0, lakeY + lakeH * .45));
     drawImg('skyClouds', 0, Math.min(0, lakeY), W, Math.max(H * .28, lakeY + lakeH * .5));
     drawImg('valleyLake', 0, lakeY, W, lakeH);
@@ -150,7 +149,17 @@ export function createSceneRenderer(canvas, assets) {
       const [, , sw, sh] = a.sourceRect, k = a.fit === 'contain' && id === 'frameBottom' ? Math.max(rw / sw, rh / sh) : Math.min(rw / sw, rh / sh);
       const dw = sw * k, dh = sh * k;
       const dx = a.edge === 'right' ? W - dw : a.edge === 'left' ? 0 : (W - dw) / 2;
-      drawImg(id, dx, H - dh, dw, dh);
+      // 前景離鏡頭最近、在陰影裡：壓暗約三成，視線才會落到中間的農場
+      // （先畫到暫存畫布再疊深色，不用 ctx.filter，Safari 也一致）
+      const tmp = document.createElement('canvas');
+      tmp.width = Math.ceil(dw * dpr); tmp.height = Math.ceil(dh * dpr);
+      const t = tmp.getContext('2d'), img = images.get(a.file);
+      if (!ready(img)) continue;
+      t.imageSmoothingEnabled = false;
+      t.drawImage(img, ...a.sourceRect, 0, 0, tmp.width, tmp.height);
+      t.globalCompositeOperation = 'source-atop';
+      t.fillStyle = 'rgba(16, 30, 27, .34)'; t.fillRect(0, 0, tmp.width, tmp.height);
+      pen.drawImage(tmp, dx, H - dh, dw, dh);
     }
   }
 
@@ -197,7 +206,14 @@ export function createSceneRenderer(canvas, assets) {
     return props;
   }
 
-  const sortedProps = front => sceneryProps().filter(s => !!s.front === front).sort((a, b) => toScreen(a.gx, a.gy)[1] - toScreen(b.gx, b.gy)[1]);
+  // 草地與遠景的交界線：湖景底部接在地圖北緣，但至少落在畫面 30% 高度，鏡頭拉近時也看得到遠景
+  const horizonY = () => Math.max(toScreen(6, -8)[1], H * .3);
+  // 落地點在交界線以上的樹不畫：那裡在畫面上是遠景（湖、山），近處的樹不可能站在上面
+  const sortedProps = front => {
+    const limit = horizonY() + 6;
+    return sceneryProps().filter(s => !!s.front === front && (s.id === 'farmhouseAngled' || toScreen(s.gx, s.gy)[1] > limit))
+      .sort((a, b) => toScreen(a.gx, a.gy)[1] - toScreen(b.gx, b.gy)[1]);
+  };
 
   function uprightProp(s) {
     const a = asset(s.id);
