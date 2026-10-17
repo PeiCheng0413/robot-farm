@@ -15,7 +15,8 @@ const OUTSIDE = 'rgba(29, 47, 44, .78)';   // 盤面以外（主畫面）：比�
 const ROBOT_SCALE = 1.4;   // 機器人 416 畫布的邊長＝格子邊長 × 這個倍數
 const ROBOT_LIFT = 0.32;   // 機身中心比格子中心高幾格
 
-export async function loadAssets() {
+// onProgress(已完成, 總數)：給載入畫面顯示進度。
+export async function loadAssets(onProgress) {
   const response = await fetch('assets/manifest.json', { cache: 'no-cache' });
   if (!response.ok) throw new Error('素材數據讀取失敗：' + response.status);
   const manifest = await response.json();
@@ -26,19 +27,26 @@ export async function loadAssets() {
     ...Object.values(rendering.robotPoses).map(p => p.atlas),
     ...(manifest.thoughtBubbles ? [manifest.thoughtBubbles.atlas] : []),
     ...Object.values(manifest.effectClips || {}).map(e => e.atlas),
-    ...(manifest.mainScreenAssets?.items || []).map(i => i.file),
-    ...Object.values(manifest.valleyFarm?.assets || {}).map(a => a.file),
     ...(manifest.landBoundary ? [manifest.landBoundary.atlas] : [])]);
+  // 有新版斜角場景（valleyScene）時，只載它與俯瞰地圖；舊版溫室窗框、石板地與第一版山谷大圖不再下載（約 5MB）。
+  const scene = manifest.valleyScene;
+  for (const item of manifest.mainScreenAssets?.items || []) if (!scene || !item.layer.startsWith('environment')) files.add(item.file);
+  for (const [id, a] of Object.entries(manifest.valleyFarm?.assets || {})) if (!scene || id === 'soilFront') files.add(a.file);
+  for (const a of Object.values(scene?.assets || {})) files.add(a.file);
+  for (const a of Object.values(manifest.farmWorld?.assets || {})) files.add(a.file);
   // 圖片失敗會重試一次（網路不穩時偶爾有大圖載入失敗）。每張圖成功載入都會通知 onImage，
   // 讓只在大小改變時才重畫的背景，在晚到的圖載好後補畫。
   const images = new Map(), listeners = new Set();
+  let done = 0;
+  const settle = resolve => () => { onProgress?.(++done, files.size); resolve(); };
   const load = (file, attempt) => new Promise(resolve => {
     const img = new Image();
-    img.onload = () => { listeners.forEach(fn => fn(file)); resolve(); };
-    img.onerror = () => attempt ? resolve() : load(file, 1).then(resolve);
+    img.onload = () => { listeners.forEach(fn => fn(file)); settle(resolve)(); };
+    img.onerror = () => attempt ? settle(resolve)() : load(file, 1).then(resolve);
     img.src = 'assets/' + file + '?v=' + encodeURIComponent(manifest.version) + (attempt ? '&retry=1' : '');
     images.set(file, img);
   });
+  onProgress?.(0, files.size);
   await Promise.all([...files].map(file => load(file, 0)));
   return { manifest, align, images, onImage: fn => listeners.add(fn) };
 }

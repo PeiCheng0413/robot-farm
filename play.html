@@ -8,7 +8,15 @@
 <link rel="stylesheet" href="game/editor.css">
 <link rel="stylesheet" href="game/play.css">
 </head>
-<body class="play">
+<body class="play loading">
+<div id="loading" class="loading-screen" role="status" aria-live="polite">
+  <div class="loading-card">
+    <p class="loading-title">浮葉農場</p>
+    <p id="loading-text" class="loading-text">正在準備農場…</p>
+    <div class="loading-bar" aria-hidden="true"><span id="loading-fill"></span></div>
+    <p class="loading-note">第一次打開要下載比較多圖片，請稍等一下。</p>
+  </div>
+</div>
 <header class="console">
   <h1 class="console-brand">浮葉農場</h1>
   <div class="gauges" aria-live="polite">
@@ -42,7 +50,7 @@
   <div id="arrange-banner" class="arrange-banner" hidden>
     <div class="arrange-text">
       <p>拖曳田塊換位置，會自動對齊格子；點一下田塊轉 90°（拖曳中也可以按 R）。綠色可以放，紅色放不下。</p>
-      <p>圍欄外的草地還沒開放：點有「+」的格子兩下就能擴地。</p>
+      <p>較暗的格子還沒開放：點有「+」的格子兩下就能擴地。</p>
     </div>
     <div class="tray-wrap">
       <p class="tray-title">倉庫<small>把田拖到盤面；把盤面上的田拖到這裡收起來</small></p>

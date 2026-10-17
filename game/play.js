@@ -11,6 +11,7 @@ import {
 import { loadAssets, createBoardRenderer, createPainter, screenAsset, spriteURL } from './render.js';
 import { defineBlocks } from './blocks.js';
 import { createValleyRenderer, drawValleyBackdrop, landView } from './valley.js';
+import { createSceneRenderer } from './scene.js';
 import { createEditor, STAGE_LABEL } from './editor.js';
 import { loadGame, saveGame, autosave } from './session.js';
 
@@ -20,7 +21,7 @@ const TIER_TYPE = Object.fromEntries([1, 2, 3, 4].map(t => [t, Object.values(PLO
 
 let state, renderer, painter, editor, assetsRef, selected = null, cropNames = {};
 let arranging = false, drag = null, pendingLand = null;
-let fitFarm = () => {}, landCount = 0;
+let fitFarm = () => {}, landCount = 0, hovered = null;
 
 // ---------- 主迴圈 ----------
 
@@ -31,7 +32,7 @@ function frame(now) {
   update(state, dt);
   handleEvents();
   if (state.land.length !== landCount) { landCount = state.land.length; fitFarm(); }   // 擴地後鏡頭拉遠
-  renderer.draw(state, { selected: arranging ? null : selected, ghost: drag?.moved && drag.overBoard ? drag : null, land: arranging ? landHints() : null });
+  renderer.draw(state, { selected: arranging ? null : selected, hovered: arranging || drag ? null : hovered, ghost: drag?.moved && drag.overBoard ? drag : null, land: arranging ? landHints() : null });
   setText('#tokens', Math.floor(state.tokens));
   setText('#money', Math.floor(state.money));
   if (now - lastCard > 400) {
@@ -235,6 +236,8 @@ function confirmSell(plotId) {
 
 // 平常是山谷斜角；排列時換成正上方俯瞰的格子盤面，拖曳、吸附、擴地都在格子上一目了然。
 function useRenderer(topDown) {
+  // 新版場景：同一個渲染器切換斜角／俯瞰；俯瞰時不畫機器人
+  if (renderer.scene) { renderer.setMode(topDown ? 'top' : 'angled'); $('.greenhouse').classList.toggle('top-down', topDown); return; }
   const valley = !!assetsRef.manifest.valleyFarm;
   renderer = valley && !topDown ? createValleyRenderer($('#farm'), assetsRef) : createBoardRenderer($('#farm'), assetsRef, { background: valley });
   $('.greenhouse').classList.toggle('top-down', valley && topDown);
@@ -477,16 +480,23 @@ async function start() {
   defineBlocks();
   let assets;
   try {
-    assets = await loadAssets();
+    assets = await loadAssets((done, total) => {
+      $('#loading-text').textContent = `正在載入素材 ${done} / ${total}`;
+      $('#loading-fill').style.width = (total ? done / total * 100 : 0) + '%';
+    });
   } catch (e) {
+    $('#loading').classList.add('error');
+    $('#loading-text').textContent = '素材載入失敗：' + e.message + '。請檢查網路後重新整理頁面。';
     $('#farm-hint').textContent = '素材載入失敗：' + e.message + '。請重新整理頁面。';
     throw e;
   }
   cropNames = Object.fromEntries(assets.manifest.crops.map(c => [c.id, c.name]));
   applyScreenAssets(assets);
   assetsRef = assets;
-  const valley = !!assets.manifest.valleyFarm;
-  renderer = valley ? createValleyRenderer($('#farm'), assets) : createBoardRenderer($('#farm'), assets, { background: false });
+  // 優先用新版斜角場景（valleyScene）；沒有就退回第一版山谷，再沒有就是溫室
+  const sceneMode = !!assets.manifest.valleyScene, valley = !sceneMode && !!assets.manifest.valleyFarm;
+  renderer = sceneMode ? createSceneRenderer($('#farm'), assets) : valley ? createValleyRenderer($('#farm'), assets) : createBoardRenderer($('#farm'), assets, { background: false });
+  $('.greenhouse').classList.toggle('scene', sceneMode);
   $('.greenhouse').classList.toggle('valley', valley);
   painter = createPainter(assets);
   state = loadGame();
@@ -533,6 +543,7 @@ async function start() {
   // 山谷版多一個鏡頭：只把「開放範圍＋一圈草地」放大到填滿地板，擴地後鏡頭自動拉遠。
   const floor = $('.floor'), farm = $('#farm');
   fitFarm = () => {
+    if (renderer.scene) return;   // 新版場景自己算鏡頭
     const pad = parseFloat(getComputedStyle(floor).paddingLeft) * 2;
     const fw = floor.clientWidth - pad, fh = floor.clientHeight - pad;
     if (renderer.valley) {
@@ -562,11 +573,19 @@ async function start() {
     fitFarm();
   }).observe($('.greenhouse'));
   assets.onImage(() => { if (renderer.valley) drawValleyBackdrop($('#valley-bg'), assets); });
+  // 滑鼠移到田上：田的形狀發光、游標變成手指
+  $('#farm').addEventListener('pointermove', e => {
+    if (arranging || drag) return;
+    hovered = renderer.plotAt(e.clientX, e.clientY);
+    document.body.classList.toggle('hovering-plot', !!hovered);
+  });
+  $('#farm').addEventListener('pointerleave', () => { hovered = null; document.body.classList.remove('hovering-plot'); });
   autosave(() => state);
   // play.html#plot=T-high 直接打開該塊田的卡片
   const linked = new URLSearchParams(location.hash.slice(1)).get('plot');
   if (plotById.has(linked)) select(linked);
   if (location.hash === '#shop') openShop();   // play.html#shop 直接打開選關畫面
+  document.body.classList.remove('loading');   // 素材到齊，收起載入畫面
   requestAnimationFrame(frame);
 }
 

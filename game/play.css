@@ -240,3 +240,22 @@ body.arranging #farm:active { cursor: grabbing; }
   .plot-card { top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 68dvh; border-width: 4px 0 0; transform: translateY(105%); }
   .plot-card.open { transform: none; }
 }
+
+/* ---------- 載入畫面 ---------- */
+.loading-screen { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: #2f4a3a; }
+body:not(.loading) .loading-screen { display: none; }
+.loading-card { width: min(420px, calc(100vw - 48px)); padding: 24px 26px; background: var(--paper); border: 4px solid var(--ink); box-shadow: 8px 8px 0 rgba(0, 0, 0, .3); text-align: center; }
+.loading-title { margin: 0 0 6px; font-size: 1.7rem; font-weight: 900; letter-spacing: .12em; }
+.loading-text { margin: 0 0 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.loading-bar { height: 22px; border: 3px solid var(--ink); background: #e9dfbf; }
+.loading-bar span { display: block; height: 100%; width: 0; background: var(--mint); box-shadow: inset -3px -3px 0 var(--panel); transition: width .2s; }
+.loading-note { margin: 12px 0 0; font-size: .9rem; color: var(--muted); }
+.loading-screen.error .loading-text { color: #8d2d1e; }
+
+/* ---------- 斜角場景（scene.js）：畫布填滿整個場景，自己畫背景與鏡頭 ---------- */
+.greenhouse.scene { grid-template-rows: 0 minmax(0, 1fr); background: #69965b; }
+.greenhouse.scene .glass, .greenhouse.scene .valley-bg { display: none; }
+.greenhouse.scene .floor { background: none !important; padding: 0; position: relative; z-index: 1; }
+.greenhouse.scene #farm { position: absolute; inset: 0; width: 100% !important; height: 100% !important; box-shadow: none; border: 0; }
+.greenhouse.scene .farm-hint, .greenhouse.scene .arrange-banner { z-index: 6; }
+body.hovering-plot #farm { cursor: pointer; }
