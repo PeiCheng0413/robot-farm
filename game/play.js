@@ -37,6 +37,7 @@ function frame(now) {
   setText('#money', Math.floor(state.money));
   if (now - lastCard > 400) {
     if (selected) refreshCard();
+    if (!$('#plot-tip').hidden) refreshTip();   // 狀態會隨時間變（機器人來了、作物長大）
     // 商店開著時，錢夠不夠買會隨收成變化
     if (!$('#shop').hidden) $('#shop').querySelectorAll('[data-buy]').forEach(b => { const [shape, type] = b.dataset.buy.split('|'); b.disabled = state.money < plotPrice(shape, type); });
     lastCard = now;
@@ -79,6 +80,36 @@ function toast(text, actionText, action) {
   el.append(close);
   $('#toasts').append(el);
   while ($('#toasts').children.length > 3) $('#toasts').firstElementChild.remove();
+}
+
+// ---------- 游標旁的田地提示 ----------
+
+let tipAt = null;
+function showTip(plotId, x, y) {
+  const tip = $('#plot-tip');
+  if (!plotId || (selected === plotId && !$('#card').hidden)) { tip.hidden = true; tipAt = null; return; }
+  if (x !== undefined) tipAt = { plotId, x, y };
+  refreshTip();
+  tip.hidden = false;
+  // 預設在游標右下；靠近右緣或下緣就翻到另一邊
+  const r = tip.getBoundingClientRect();
+  const left = tipAt.x + 18 + r.width > innerWidth ? tipAt.x - 18 - r.width : tipAt.x + 18;
+  const top = tipAt.y + 20 + r.height > innerHeight ? tipAt.y - 20 - r.height : tipAt.y + 20;
+  tip.style.left = Math.max(4, left) + 'px'; tip.style.top = Math.max(4, top) + 'px';
+}
+
+function refreshTip() {
+  if (!tipAt || !plotById.has(tipAt.plotId)) return;
+  const plot = plotById.get(tipAt.plotId), ps = state.plots[plot.id], cells = Object.values(ps.cells);
+  const mature = cells.filter(c => c.crop && c.growth >= 1).length, growing = cells.filter(c => c.crop && c.growth < 1).length;
+  const dry = cells.filter(c => c.crop && c.growth < 1 && c.moisture === 0).length;
+  const status = ps.crashed ? `當機了：${CRASH_REASONS[ps.crashed.reason]}` : robotStatus(plot.id);
+  const html = `<strong>${escape(plot.name)}</strong>
+    <span class="tip-status${ps.crashed ? ' bad' : ''}">${escape(status)}</span><br>
+    <span class="tip-cells">${cropNames[ps.crop] || ''}・成熟 ${mature}・生長中 ${growing}${dry ? `（${dry} 格乾裂）` : ''}・空地 ${cells.length - mature - growing}</span>`;
+  const tip = $('#plot-tip');
+  tip.style.setProperty('--type', plot.rules.colour);
+  if (tip.dataset.html !== html) { tip.innerHTML = html; tip.dataset.html = html; }
 }
 
 // ---------- 田地卡片 ----------
@@ -581,11 +612,12 @@ async function start() {
   assets.onImage(() => { if (renderer.valley) drawValleyBackdrop($('#valley-bg'), assets); });
   // 滑鼠移到田上：田的形狀發光、游標變成手指
   $('#farm').addEventListener('pointermove', e => {
-    if (arranging || drag) return;
+    if (arranging || drag) { showTip(null); return; }
     hovered = renderer.plotAt(e.clientX, e.clientY);
     document.body.classList.toggle('hovering-plot', !!hovered);
+    showTip(hovered, e.clientX, e.clientY);
   });
-  $('#farm').addEventListener('pointerleave', () => { hovered = null; document.body.classList.remove('hovering-plot'); });
+  $('#farm').addEventListener('pointerleave', () => { hovered = null; document.body.classList.remove('hovering-plot'); showTip(null); });
   autosave(() => state);
   // play.html#plot=T-high 直接打開該塊田的卡片
   const linked = new URLSearchParams(location.hash.slice(1)).get('plot');

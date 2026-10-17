@@ -351,8 +351,10 @@ export function createSceneRenderer(canvas, assets) {
       const [x, y] = key.split(',').map(Number);
       for (const side of scene.rendering.frontWalls.sides) {
         if (occupied.has(cellKey(x + side.neighbor[0], y + side.neighbor[1]))) continue;
-        const a = toScreen(x + side.start[0], y + side.start[1]), b = toScreen(x + side.end[0], y + side.end[1]);
-        if (b[0] - a[0] <= 0) continue;   // 法向量 [b.y-a.y, -(b.x-a.x)] 的 y > 0 ⇔ b.x > a.x
+        let a = toScreen(x + side.start[0], y + side.start[1]), b = toScreen(x + side.end[0], y + side.end[1]);
+        // 順時針的邊 a→b，螢幕外法向量 [b.y-a.y, -(b.x-a.x)] 的 y > 0（朝下、朝向鏡頭）⇔ b.x < a.x，才露出土壁
+        if (b[0] - a[0] >= 0) continue;
+        [a, b] = [b, a];   // 改成由左到右畫，土壁貼圖才不會左右翻過來
         const frame = f?.frames.find(fr => fr.soilIndex === moisture);
         if (ready(img) && frame) {
           const [, , w, h] = frame.sourceRect;
