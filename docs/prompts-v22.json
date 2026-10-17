@@ -1,0 +1,330 @@
+{
+  "method": "Existing art: user-requested Pillow nearest-neighbor exact half-size with transparent padding for odd dimensions; PNG lossless compression; icons resized to256 square. New stuck art: built-in image_gen, then half-size and user-authorized alpha cleanup.",
+  "prompt": "Use case: stylized-concept. Create a precise GAME ANIMATION SPRITE SHEET for the SAME floating farm robot in reference, identity-preserve design. 1024x1024 transparent PNG, FOUR frames in a clean 2x2 grid, chronological reading left-to-right then top-to-bottom. Each robot fits its 512x512 quadrant with generous transparent padding so no smoke touches neighbor. Exactly same shell scale, center and camera each frame: warm cream round squarish shell, deep teal outline, dark green rounded screen, two square eyes, teal round ear disks, two jointed teal arms, one thin brass antenna, little mint hover nozzle. Upright slightly overhead orthographic three-quarter work pose, almost frontal, matching reference first robot. EMPTY HANDS, no crop/tools. This is a looping STUCK / MALFUNCTION animation: both arms lowered limply beside shell in ALL frames; shell remains level centered, no big shake. Frame1: screen with two red square eyes, a small discrete gray pixel smoke puff just above rear-right ear. Frame2: eyes dim dark red, smoke splits into two small hard-edge puffs moving upward. Frame3: bright red eyes, old smoke rises and dissolves into 3 little gray square clusters, one new small puff at vent. Frame4: dim red eyes, one faint flat darkgray puff near vent, loop returns naturally toframe1. Gray smoke is hard opaque pixel clusters with transparent gaps, NOT blur or semitransparent haze. Face is readable in every frame, no alarm labels or symbols baked in. Smoke never covers face or antenna. Keep propeller/nozzle restrained, no big glow. Warm 3-shade pixel art, blocky hard square clusters, thin dark teal contour, upper-left light. Keep same robot anatomy/camera from reference, no legs, no wheels, no redesigned head, no wrench, no ground, no scenery, no shadows on backdrop. No letters numbers text borders frame lines watermarks gradients blur glows. Genuine alpha transparency outside each frame. Body size around250px high before half-resolution processing; final game sprites will be exactly50% of source pixels. Design readable at100px shell height.",
+  "selectedSource": "exec-2e5b70a0-02c7-477c-a755-3ec5348c3895.png",
+  "file": "robot-stuck-v01-half.png",
+  "size": [
+    627,
+    627
+  ],
+  "note": "No new crop/gameplay actions. Existing red-cross bubble reused for stuck. All animation/lifecycle rules in manifest.",
+  "files": [
+    {
+      "original": "robot-atlas-v01.png",
+      "file": "robot-atlas-v01-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1254,
+        1254
+      ],
+      "imageSize": [
+        627,
+        627
+      ],
+      "beforeBytes": 1049756,
+      "afterBytes": 302443,
+      "originalSha256": "adf1f749da66549b0277f8a1c47c4ef33dafabc5323c47b3055c76639aa31896"
+    },
+    {
+      "original": "robot-carry-directions-v06.png",
+      "file": "robot-carry-directions-v06-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1122,
+        1402
+      ],
+      "imageSize": [
+        561,
+        701
+      ],
+      "beforeBytes": 1413644,
+      "afterBytes": 412638,
+      "originalSha256": "0fc941b2b611828251ecefd8971cbcb6803eea5969340b9f03d8964214a81f6f"
+    },
+    {
+      "original": "robot-hover-directions-v04.png",
+      "file": "robot-hover-directions-v04-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1254,
+        1254
+      ],
+      "imageSize": [
+        627,
+        627
+      ],
+      "beforeBytes": 988849,
+      "afterBytes": 292244,
+      "originalSha256": "f2586815864d33de69c761e90617687dc43970e1f5defd99e7cb48d88c3ac581"
+    },
+    {
+      "original": "robot-harvest-empty-v02.png",
+      "file": "robot-harvest-empty-v02-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1254,
+        1254
+      ],
+      "imageSize": [
+        627,
+        627
+      ],
+      "beforeBytes": 769207,
+      "afterBytes": 220339,
+      "originalSha256": "9449b18dc458e4d6ce704302be88dc794c696e5496b165545bf3149e86fbd00a"
+    },
+    {
+      "original": "robot-decision-v01.png",
+      "file": "robot-decision-v01-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1254,
+        1254
+      ],
+      "imageSize": [
+        627,
+        627
+      ],
+      "beforeBytes": 739594,
+      "afterBytes": 208166,
+      "originalSha256": "83c1fd433f4180b11780018316ed083c5864a7f60fb65aa36ecb03c1fc6d6cc6"
+    },
+    {
+      "original": "robot-area-scan-v01.png",
+      "file": "robot-area-scan-v01-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1254,
+        1254
+      ],
+      "imageSize": [
+        627,
+        627
+      ],
+      "beforeBytes": 685231,
+      "afterBytes": 193179,
+      "originalSha256": "65b16498d2ee3bb99f999c9cb08fda1e842948c33873bbf085a73628a5f9970d"
+    },
+    {
+      "original": "robot-area-scan-v02.png",
+      "file": "robot-area-scan-v02-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1774,
+        887
+      ],
+      "imageSize": [
+        887,
+        444
+      ],
+      "beforeBytes": 866915,
+      "afterBytes": 255868,
+      "originalSha256": "00761ef4af6c5b04de4c16f53e192e5c51734376a553980197542679aba9a5d5"
+    },
+    {
+      "original": "farm-atlas-v01.png",
+      "file": "farm-atlas-v01-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1254,
+        1254
+      ],
+      "imageSize": [
+        627,
+        627
+      ],
+      "beforeBytes": 1186490,
+      "afterBytes": 353565,
+      "originalSha256": "c3628f08caaa327a867d359ac71a5a757c344daa993b5d977f4680a1cc0472b1"
+    },
+    {
+      "original": "fruit-growth-v01.png",
+      "file": "fruit-growth-v01-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1448,
+        1086
+      ],
+      "imageSize": [
+        724,
+        543
+      ],
+      "beforeBytes": 1138014,
+      "afterBytes": 334172,
+      "originalSha256": "e047425dcc228adc5a81fcfc84a3078db03da6b9463e875b35ecb577c1de5431"
+    },
+    {
+      "original": "robot-thought-bubbles-v01.png",
+      "file": "robot-thought-bubbles-v01-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1774,
+        887
+      ],
+      "imageSize": [
+        887,
+        444
+      ],
+      "beforeBytes": 911956,
+      "afterBytes": 256047,
+      "originalSha256": "5ae09b73ea129509c7ae95bde6a8f25266df0549d09d21e83f73feacc09627c4"
+    },
+    {
+      "original": "scan-wave-v01.png",
+      "file": "scan-wave-v01-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1254,
+        1254
+      ],
+      "imageSize": [
+        627,
+        627
+      ],
+      "beforeBytes": 336137,
+      "afterBytes": 91956,
+      "originalSha256": "eff6017c62a3d9c520471ebb6f7edde2a50ee77568684d95d32519ec4c6ac59b"
+    },
+    {
+      "original": "produce-carrot-v01.png",
+      "file": "produce-carrot-v01-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1254,
+        1254
+      ],
+      "imageSize": [
+        627,
+        627
+      ],
+      "beforeBytes": 326448,
+      "afterBytes": 88919,
+      "originalSha256": "7a90ad53537a54205771356013485b4f0a903bd6d2a7f886721b12f6b66cf33e"
+    },
+    {
+      "original": "produce-tomato-v01.png",
+      "file": "produce-tomato-v01-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1254,
+        1254
+      ],
+      "imageSize": [
+        627,
+        627
+      ],
+      "beforeBytes": 222430,
+      "afterBytes": 53896,
+      "originalSha256": "facdc66ac0b0372053325b12a214d88e482e9e5f2f742a777fa637ae2f85f12d"
+    },
+    {
+      "original": "produce-lettuce-v01.png",
+      "file": "produce-lettuce-v01-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1254,
+        1254
+      ],
+      "imageSize": [
+        627,
+        627
+      ],
+      "beforeBytes": 433586,
+      "afterBytes": 117297,
+      "originalSha256": "e1a1246e29012874cb33b507f426c20b254415eaced019dabaa7a1521c88b153"
+    },
+    {
+      "original": "produce-strawberry-v01.png",
+      "file": "produce-strawberry-v01-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1254,
+        1254
+      ],
+      "imageSize": [
+        627,
+        627
+      ],
+      "beforeBytes": 295210,
+      "afterBytes": 76860,
+      "originalSha256": "171b5cec24895970b75e533e077db8f6a4f3203ad11db87cae49e7d9c84bd225"
+    },
+    {
+      "original": "produce-watermelon-v01.png",
+      "file": "produce-watermelon-v01-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1254,
+        1254
+      ],
+      "imageSize": [
+        627,
+        627
+      ],
+      "beforeBytes": 429517,
+      "afterBytes": 109421,
+      "originalSha256": "9a64e423de33505fd5e705e885c0fa728b1d46be7fc801f1fd75d00454adec7b"
+    },
+    {
+      "original": "produce-cantaloupe-v01.png",
+      "file": "produce-cantaloupe-v01-half.png",
+      "sourceScale": 0.5,
+      "originalImageSize": [
+        1254,
+        1254
+      ],
+      "imageSize": [
+        627,
+        627
+      ],
+      "beforeBytes": 386664,
+      "afterBytes": 102339,
+      "originalSha256": "3f72bcef7d8e8058cb50922cb8f3fbda3373565ba29cf7cd202158ebdea29b8a"
+    },
+    {
+      "original": "token-icon-v01.png",
+      "file": "token-icon-v02.png",
+      "sourceScale": 0.20414673046251994,
+      "originalImageSize": [
+        1254,
+        1254
+      ],
+      "imageSize": [
+        256,
+        256
+      ],
+      "beforeBytes": 479645,
+      "afterBytes": 25715,
+      "originalSha256": "b7b97532afe7a97f06f92a525f613187da7454b438f5767ecbd01c302896d068"
+    },
+    {
+      "original": "money-icon-v01.png",
+      "file": "money-icon-v02.png",
+      "sourceScale": 0.20414673046251994,
+      "originalImageSize": [
+        1254,
+        1254
+      ],
+      "imageSize": [
+        256,
+        256
+      ],
+      "beforeBytes": 547713,
+      "afterBytes": 29510,
+      "originalSha256": "135d1e4c2f57850ef3aeb6ad6b420c7676d6d365419b48f8ebad073bd8c81ea0"
+    }
+  ],
+  "performance": {
+    "requestedFilesBeforeBytes": 13207006,
+    "requestedFilesAfterBytes": 3524574,
+    "gameLoaderBefore": {
+      "files": 31,
+      "bytes": 14984574
+    },
+    "gameLoaderAfterIncludingStuck": {
+      "files": 32,
+      "bytes": 5487295
+    },
+    "scope": "PNG bytes in current game/render.js loadAssets image list; excludes HTML, JS, CSS, HTTP compression, browser cache, archived originals and manual comparison assets."
+  }
+}

@@ -1,21 +1,21 @@
 {
   "version": "0.13",
   "status": "art-prototype",
-  "width": 1254,
-  "height": 1254,
+  "width": 627.0,
+  "height": 627.0,
   "columns": 4,
   "rows": 4,
   "pixelBoundaries": [
-    0,
-    314,
-    627,
-    941,
-    1254
+    0.0,
+    157.0,
+    313.5,
+    470.5,
+    627.0
   ],
   "frameDurationMs": 180,
   "atlases": [
     {
-      "file": "robot-atlas-v01.png",
+      "file": "robot-atlas-v01-half.png",
       "rows": [
         "idle",
         "sow",
@@ -24,32 +24,32 @@
       ],
       "columnBoundariesByRow": [
         [
-          0,
-          327,
-          630,
-          936,
-          1254
+          0.0,
+          163.5,
+          315.0,
+          468.0,
+          627.0
         ],
         [
-          0,
-          329,
-          659,
-          970,
-          1254
+          0.0,
+          164.5,
+          329.5,
+          485.0,
+          627.0
         ],
         [
-          0,
-          336,
-          660,
-          986,
-          1254
+          0.0,
+          168.0,
+          330.0,
+          493.0,
+          627.0
         ],
         [
-          0,
-          359,
-          647,
-          949,
-          1254
+          0.0,
+          179.5,
+          323.5,
+          474.5,
+          627.0
         ]
       ],
       "renderCanvas": {
@@ -64,7 +64,7 @@
       ]
     },
     {
-      "file": "farm-atlas-v01.png",
+      "file": "farm-atlas-v01-half.png",
       "rows": [
         "soil",
         "carrot",
@@ -85,12 +85,12 @@
       ]
     },
     {
-      "file": "robot-harvest-empty-v02.png",
-      "width": 1254,
-      "height": 1254,
+      "file": "robot-harvest-empty-v02-half.png",
+      "width": 627,
+      "height": 627,
       "columns": 2,
       "rows": 2,
-      "frameSize": 627,
+      "frameSize": 313.5,
       "frames": [
         "reach",
         "grasp",
@@ -120,9 +120,9 @@
       ]
     },
     {
-      "file": "robot-hover-directions-v04.png",
-      "width": 1254,
-      "height": 1254,
+      "file": "robot-hover-directions-v04-half.png",
+      "width": 627,
+      "height": 627,
       "columns": 4,
       "rows": [
         "south",
@@ -132,26 +132,26 @@
       ],
       "framesPerDirection": 4,
       "columnBoundaries": [
-        0,
-        314,
-        627,
-        941,
-        1254
+        0.0,
+        157.0,
+        313.5,
+        470.5,
+        627.0
       ],
       "rowBoundaries": [
-        0,
-        331,
-        625,
-        910,
-        1254
+        0.0,
+        165.5,
+        312.5,
+        455.0,
+        627.0
       ],
       "frameDurationMs": 180,
       "southView": "straight-on-symmetrical"
     },
     {
-      "file": "robot-carry-directions-v06.png",
-      "width": 1122,
-      "height": 1402,
+      "file": "robot-carry-directions-v06-half.png",
+      "width": 561,
+      "height": 701,
       "columns": 4,
       "rows": [
         "south",
@@ -164,26 +164,26 @@
       "containsCargo": false,
       "frameDurationMs": 180,
       "columnBoundaries": [
-        0,
-        281,
-        561,
-        842,
-        1122
+        0.0,
+        140.5,
+        280.5,
+        421.0,
+        561.0
       ],
       "rowBoundaries": [
-        0,
-        300,
-        572,
-        839,
-        1106,
-        1402
+        0.0,
+        150.0,
+        286.0,
+        419.5,
+        553.0,
+        701.0
       ],
       "alignmentSource": "../alignment.js"
     },
     {
-      "file": "fruit-growth-v01.png",
-      "width": 1448,
-      "height": 1086,
+      "file": "fruit-growth-v01-half.png",
+      "width": 724,
+      "height": 543,
       "columns": 4,
       "rows": [
         "strawberry",
@@ -198,32 +198,32 @@
       ],
       "columnBoundariesByRow": [
         [
-          0,
-          324,
-          672,
-          1056,
-          1448
+          0.0,
+          162.0,
+          336.0,
+          528.0,
+          724.0
         ],
         [
-          0,
-          300,
-          670,
-          1050,
-          1448
+          0.0,
+          150.0,
+          335.0,
+          525.0,
+          724.0
         ],
         [
-          0,
-          314,
-          684,
-          1050,
-          1448
+          0.0,
+          157.0,
+          342.0,
+          525.0,
+          724.0
         ]
       ],
       "rowBoundaries": [
-        0,
-        362,
-        724,
-        1086
+        0.0,
+        181.0,
+        362.0,
+        543.0
       ],
       "sampling": "Use crops[].frames[].sourceRect and root; nominal uniform columns clip spreading vines."
     },
@@ -254,69 +254,77 @@
       "sampling": "Use soilVariants.states[].variants[].layers sourceRect and destinationRect; decorations only, no soil base."
     },
     {
-      "file": "robot-area-scan-v01.png",
-      "width": 1254,
-      "height": 1254,
+      "file": "robot-area-scan-v01-half.png",
+      "width": 627,
+      "height": 627,
       "columns": 2,
       "rows": 2,
       "sampling": "Use explicit per-frame sourceRect; artwork does not align to uniform cells."
     },
     {
-      "file": "scan-wave-v01.png",
-      "width": 1254,
-      "height": 1254,
+      "file": "scan-wave-v01-half.png",
+      "width": 627,
+      "height": 627,
       "columns": 2,
       "rows": 2,
       "sampling": "Use explicit per-frame sourceRect; artwork does not align to uniform cells."
     },
     {
-      "file": "robot-area-scan-v02.png",
-      "width": 1774,
-      "height": 887,
+      "file": "robot-area-scan-v02-half.png",
+      "width": 887,
+      "height": 444,
       "columns": 4,
       "rows": 2,
       "columnBoundaries": [
-        0,
-        443,
-        887,
-        1330,
-        1774
+        0.0,
+        221.5,
+        443.5,
+        665.0,
+        887.0
       ],
       "rowBoundaries": [
-        0,
-        490,
-        887
+        0.0,
+        245.0,
+        443.5
       ],
       "sampling": "Use rendering.robotPoses per-frame sourceRect; row boundary is calibrated, not half the image height."
     },
     {
-      "file": "robot-decision-v01.png",
-      "width": 1254,
-      "height": 1254,
+      "file": "robot-decision-v01-half.png",
+      "width": 627,
+      "height": 627,
       "columns": 2,
       "rows": 2,
       "sampling": "Use explicit per-frame sourceRect and shell alignment. Top row: red/green, green/red; bottom row: green/green, red/red. Eye sides are viewer-relative."
     },
     {
-      "file": "robot-thought-bubbles-v01.png",
-      "width": 1774,
-      "height": 887,
+      "file": "robot-thought-bubbles-v01-half.png",
+      "width": 887,
+      "height": 444,
       "columns": 4,
       "rows": 2,
       "sampling": "Use thoughtBubbles.frames sourceRect; generated bubbles extend beyond nominal columns."
+    },
+    {
+      "file": "robot-stuck-v01-half.png",
+      "width": 627,
+      "height": 627,
+      "columns": 2,
+      "rows": 2,
+      "sampling": "Half-resolution source; calibrated shell centers/heights in alignment.stuck; smoke does not affect normalization."
     }
   ],
   "produce": [
     {
       "id": "carrot",
-      "file": "produce-carrot-v01.png",
-      "width": 1254,
-      "height": 1254,
+      "file": "produce-carrot-v01-half.png",
+      "width": 627,
+      "height": 627,
       "sourceRect": [
-        393,
-        275,
-        632,
-        778
+        196.5,
+        137.5,
+        316.0,
+        389.0
       ],
       "uses": [
         "carry",
@@ -325,14 +333,14 @@
     },
     {
       "id": "tomato",
-      "file": "produce-tomato-v01.png",
-      "width": 1254,
-      "height": 1254,
+      "file": "produce-tomato-v01-half.png",
+      "width": 627,
+      "height": 627,
       "sourceRect": [
-        400,
-        421,
-        454,
-        448
+        200.0,
+        210.5,
+        227.0,
+        224.0
       ],
       "uses": [
         "carry",
@@ -341,14 +349,14 @@
     },
     {
       "id": "lettuce",
-      "file": "produce-lettuce-v01.png",
-      "width": 1254,
-      "height": 1254,
+      "file": "produce-lettuce-v01-half.png",
+      "width": 627,
+      "height": 627,
       "sourceRect": [
-        268,
-        355,
-        724,
-        643
+        134.0,
+        177.5,
+        362.0,
+        321.5
       ],
       "uses": [
         "carry",
@@ -357,14 +365,14 @@
     },
     {
       "id": "strawberry",
-      "file": "produce-strawberry-v01.png",
-      "width": 1254,
-      "height": 1254,
+      "file": "produce-strawberry-v01-half.png",
+      "width": 627,
+      "height": 627,
       "sourceRect": [
-        372,
-        346,
-        512,
-        646
+        186.0,
+        173.0,
+        256.0,
+        323.0
       ],
       "uses": [
         "carry",
@@ -373,14 +381,14 @@
     },
     {
       "id": "watermelon",
-      "file": "produce-watermelon-v01.png",
-      "width": 1254,
-      "height": 1254,
+      "file": "produce-watermelon-v01-half.png",
+      "width": 627,
+      "height": 627,
       "sourceRect": [
-        295,
-        289,
-        665,
-        747
+        147.5,
+        144.5,
+        332.5,
+        373.5
       ],
       "uses": [
         "carry",
@@ -389,14 +397,14 @@
     },
     {
       "id": "cantaloupe",
-      "file": "produce-cantaloupe-v01.png",
-      "width": 1254,
-      "height": 1254,
+      "file": "produce-cantaloupe-v01-half.png",
+      "width": 627,
+      "height": 627,
       "sourceRect": [
-        322,
-        324,
-        611,
-        660
+        161.0,
+        162.0,
+        305.5,
+        330.0
       ],
       "uses": [
         "carry",
@@ -459,7 +467,7 @@
     "reducedMotionStepDurationMs": 0
   },
   "idle": {
-    "file": "robot-atlas-v01.png",
+    "file": "robot-atlas-v01-half.png",
     "row": 0,
     "frames": 4
   },
@@ -490,7 +498,7 @@
       "id": "carrot",
       "name": "胡蘿蔔",
       "labValue": 1,
-      "atlas": "farm-atlas-v01.png",
+      "atlas": "farm-atlas-v01-half.png",
       "stageOrder": [
         "seedling",
         "young",
@@ -506,55 +514,55 @@
       "frames": [
         {
           "sourceRect": [
-            0,
-            318,
-            314,
-            309
+            0.0,
+            159.0,
+            157.0,
+            154.5
           ],
           "root": [
-            168,
-            290
+            84.0,
+            145.0
           ],
-          "scale": 1
+          "scale": 2
         },
         {
           "sourceRect": [
-            314,
-            318,
-            313,
-            309
+            157.0,
+            159.0,
+            156.5,
+            154.5
           ],
           "root": [
-            166,
-            287
+            83.0,
+            143.5
           ],
-          "scale": 1
+          "scale": 2
         },
         {
           "sourceRect": [
-            627,
-            318,
-            313,
-            309
+            313.5,
+            159.0,
+            156.5,
+            154.5
           ],
           "root": [
-            154,
-            297
+            77.0,
+            148.5
           ],
-          "scale": 1
+          "scale": 2
         },
         {
           "sourceRect": [
-            940,
-            318,
-            314,
-            309
+            470.0,
+            159.0,
+            157.0,
+            154.5
           ],
           "root": [
-            161,
-            297
+            80.5,
+            148.5
           ],
-          "scale": 1
+          "scale": 2
         }
       ],
       "produceId": "carrot"
@@ -563,7 +571,7 @@
       "id": "tomato",
       "name": "番茄",
       "labValue": 2,
-      "atlas": "farm-atlas-v01.png",
+      "atlas": "farm-atlas-v01-half.png",
       "stageOrder": [
         "seedling",
         "young",
@@ -579,55 +587,55 @@
       "frames": [
         {
           "sourceRect": [
-            0,
-            627,
-            314,
-            313
+            0.0,
+            313.5,
+            157.0,
+            156.5
           ],
           "root": [
-            165,
-            294
+            82.5,
+            147.0
           ],
-          "scale": 1
+          "scale": 2
         },
         {
           "sourceRect": [
-            314,
-            627,
-            313,
-            313
+            157.0,
+            313.5,
+            156.5,
+            156.5
           ],
           "root": [
-            165,
-            301
+            82.5,
+            150.5
           ],
-          "scale": 1
+          "scale": 2
         },
         {
           "sourceRect": [
-            627,
-            627,
-            313,
-            313
+            313.5,
+            313.5,
+            156.5,
+            156.5
           ],
           "root": [
-            163,
-            301
+            81.5,
+            150.5
           ],
-          "scale": 1
+          "scale": 2
         },
         {
           "sourceRect": [
-            940,
-            627,
-            314,
-            313
+            470.0,
+            313.5,
+            157.0,
+            156.5
           ],
           "root": [
-            162,
-            301
+            81.0,
+            150.5
           ],
-          "scale": 1
+          "scale": 2
         }
       ],
       "produceId": "tomato"
@@ -636,7 +644,7 @@
       "id": "lettuce",
       "name": "萵苣",
       "labValue": 3,
-      "atlas": "farm-atlas-v01.png",
+      "atlas": "farm-atlas-v01-half.png",
       "stageOrder": [
         "seedling",
         "young",
@@ -652,55 +660,55 @@
       "frames": [
         {
           "sourceRect": [
-            0,
-            940,
-            314,
-            314
+            0.0,
+            470.0,
+            157.0,
+            157.0
           ],
           "root": [
-            165,
-            236
+            82.5,
+            118.0
           ],
-          "scale": 1
+          "scale": 2
         },
         {
           "sourceRect": [
-            314,
-            940,
-            313,
-            314
+            157.0,
+            470.0,
+            156.5,
+            157.0
           ],
           "root": [
-            159,
-            248
+            79.5,
+            124.0
           ],
-          "scale": 1
+          "scale": 2
         },
         {
           "sourceRect": [
-            627,
-            940,
-            313,
-            314
+            313.5,
+            470.0,
+            156.5,
+            157.0
           ],
           "root": [
-            157,
-            256
+            78.5,
+            128.0
           ],
-          "scale": 1
+          "scale": 2
         },
         {
           "sourceRect": [
-            940,
-            940,
-            314,
-            314
+            470.0,
+            470.0,
+            157.0,
+            157.0
           ],
           "root": [
-            158,
-            261
+            79.0,
+            130.5
           ],
-          "scale": 1
+          "scale": 2
         }
       ],
       "produceId": "lettuce"
@@ -709,7 +717,7 @@
       "id": "strawberry",
       "name": "草莓",
       "labValue": 4,
-      "atlas": "fruit-growth-v01.png",
+      "atlas": "fruit-growth-v01-half.png",
       "stageOrder": [
         "seedling",
         "young",
@@ -725,55 +733,55 @@
       "frames": [
         {
           "sourceRect": [
-            92,
-            254,
-            151,
-            93
-          ],
-          "root": [
+            46.0,
+            127.0,
             75.5,
-            91
+            46.5
           ],
-          "scale": 0.8042895442359249
+          "root": [
+            37.75,
+            45.5
+          ],
+          "scale": 1.6085790884718498
         },
         {
           "sourceRect": [
-            407,
-            171,
-            215,
-            177
-          ],
-          "root": [
+            203.5,
+            85.5,
             107.5,
-            175
+            88.5
           ],
-          "scale": 0.8042895442359249
+          "root": [
+            53.75,
+            87.5
+          ],
+          "scale": 1.6085790884718498
         },
         {
           "sourceRect": [
-            722,
-            123,
-            300,
-            232
-          ],
-          "root": [
+            361.0,
+            61.5,
             150.0,
-            230
+            116.0
           ],
-          "scale": 0.8042895442359249
+          "root": [
+            75.0,
+            115.0
+          ],
+          "scale": 1.6085790884718498
         },
         {
           "sourceRect": [
-            1091,
-            102,
-            316,
-            256
+            545.5,
+            51.0,
+            158.0,
+            128.0
           ],
           "root": [
-            158.0,
-            254
+            79.0,
+            127.0
           ],
-          "scale": 0.8042895442359249
+          "scale": 1.6085790884718498
         }
       ],
       "produceId": "strawberry"
@@ -782,7 +790,7 @@
       "id": "watermelon",
       "name": "西瓜",
       "labValue": 5,
-      "atlas": "fruit-growth-v01.png",
+      "atlas": "fruit-growth-v01-half.png",
       "stageOrder": [
         "seedling",
         "young",
@@ -798,55 +806,55 @@
       "frames": [
         {
           "sourceRect": [
-            71,
-            551,
-            185,
-            111
-          ],
-          "root": [
+            35.5,
+            275.5,
             92.5,
-            109
+            55.5
           ],
-          "scale": 0.8042895442359249
+          "root": [
+            46.25,
+            54.5
+          ],
+          "scale": 1.6085790884718498
         },
         {
           "sourceRect": [
-            346,
-            457,
-            302,
-            223
-          ],
-          "root": [
+            173.0,
+            228.5,
             151.0,
-            221
+            111.5
           ],
-          "scale": 0.8042895442359249
+          "root": [
+            75.5,
+            110.5
+          ],
+          "scale": 1.6085790884718498
         },
         {
           "sourceRect": [
-            694,
-            427,
-            347,
-            253
-          ],
-          "root": [
+            347.0,
+            213.5,
             173.5,
-            251
+            126.5
           ],
-          "scale": 0.8042895442359249
+          "root": [
+            86.75,
+            125.5
+          ],
+          "scale": 1.6085790884718498
         },
         {
           "sourceRect": [
-            1061,
-            417,
-            365,
-            271
+            530.5,
+            208.5,
+            182.5,
+            135.5
           ],
           "root": [
-            182.5,
-            269
+            91.25,
+            134.5
           ],
-          "scale": 0.8042895442359249
+          "scale": 1.6085790884718498
         }
       ],
       "produceId": "watermelon"
@@ -855,7 +863,7 @@
       "id": "cantaloupe",
       "name": "哈密瓜",
       "labValue": 6,
-      "atlas": "fruit-growth-v01.png",
+      "atlas": "fruit-growth-v01-half.png",
       "stageOrder": [
         "seedling",
         "young",
@@ -871,55 +879,55 @@
       "frames": [
         {
           "sourceRect": [
-            72,
-            881,
-            199,
-            113
-          ],
-          "root": [
+            36.0,
+            440.5,
             99.5,
-            111
+            56.5
           ],
-          "scale": 0.8042895442359249
+          "root": [
+            49.75,
+            55.5
+          ],
+          "scale": 1.6085790884718498
         },
         {
           "sourceRect": [
-            357,
-            784,
-            309,
-            232
-          ],
-          "root": [
+            178.5,
+            392.0,
             154.5,
-            230
+            116.0
           ],
-          "scale": 0.8042895442359249
+          "root": [
+            77.25,
+            115.0
+          ],
+          "scale": 1.6085790884718498
         },
         {
           "sourceRect": [
-            704,
-            755,
-            337,
-            261
-          ],
-          "root": [
+            352.0,
+            377.5,
             168.5,
-            259
+            130.5
           ],
-          "scale": 0.8042895442359249
+          "root": [
+            84.25,
+            129.5
+          ],
+          "scale": 1.6085790884718498
         },
         {
           "sourceRect": [
-            1061,
-            743,
-            373,
-            282
+            530.5,
+            371.5,
+            186.5,
+            141.0
           ],
           "root": [
-            186.5,
-            280
+            93.25,
+            140.0
           ],
-          "scale": 0.8042895442359249
+          "scale": 1.6085790884718498
         }
       ],
       "produceId": "cantaloupe"
@@ -1443,6 +1451,79 @@
       },
       "description": "Visual status only. Eye sides are viewer-relative. Thinking repeats until the caller supplies a result or another action. Result is provided externally; do not infer or randomly generate a condition outcome.",
       "onComplete": "idle"
+    },
+    "stuck": {
+      "poseRows": [
+        16
+      ],
+      "frameOrder": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frameDurationMs": 280,
+      "frameDurationsMs": [
+        300,
+        260,
+        300,
+        260
+      ],
+      "loop": true,
+      "objects": {
+        "cargoVisible": [
+          false,
+          false,
+          false,
+          false
+        ],
+        "sourcePlantVisible": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "cargoPose": [
+          "hidden",
+          "hidden",
+          "hidden",
+          "hidden"
+        ],
+        "eyeLeft": [
+          "red",
+          "dim-red",
+          "red",
+          "dim-red"
+        ],
+        "eyeRight": [
+          "red",
+          "dim-red",
+          "red",
+          "dim-red"
+        ],
+        "smoke": [
+          "small",
+          "rising",
+          "dispersing",
+          "small"
+        ]
+      },
+      "lifecycle": {
+        "enterWhen": {
+          "path": "robot.phase",
+          "equals": "stuck"
+        },
+        "leaveWhen": {
+          "path": "robot.phase",
+          "notEquals": "stuck"
+        },
+        "resetElapsedOnEntry": true,
+        "resetElapsedOnReplay": true,
+        "exitClip": "idle",
+        "pauseWithRobot": true,
+        "automaticRecovery": false
+      },
+      "description": "Static body calibration; limp lowered empty arms, alternating red eyes and discrete pixel smoke. Repeat until caller resets the robot; does not clear crash, consume Token, hide crops or discard stored cargo state."
     }
   },
   "playback": {
@@ -1454,7 +1535,8 @@
       "scan",
       "decisionThinking",
       "decisionTrue",
-      "decisionFalse"
+      "decisionFalse",
+      "stuck"
     ],
     "actionLabels": [
       "漂浮待命",
@@ -1464,7 +1546,8 @@
       "範圍掃描",
       "判斷中",
       "判斷成立",
-      "判斷不成立"
+      "判斷不成立",
+      "當機循環"
     ],
     "directionalClips": {
       "empty": "move",
@@ -1478,19 +1561,22 @@
       "thinking": "decisionThinking",
       "true": "decisionTrue",
       "false": "decisionFalse"
+    },
+    "statusClips": {
+      "stuck": "stuck"
     }
   },
   "rendering": {
     "robotPoses": {
       "0": {
-        "atlas": "robot-atlas-v01.png",
+        "atlas": "robot-atlas-v01-half.png",
         "frames": [
           {
             "sourceRect": [
-              0,
-              0,
-              327,
-              314
+              0.0,
+              0.0,
+              163.5,
+              157.0
             ],
             "alignmentPath": [
               "original",
@@ -1501,10 +1587,10 @@
           },
           {
             "sourceRect": [
-              327,
-              0,
-              303,
-              314
+              163.5,
+              0.0,
+              151.5,
+              157.0
             ],
             "alignmentPath": [
               "original",
@@ -1515,10 +1601,10 @@
           },
           {
             "sourceRect": [
-              630,
-              0,
-              306,
-              314
+              315.0,
+              0.0,
+              153.0,
+              157.0
             ],
             "alignmentPath": [
               "original",
@@ -1529,10 +1615,10 @@
           },
           {
             "sourceRect": [
-              936,
-              0,
-              318,
-              314
+              468.0,
+              0.0,
+              159.0,
+              157.0
             ],
             "alignmentPath": [
               "original",
@@ -1544,14 +1630,14 @@
         ]
       },
       "1": {
-        "atlas": "robot-atlas-v01.png",
+        "atlas": "robot-atlas-v01-half.png",
         "frames": [
           {
             "sourceRect": [
-              0,
-              314,
-              329,
-              313
+              0.0,
+              157.0,
+              164.5,
+              156.5
             ],
             "alignmentPath": [
               "original",
@@ -1562,10 +1648,10 @@
           },
           {
             "sourceRect": [
-              329,
-              314,
-              330,
-              313
+              164.5,
+              157.0,
+              165.0,
+              156.5
             ],
             "alignmentPath": [
               "original",
@@ -1576,10 +1662,10 @@
           },
           {
             "sourceRect": [
-              659,
-              314,
-              311,
-              313
+              329.5,
+              157.0,
+              155.5,
+              156.5
             ],
             "alignmentPath": [
               "original",
@@ -1590,10 +1676,10 @@
           },
           {
             "sourceRect": [
-              970,
-              314,
-              284,
-              313
+              485.0,
+              157.0,
+              142.0,
+              156.5
             ],
             "alignmentPath": [
               "original",
@@ -1605,14 +1691,14 @@
         ]
       },
       "2": {
-        "atlas": "robot-atlas-v01.png",
+        "atlas": "robot-atlas-v01-half.png",
         "frames": [
           {
             "sourceRect": [
-              0,
-              627,
-              336,
-              313
+              0.0,
+              313.5,
+              168.0,
+              156.5
             ],
             "alignmentPath": [
               "original",
@@ -1623,10 +1709,10 @@
           },
           {
             "sourceRect": [
-              336,
-              627,
-              324,
-              313
+              168.0,
+              313.5,
+              162.0,
+              156.5
             ],
             "alignmentPath": [
               "original",
@@ -1637,10 +1723,10 @@
           },
           {
             "sourceRect": [
-              660,
-              627,
-              326,
-              313
+              330.0,
+              313.5,
+              163.0,
+              156.5
             ],
             "alignmentPath": [
               "original",
@@ -1651,10 +1737,10 @@
           },
           {
             "sourceRect": [
-              986,
-              627,
-              268,
-              313
+              493.0,
+              313.5,
+              134.0,
+              156.5
             ],
             "alignmentPath": [
               "original",
@@ -1666,14 +1752,14 @@
         ]
       },
       "3": {
-        "atlas": "robot-harvest-empty-v02.png",
+        "atlas": "robot-harvest-empty-v02-half.png",
         "frames": [
           {
             "sourceRect": [
-              0,
-              0,
-              627,
-              627
+              0.0,
+              0.0,
+              313.5,
+              313.5
             ],
             "alignmentPath": [
               "harvest",
@@ -1683,10 +1769,10 @@
           },
           {
             "sourceRect": [
-              627,
-              0,
-              627,
-              627
+              313.5,
+              0.0,
+              313.5,
+              313.5
             ],
             "alignmentPath": [
               "harvest",
@@ -1696,10 +1782,10 @@
           },
           {
             "sourceRect": [
-              0,
-              627,
-              627,
-              627
+              0.0,
+              313.5,
+              313.5,
+              313.5
             ],
             "alignmentPath": [
               "harvest",
@@ -1709,10 +1795,10 @@
           },
           {
             "sourceRect": [
-              627,
-              627,
-              627,
-              627
+              313.5,
+              313.5,
+              313.5,
+              313.5
             ],
             "alignmentPath": [
               "harvest",
@@ -1723,14 +1809,14 @@
         ]
       },
       "4": {
-        "atlas": "robot-hover-directions-v04.png",
+        "atlas": "robot-hover-directions-v04-half.png",
         "frames": [
           {
             "sourceRect": [
-              0,
-              0,
-              314,
-              331
+              0.0,
+              0.0,
+              157.0,
+              165.5
             ],
             "alignmentPath": [
               "hover",
@@ -1741,10 +1827,10 @@
           },
           {
             "sourceRect": [
-              314,
-              0,
-              313,
-              331
+              157.0,
+              0.0,
+              156.5,
+              165.5
             ],
             "alignmentPath": [
               "hover",
@@ -1755,10 +1841,10 @@
           },
           {
             "sourceRect": [
-              627,
-              0,
-              314,
-              331
+              313.5,
+              0.0,
+              157.0,
+              165.5
             ],
             "alignmentPath": [
               "hover",
@@ -1769,10 +1855,10 @@
           },
           {
             "sourceRect": [
-              941,
-              0,
-              313,
-              331
+              470.5,
+              0.0,
+              156.5,
+              165.5
             ],
             "alignmentPath": [
               "hover",
@@ -1784,14 +1870,14 @@
         ]
       },
       "5": {
-        "atlas": "robot-hover-directions-v04.png",
+        "atlas": "robot-hover-directions-v04-half.png",
         "frames": [
           {
             "sourceRect": [
-              0,
-              331,
-              314,
-              294
+              0.0,
+              165.5,
+              157.0,
+              147.0
             ],
             "alignmentPath": [
               "hover",
@@ -1802,10 +1888,10 @@
           },
           {
             "sourceRect": [
-              314,
-              331,
-              313,
-              294
+              157.0,
+              165.5,
+              156.5,
+              147.0
             ],
             "alignmentPath": [
               "hover",
@@ -1816,10 +1902,10 @@
           },
           {
             "sourceRect": [
-              627,
-              331,
-              314,
-              294
+              313.5,
+              165.5,
+              157.0,
+              147.0
             ],
             "alignmentPath": [
               "hover",
@@ -1830,10 +1916,10 @@
           },
           {
             "sourceRect": [
-              941,
-              331,
-              313,
-              294
+              470.5,
+              165.5,
+              156.5,
+              147.0
             ],
             "alignmentPath": [
               "hover",
@@ -1845,14 +1931,14 @@
         ]
       },
       "6": {
-        "atlas": "robot-hover-directions-v04.png",
+        "atlas": "robot-hover-directions-v04-half.png",
         "frames": [
           {
             "sourceRect": [
-              0,
-              625,
-              314,
-              285
+              0.0,
+              312.5,
+              157.0,
+              142.5
             ],
             "alignmentPath": [
               "hover",
@@ -1863,10 +1949,10 @@
           },
           {
             "sourceRect": [
-              314,
-              625,
-              313,
-              285
+              157.0,
+              312.5,
+              156.5,
+              142.5
             ],
             "alignmentPath": [
               "hover",
@@ -1877,10 +1963,10 @@
           },
           {
             "sourceRect": [
-              627,
-              625,
-              314,
-              285
+              313.5,
+              312.5,
+              157.0,
+              142.5
             ],
             "alignmentPath": [
               "hover",
@@ -1891,10 +1977,10 @@
           },
           {
             "sourceRect": [
-              941,
-              625,
-              313,
-              285
+              470.5,
+              312.5,
+              156.5,
+              142.5
             ],
             "alignmentPath": [
               "hover",
@@ -1906,14 +1992,14 @@
         ]
       },
       "7": {
-        "atlas": "robot-hover-directions-v04.png",
+        "atlas": "robot-hover-directions-v04-half.png",
         "frames": [
           {
             "sourceRect": [
-              0,
-              910,
-              314,
-              344
+              0.0,
+              455.0,
+              157.0,
+              172.0
             ],
             "alignmentPath": [
               "hover",
@@ -1924,10 +2010,10 @@
           },
           {
             "sourceRect": [
-              314,
-              910,
-              313,
-              344
+              157.0,
+              455.0,
+              156.5,
+              172.0
             ],
             "alignmentPath": [
               "hover",
@@ -1938,10 +2024,10 @@
           },
           {
             "sourceRect": [
-              627,
-              910,
-              314,
-              344
+              313.5,
+              455.0,
+              157.0,
+              172.0
             ],
             "alignmentPath": [
               "hover",
@@ -1952,10 +2038,10 @@
           },
           {
             "sourceRect": [
-              941,
-              910,
-              313,
-              344
+              470.5,
+              455.0,
+              156.5,
+              172.0
             ],
             "alignmentPath": [
               "hover",
@@ -1967,14 +2053,14 @@
         ]
       },
       "8": {
-        "atlas": "robot-carry-directions-v06.png",
+        "atlas": "robot-carry-directions-v06-half.png",
         "frames": [
           {
             "sourceRect": [
-              0,
-              0,
-              281,
-              300
+              0.0,
+              0.0,
+              140.5,
+              150.0
             ],
             "alignmentPath": [
               "carry",
@@ -1992,10 +2078,10 @@
           },
           {
             "sourceRect": [
-              281,
-              0,
-              280,
-              300
+              140.5,
+              0.0,
+              140.0,
+              150.0
             ],
             "alignmentPath": [
               "carry",
@@ -2013,10 +2099,10 @@
           },
           {
             "sourceRect": [
-              561,
-              0,
-              281,
-              300
+              280.5,
+              0.0,
+              140.5,
+              150.0
             ],
             "alignmentPath": [
               "carry",
@@ -2034,10 +2120,10 @@
           },
           {
             "sourceRect": [
-              842,
-              0,
-              280,
-              300
+              421.0,
+              0.0,
+              140.0,
+              150.0
             ],
             "alignmentPath": [
               "carry",
@@ -2056,14 +2142,14 @@
         ]
       },
       "9": {
-        "atlas": "robot-carry-directions-v06.png",
+        "atlas": "robot-carry-directions-v06-half.png",
         "frames": [
           {
             "sourceRect": [
-              0,
-              300,
-              281,
-              272
+              0.0,
+              150.0,
+              140.5,
+              136.0
             ],
             "alignmentPath": [
               "carry",
@@ -2081,10 +2167,10 @@
           },
           {
             "sourceRect": [
-              281,
-              300,
-              280,
-              272
+              140.5,
+              150.0,
+              140.0,
+              136.0
             ],
             "alignmentPath": [
               "carry",
@@ -2102,10 +2188,10 @@
           },
           {
             "sourceRect": [
-              561,
-              300,
-              281,
-              272
+              280.5,
+              150.0,
+              140.5,
+              136.0
             ],
             "alignmentPath": [
               "carry",
@@ -2123,10 +2209,10 @@
           },
           {
             "sourceRect": [
-              842,
-              300,
-              280,
-              272
+              421.0,
+              150.0,
+              140.0,
+              136.0
             ],
             "alignmentPath": [
               "carry",
@@ -2145,14 +2231,14 @@
         ]
       },
       "10": {
-        "atlas": "robot-carry-directions-v06.png",
+        "atlas": "robot-carry-directions-v06-half.png",
         "frames": [
           {
             "sourceRect": [
-              0,
-              572,
-              281,
-              267
+              0.0,
+              286.0,
+              140.5,
+              133.5
             ],
             "alignmentPath": [
               "carry",
@@ -2170,10 +2256,10 @@
           },
           {
             "sourceRect": [
-              281,
-              572,
-              280,
-              267
+              140.5,
+              286.0,
+              140.0,
+              133.5
             ],
             "alignmentPath": [
               "carry",
@@ -2191,10 +2277,10 @@
           },
           {
             "sourceRect": [
-              561,
-              572,
-              281,
-              267
+              280.5,
+              286.0,
+              140.5,
+              133.5
             ],
             "alignmentPath": [
               "carry",
@@ -2212,10 +2298,10 @@
           },
           {
             "sourceRect": [
-              842,
-              572,
-              280,
-              267
+              421.0,
+              286.0,
+              140.0,
+              133.5
             ],
             "alignmentPath": [
               "carry",
@@ -2234,14 +2320,14 @@
         ]
       },
       "11": {
-        "atlas": "robot-carry-directions-v06.png",
+        "atlas": "robot-carry-directions-v06-half.png",
         "frames": [
           {
             "sourceRect": [
-              0,
-              839,
-              281,
-              267
+              0.0,
+              419.5,
+              140.5,
+              133.5
             ],
             "alignmentPath": [
               "carry",
@@ -2259,10 +2345,10 @@
           },
           {
             "sourceRect": [
-              281,
-              839,
-              280,
-              267
+              140.5,
+              419.5,
+              140.0,
+              133.5
             ],
             "alignmentPath": [
               "carry",
@@ -2280,10 +2366,10 @@
           },
           {
             "sourceRect": [
-              561,
-              839,
-              281,
-              267
+              280.5,
+              419.5,
+              140.5,
+              133.5
             ],
             "alignmentPath": [
               "carry",
@@ -2301,10 +2387,10 @@
           },
           {
             "sourceRect": [
-              842,
-              839,
-              280,
-              267
+              421.0,
+              419.5,
+              140.0,
+              133.5
             ],
             "alignmentPath": [
               "carry",
@@ -2323,14 +2409,14 @@
         ]
       },
       "12": {
-        "atlas": "robot-carry-directions-v06.png",
+        "atlas": "robot-carry-directions-v06-half.png",
         "frames": [
           {
             "sourceRect": [
-              0,
-              1106,
-              281,
-              296
+              0.0,
+              553.0,
+              140.5,
+              148.0
             ],
             "alignmentPath": [
               "carry",
@@ -2348,10 +2434,10 @@
           },
           {
             "sourceRect": [
-              281,
-              1106,
-              280,
-              296
+              140.5,
+              553.0,
+              140.0,
+              148.0
             ],
             "alignmentPath": [
               "carry",
@@ -2369,10 +2455,10 @@
           },
           {
             "sourceRect": [
-              561,
-              1106,
-              281,
-              296
+              280.5,
+              553.0,
+              140.5,
+              148.0
             ],
             "alignmentPath": [
               "carry",
@@ -2390,10 +2476,10 @@
           },
           {
             "sourceRect": [
-              842,
-              1106,
-              280,
-              296
+              421.0,
+              553.0,
+              140.0,
+              148.0
             ],
             "alignmentPath": [
               "carry",
@@ -2412,14 +2498,14 @@
         ]
       },
       "13": {
-        "atlas": "robot-area-scan-v01.png",
+        "atlas": "robot-area-scan-v01-half.png",
         "frames": [
           {
             "sourceRect": [
-              111,
-              120,
-              442,
-              429
+              55.5,
+              60.0,
+              221.0,
+              214.5
             ],
             "alignmentPath": [
               "scan",
@@ -2429,10 +2515,10 @@
           },
           {
             "sourceRect": [
-              719,
-              120,
-              488,
-              429
+              359.5,
+              60.0,
+              244.0,
+              214.5
             ],
             "alignmentPath": [
               "scan",
@@ -2442,10 +2528,10 @@
           },
           {
             "sourceRect": [
-              102,
-              707,
-              575,
-              427
+              51.0,
+              353.5,
+              287.5,
+              213.5
             ],
             "alignmentPath": [
               "scan",
@@ -2455,10 +2541,10 @@
           },
           {
             "sourceRect": [
-              717,
-              707,
-              499,
-              428
+              358.5,
+              353.5,
+              249.5,
+              214.0
             ],
             "alignmentPath": [
               "scan",
@@ -2469,14 +2555,14 @@
         ]
       },
       "14": {
-        "atlas": "robot-area-scan-v02.png",
+        "atlas": "robot-area-scan-v02-half.png",
         "frames": [
           {
             "sourceRect": [
-              59,
-              131,
-              351,
-              350
+              29.5,
+              65.5,
+              175.5,
+              175.0
             ],
             "alignmentPath": [
               "scanRadar",
@@ -2487,10 +2573,10 @@
           },
           {
             "sourceRect": [
-              500,
-              156,
-              350,
-              325
+              250.0,
+              78.0,
+              175.0,
+              162.5
             ],
             "alignmentPath": [
               "scanRadar",
@@ -2501,10 +2587,10 @@
           },
           {
             "sourceRect": [
-              940,
-              189,
-              349,
-              292
+              470.0,
+              94.5,
+              174.5,
+              146.0
             ],
             "alignmentPath": [
               "scanRadar",
@@ -2515,10 +2601,10 @@
           },
           {
             "sourceRect": [
-              1381,
-              117,
-              349,
-              364
+              690.5,
+              58.5,
+              174.5,
+              182.0
             ],
             "alignmentPath": [
               "scanRadar",
@@ -2529,10 +2615,10 @@
           },
           {
             "sourceRect": [
-              59,
-              507,
-              351,
-              366
+              29.5,
+              253.5,
+              175.5,
+              183.0
             ],
             "alignmentPath": [
               "scanRadar",
@@ -2543,10 +2629,10 @@
           },
           {
             "sourceRect": [
-              500,
-              507,
-              349,
-              366
+              250.0,
+              253.5,
+              174.5,
+              183.0
             ],
             "alignmentPath": [
               "scanRadar",
@@ -2557,10 +2643,10 @@
           },
           {
             "sourceRect": [
-              940,
-              548,
-              349,
-              325
+              470.0,
+              274.0,
+              174.5,
+              162.5
             ],
             "alignmentPath": [
               "scanRadar",
@@ -2571,10 +2657,10 @@
           },
           {
             "sourceRect": [
-              1381,
-              523,
-              348,
-              350
+              690.5,
+              261.5,
+              174.0,
+              175.0
             ],
             "alignmentPath": [
               "scanRadar",
@@ -2586,14 +2672,14 @@
         ]
       },
       "15": {
-        "atlas": "robot-decision-v01.png",
+        "atlas": "robot-decision-v01-half.png",
         "frames": [
           {
             "sourceRect": [
-              100,
-              82,
-              479,
-              492
+              50.0,
+              41.0,
+              239.5,
+              246.0
             ],
             "alignmentPath": [
               "decision",
@@ -2604,10 +2690,10 @@
           },
           {
             "sourceRect": [
-              699,
-              82,
-              481,
-              492
+              349.5,
+              41.0,
+              240.5,
+              246.0
             ],
             "alignmentPath": [
               "decision",
@@ -2618,10 +2704,10 @@
           },
           {
             "sourceRect": [
-              99,
-              683,
-              482,
-              491
+              49.5,
+              341.5,
+              241.0,
+              245.5
             ],
             "alignmentPath": [
               "decision",
@@ -2632,10 +2718,10 @@
           },
           {
             "sourceRect": [
-              698,
-              680,
-              485,
-              494
+              349.0,
+              340.0,
+              242.5,
+              247.0
             ],
             "alignmentPath": [
               "decision",
@@ -2643,6 +2729,67 @@
             ],
             "bobIndex": null,
             "label": "不成立・雙紅"
+          }
+        ]
+      },
+      "16": {
+        "atlas": "robot-stuck-v01-half.png",
+        "frames": [
+          {
+            "sourceRect": [
+              51.0,
+              53.5,
+              222.0,
+              219.5
+            ],
+            "alignmentPath": [
+              "stuck",
+              0
+            ],
+            "bobIndex": null,
+            "label": "紅眼・初煙"
+          },
+          {
+            "sourceRect": [
+              357.5,
+              54.0,
+              222.5,
+              219.0
+            ],
+            "alignmentPath": [
+              "stuck",
+              1
+            ],
+            "bobIndex": null,
+            "label": "暗紅眼・煙升起"
+          },
+          {
+            "sourceRect": [
+              51.0,
+              350.5,
+              225.0,
+              229.0
+            ],
+            "alignmentPath": [
+              "stuck",
+              2
+            ],
+            "bobIndex": null,
+            "label": "紅眼・散煙"
+          },
+          {
+            "sourceRect": [
+              357.5,
+              361.0,
+              222.5,
+              218.5
+            ],
+            "alignmentPath": [
+              "stuck",
+              3
+            ],
+            "bobIndex": null,
+            "label": "暗紅眼・回到初煙"
           }
         ]
       }
@@ -2694,7 +2841,7 @@
       "robotHeightRatio": 0.72
     },
     "soil": {
-      "atlas": "farm-atlas-v01.png",
+      "atlas": "farm-atlas-v01-half.png",
       "columns": 4,
       "labels": [
         "乾裂",
@@ -2763,12 +2910,12 @@
             "id": "plain",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  0,
-                  0,
-                  314,
-                  314
+                  0.0,
+                  0.0,
+                  157.0,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -2784,12 +2931,12 @@
             "id": "flowers",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  0,
-                  0,
-                  314,
-                  314
+                  0.0,
+                  0.0,
+                  157.0,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -2837,12 +2984,12 @@
             "id": "stones",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  0,
-                  0,
-                  314,
-                  314
+                  0.0,
+                  0.0,
+                  157.0,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -2890,12 +3037,12 @@
             "id": "mixed",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  0,
-                  0,
-                  314,
-                  314
+                  0.0,
+                  0.0,
+                  157.0,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -2949,12 +3096,12 @@
             "id": "plain",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  314,
-                  0,
-                  313,
-                  314
+                  157.0,
+                  0.0,
+                  156.5,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -2970,12 +3117,12 @@
             "id": "flowers",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  314,
-                  0,
-                  313,
-                  314
+                  157.0,
+                  0.0,
+                  156.5,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -3023,12 +3170,12 @@
             "id": "stones",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  314,
-                  0,
-                  313,
-                  314
+                  157.0,
+                  0.0,
+                  156.5,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -3076,12 +3223,12 @@
             "id": "mixed",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  314,
-                  0,
-                  313,
-                  314
+                  157.0,
+                  0.0,
+                  156.5,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -3135,12 +3282,12 @@
             "id": "plain",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  627,
-                  0,
-                  314,
-                  314
+                  313.5,
+                  0.0,
+                  157.0,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -3156,12 +3303,12 @@
             "id": "flowers",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  627,
-                  0,
-                  314,
-                  314
+                  313.5,
+                  0.0,
+                  157.0,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -3209,12 +3356,12 @@
             "id": "stones",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  627,
-                  0,
-                  314,
-                  314
+                  313.5,
+                  0.0,
+                  157.0,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -3262,12 +3409,12 @@
             "id": "mixed",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  627,
-                  0,
-                  314,
-                  314
+                  313.5,
+                  0.0,
+                  157.0,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -3321,12 +3468,12 @@
             "id": "plain",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  941,
-                  0,
-                  313,
-                  314
+                  470.5,
+                  0.0,
+                  156.5,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -3342,12 +3489,12 @@
             "id": "flowers",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  941,
-                  0,
-                  313,
-                  314
+                  470.5,
+                  0.0,
+                  156.5,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -3395,12 +3542,12 @@
             "id": "stones",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  941,
-                  0,
-                  313,
-                  314
+                  470.5,
+                  0.0,
+                  156.5,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -3448,12 +3595,12 @@
             "id": "mixed",
             "layers": [
               {
-                "atlas": "farm-atlas-v01.png",
+                "atlas": "farm-atlas-v01-half.png",
                 "sourceRect": [
-                  941,
-                  0,
-                  313,
-                  314
+                  470.5,
+                  0.0,
+                  156.5,
+                  157.0
                 ],
                 "destinationRect": [
                   0,
@@ -3520,7 +3667,7 @@
   },
   "effectClips": {
     "areaScanWave": {
-      "atlas": "scan-wave-v01.png",
+      "atlas": "scan-wave-v01-half.png",
       "canvasSpace": "fieldBounds",
       "anchor": [
         0.5,
@@ -3561,10 +3708,10 @@
       "frames": [
         {
           "sourceRect": [
-            179,
-            296,
-            268,
-            153
+            89.5,
+            148.0,
+            134.0,
+            76.5
           ],
           "sizeRatio": [
             0.24,
@@ -3573,10 +3720,10 @@
         },
         {
           "sourceRect": [
-            723,
-            258,
-            434,
-            228
+            361.5,
+            129.0,
+            217.0,
+            114.0
           ],
           "sizeRatio": [
             0.46,
@@ -3585,10 +3732,10 @@
         },
         {
           "sourceRect": [
-            46,
-            810,
-            536,
-            263
+            23.0,
+            405.0,
+            268.0,
+            131.5
           ],
           "sizeRatio": [
             0.72,
@@ -3597,10 +3744,10 @@
         },
         {
           "sourceRect": [
-            638,
-            792,
-            605,
-            301
+            319.0,
+            396.0,
+            302.5,
+            150.5
           ],
           "sizeRatio": [
             0.98,
@@ -3613,7 +3760,7 @@
     }
   },
   "thoughtBubbles": {
-    "atlas": "robot-thought-bubbles-v01.png",
+    "atlas": "robot-thought-bubbles-v01-half.png",
     "canvas": [
       400,
       340
@@ -3621,10 +3768,10 @@
     "frames": [
       {
         "sourceRect": [
-          53,
-          93,
-          396,
-          334
+          26.5,
+          46.5,
+          198.0,
+          167.0
         ],
         "destinationRect": [
           2.0,
@@ -3636,10 +3783,10 @@
       },
       {
         "sourceRect": [
-          473,
-          93,
-          398,
-          334
+          236.5,
+          46.5,
+          199.0,
+          167.0
         ],
         "destinationRect": [
           1.0,
@@ -3651,10 +3798,10 @@
       },
       {
         "sourceRect": [
-          903,
-          93,
-          396,
-          334
+          451.5,
+          46.5,
+          198.0,
+          167.0
         ],
         "destinationRect": [
           2.0,
@@ -3666,10 +3813,10 @@
       },
       {
         "sourceRect": [
-          1342,
-          93,
-          397,
-          334
+          671.0,
+          46.5,
+          198.5,
+          167.0
         ],
         "destinationRect": [
           1.5,
@@ -3681,10 +3828,10 @@
       },
       {
         "sourceRect": [
-          53,
-          498,
-          397,
-          334
+          26.5,
+          249.0,
+          198.5,
+          167.0
         ],
         "destinationRect": [
           1.5,
@@ -3696,10 +3843,10 @@
       },
       {
         "sourceRect": [
-          473,
-          498,
-          398,
-          334
+          236.5,
+          249.0,
+          199.0,
+          167.0
         ],
         "destinationRect": [
           1.0,
@@ -3711,10 +3858,10 @@
       },
       {
         "sourceRect": [
-          903,
-          498,
-          396,
-          334
+          451.5,
+          249.0,
+          198.0,
+          167.0
         ],
         "destinationRect": [
           2.0,
@@ -3726,10 +3873,10 @@
       },
       {
         "sourceRect": [
-          1342,
-          498,
-          398,
-          334
+          671.0,
+          249.0,
+          199.0,
+          167.0
         ],
         "destinationRect": [
           1.0,
@@ -3791,6 +3938,15 @@
           720
         ],
         "loop": true
+      },
+      "error": {
+        "frameOrder": [
+          5
+        ],
+        "frameDurationsMs": [
+          1000
+        ],
+        "loop": true
       }
     },
     "byClip": {
@@ -3798,7 +3954,8 @@
       "decisionTrue": "true",
       "decisionFalse": "false",
       "water": "watering",
-      "sow": "sowing"
+      "sow": "sowing",
+      "stuck": "error"
     },
     "placement": {
       "relativeTo": "robotCanvas",
@@ -3817,7 +3974,7 @@
       "onAnimationComplete": "hold-last-until-clip-exit",
       "unmappedClip": "hidden"
     },
-    "note": "Bubble animation has its own elapsed-time cursor within the shared render clock; do not use the eye/shell frame index for dot phases. Source art includes the cream cloud, thought puffs and pictogram. Result selection comes from external game logic. Scan, carry, harvest, movement and idle have no bubble mapping."
+    "note": "Bubble animation has its own elapsed-time cursor within the shared render clock; do not use the eye/shell frame index for dot phases. Source art includes the cream cloud, thought puffs and pictogram. Result selection comes from external game logic. Scan, carry, harvest, movement and idle have no bubble mapping. Stuck uses existing red-cross frame5 in looping error animation, held until clip exit/reset; no additional bubble image."
   },
   "mainScreenAssets": {
     "version": "v01",
@@ -4097,16 +4254,16 @@
       {
         "id": "token",
         "name": "Token 圖示",
-        "file": "token-icon-v01.png",
+        "file": "token-icon-v02.png",
         "imageSize": [
-          1254,
-          1254
+          256,
+          256
         ],
         "sourceRect": [
-          258,
-          264,
-          738,
-          746
+          52.66985645933014,
+          53.89473684210526,
+          150.6602870813397,
+          152.29346092503988
         ],
         "repeat": {
           "x": false,
@@ -4124,16 +4281,16 @@
       {
         "id": "money",
         "name": "金錢圖示",
-        "file": "money-icon-v01.png",
+        "file": "money-icon-v02.png",
         "imageSize": [
-          1254,
-          1254
+          256,
+          256
         ],
         "sourceRect": [
-          218,
-          223,
-          818,
-          798
+          44.503987240829346,
+          45.52472089314195,
+          166.9920255183413,
+          162.9090909090909
         ],
         "repeat": {
           "x": false,
@@ -11306,6 +11463,376 @@
         "U": 230
       },
       "doesNotReadOrWritePlayerSave": true
+    }
+  },
+  "assetOptimization": {
+    "label": "半尺寸來源圖集・顯示尺寸不變",
+    "sourceScale": 0.5,
+    "sampling": "nearest-neighbor; odd full dimensions padded with transparent right/bottom pixel before exact2:1 downsample; fractional sourceRect is intentional",
+    "files": [
+      {
+        "original": "robot-atlas-v01.png",
+        "file": "robot-atlas-v01-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1254,
+          1254
+        ],
+        "imageSize": [
+          627,
+          627
+        ],
+        "beforeBytes": 1049756,
+        "afterBytes": 302443,
+        "originalSha256": "adf1f749da66549b0277f8a1c47c4ef33dafabc5323c47b3055c76639aa31896"
+      },
+      {
+        "original": "robot-carry-directions-v06.png",
+        "file": "robot-carry-directions-v06-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1122,
+          1402
+        ],
+        "imageSize": [
+          561,
+          701
+        ],
+        "beforeBytes": 1413644,
+        "afterBytes": 412638,
+        "originalSha256": "0fc941b2b611828251ecefd8971cbcb6803eea5969340b9f03d8964214a81f6f"
+      },
+      {
+        "original": "robot-hover-directions-v04.png",
+        "file": "robot-hover-directions-v04-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1254,
+          1254
+        ],
+        "imageSize": [
+          627,
+          627
+        ],
+        "beforeBytes": 988849,
+        "afterBytes": 292244,
+        "originalSha256": "f2586815864d33de69c761e90617687dc43970e1f5defd99e7cb48d88c3ac581"
+      },
+      {
+        "original": "robot-harvest-empty-v02.png",
+        "file": "robot-harvest-empty-v02-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1254,
+          1254
+        ],
+        "imageSize": [
+          627,
+          627
+        ],
+        "beforeBytes": 769207,
+        "afterBytes": 220339,
+        "originalSha256": "9449b18dc458e4d6ce704302be88dc794c696e5496b165545bf3149e86fbd00a"
+      },
+      {
+        "original": "robot-decision-v01.png",
+        "file": "robot-decision-v01-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1254,
+          1254
+        ],
+        "imageSize": [
+          627,
+          627
+        ],
+        "beforeBytes": 739594,
+        "afterBytes": 208166,
+        "originalSha256": "83c1fd433f4180b11780018316ed083c5864a7f60fb65aa36ecb03c1fc6d6cc6"
+      },
+      {
+        "original": "robot-area-scan-v01.png",
+        "file": "robot-area-scan-v01-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1254,
+          1254
+        ],
+        "imageSize": [
+          627,
+          627
+        ],
+        "beforeBytes": 685231,
+        "afterBytes": 193179,
+        "originalSha256": "65b16498d2ee3bb99f999c9cb08fda1e842948c33873bbf085a73628a5f9970d"
+      },
+      {
+        "original": "robot-area-scan-v02.png",
+        "file": "robot-area-scan-v02-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1774,
+          887
+        ],
+        "imageSize": [
+          887,
+          444
+        ],
+        "beforeBytes": 866915,
+        "afterBytes": 255868,
+        "originalSha256": "00761ef4af6c5b04de4c16f53e192e5c51734376a553980197542679aba9a5d5"
+      },
+      {
+        "original": "farm-atlas-v01.png",
+        "file": "farm-atlas-v01-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1254,
+          1254
+        ],
+        "imageSize": [
+          627,
+          627
+        ],
+        "beforeBytes": 1186490,
+        "afterBytes": 353565,
+        "originalSha256": "c3628f08caaa327a867d359ac71a5a757c344daa993b5d977f4680a1cc0472b1"
+      },
+      {
+        "original": "fruit-growth-v01.png",
+        "file": "fruit-growth-v01-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1448,
+          1086
+        ],
+        "imageSize": [
+          724,
+          543
+        ],
+        "beforeBytes": 1138014,
+        "afterBytes": 334172,
+        "originalSha256": "e047425dcc228adc5a81fcfc84a3078db03da6b9463e875b35ecb577c1de5431"
+      },
+      {
+        "original": "robot-thought-bubbles-v01.png",
+        "file": "robot-thought-bubbles-v01-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1774,
+          887
+        ],
+        "imageSize": [
+          887,
+          444
+        ],
+        "beforeBytes": 911956,
+        "afterBytes": 256047,
+        "originalSha256": "5ae09b73ea129509c7ae95bde6a8f25266df0549d09d21e83f73feacc09627c4"
+      },
+      {
+        "original": "scan-wave-v01.png",
+        "file": "scan-wave-v01-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1254,
+          1254
+        ],
+        "imageSize": [
+          627,
+          627
+        ],
+        "beforeBytes": 336137,
+        "afterBytes": 91956,
+        "originalSha256": "eff6017c62a3d9c520471ebb6f7edde2a50ee77568684d95d32519ec4c6ac59b"
+      },
+      {
+        "original": "produce-carrot-v01.png",
+        "file": "produce-carrot-v01-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1254,
+          1254
+        ],
+        "imageSize": [
+          627,
+          627
+        ],
+        "beforeBytes": 326448,
+        "afterBytes": 88919,
+        "originalSha256": "7a90ad53537a54205771356013485b4f0a903bd6d2a7f886721b12f6b66cf33e"
+      },
+      {
+        "original": "produce-tomato-v01.png",
+        "file": "produce-tomato-v01-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1254,
+          1254
+        ],
+        "imageSize": [
+          627,
+          627
+        ],
+        "beforeBytes": 222430,
+        "afterBytes": 53896,
+        "originalSha256": "facdc66ac0b0372053325b12a214d88e482e9e5f2f742a777fa637ae2f85f12d"
+      },
+      {
+        "original": "produce-lettuce-v01.png",
+        "file": "produce-lettuce-v01-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1254,
+          1254
+        ],
+        "imageSize": [
+          627,
+          627
+        ],
+        "beforeBytes": 433586,
+        "afterBytes": 117297,
+        "originalSha256": "e1a1246e29012874cb33b507f426c20b254415eaced019dabaa7a1521c88b153"
+      },
+      {
+        "original": "produce-strawberry-v01.png",
+        "file": "produce-strawberry-v01-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1254,
+          1254
+        ],
+        "imageSize": [
+          627,
+          627
+        ],
+        "beforeBytes": 295210,
+        "afterBytes": 76860,
+        "originalSha256": "171b5cec24895970b75e533e077db8f6a4f3203ad11db87cae49e7d9c84bd225"
+      },
+      {
+        "original": "produce-watermelon-v01.png",
+        "file": "produce-watermelon-v01-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1254,
+          1254
+        ],
+        "imageSize": [
+          627,
+          627
+        ],
+        "beforeBytes": 429517,
+        "afterBytes": 109421,
+        "originalSha256": "9a64e423de33505fd5e705e885c0fa728b1d46be7fc801f1fd75d00454adec7b"
+      },
+      {
+        "original": "produce-cantaloupe-v01.png",
+        "file": "produce-cantaloupe-v01-half.png",
+        "sourceScale": 0.5,
+        "originalImageSize": [
+          1254,
+          1254
+        ],
+        "imageSize": [
+          627,
+          627
+        ],
+        "beforeBytes": 386664,
+        "afterBytes": 102339,
+        "originalSha256": "3f72bcef7d8e8058cb50922cb8f3fbda3373565ba29cf7cd202158ebdea29b8a"
+      },
+      {
+        "original": "token-icon-v01.png",
+        "file": "token-icon-v02.png",
+        "sourceScale": 0.20414673046251994,
+        "originalImageSize": [
+          1254,
+          1254
+        ],
+        "imageSize": [
+          256,
+          256
+        ],
+        "beforeBytes": 479645,
+        "afterBytes": 25715,
+        "originalSha256": "b7b97532afe7a97f06f92a525f613187da7454b438f5767ecbd01c302896d068"
+      },
+      {
+        "original": "money-icon-v01.png",
+        "file": "money-icon-v02.png",
+        "sourceScale": 0.20414673046251994,
+        "originalImageSize": [
+          1254,
+          1254
+        ],
+        "imageSize": [
+          256,
+          256
+        ],
+        "beforeBytes": 547713,
+        "afterBytes": 29510,
+        "originalSha256": "135d1e4c2f57850ef3aeb6ad6b420c7676d6d365419b48f8ebad073bd8c81ea0"
+      }
+    ],
+    "logicalFieldsPreserved": [
+      "alignment.canvas",
+      "alignment.bodyCenter",
+      "alignment.bodyHeight",
+      "alignment.bob",
+      "rendering.plantCanvas",
+      "rendering.plantRoot",
+      "atlases.renderCanvas",
+      "atlases.renderDestination",
+      "soilVariants.canvas",
+      "soilVariants.layers.destinationRect",
+      "rendering.produce.canvas",
+      "thoughtBubbles.canvas",
+      "thoughtBubbles.frames.destinationRect"
+    ],
+    "cropScaleRule": "Source rectangles and local roots /2; frames.scale *2; destination dimensions and roots remain identical.",
+    "robotScaleRule": "Source shell centers/heights and hand anchors /2; logical416 canvas/bodyCenter/bodyHeight/bob preserved.",
+    "comparison": {
+      "manifest": "manifest-reference-v21.json",
+      "alignment": "alignment-reference-v21.json",
+      "load": "explicit-button-only",
+      "displayTileSize": 96,
+      "robotDisplaySize": 150,
+      "frameIndex": 0,
+      "cropStage": 3,
+      "background": "#69965b",
+      "note": "Archive is never loaded by game. Current lab loads it only on explicit request."
+    },
+    "stuckPreview": {
+      "canvas": [
+        256,
+        288
+      ],
+      "robotDisplaySize": 208,
+      "clip": "stuck",
+      "resetClip": "idle",
+      "robotBox": [
+        12,
+        80
+      ],
+      "initiallyStuck": true,
+      "clock": "shared-lab-elapsed-time",
+      "resetButtonLabel": "重置當機示範",
+      "startButtonLabel": "模擬當機",
+      "pauseWithRobot": true
+    },
+    "performance": {
+      "requestedFilesBeforeBytes": 13207006,
+      "requestedFilesAfterBytes": 3524574,
+      "gameLoaderBefore": {
+        "files": 31,
+        "bytes": 14984574
+      },
+      "gameLoaderAfterIncludingStuck": {
+        "files": 32,
+        "bytes": 5487295
+      },
+      "scope": "PNG bytes in current game/render.js loadAssets image list; excludes HTML, JS, CSS, HTTP compression, browser cache, archived originals and manual comparison assets."
     }
   }
 }

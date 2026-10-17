@@ -1,6 +1,13 @@
 # 浮葉農場｜ChatGPT 交接
 
-更新：2026-10-16。這份文件由使用者明確要求建立，供新的 ChatGPT 對話接手；分工仍以最新版 AGENTS.md 為準。請先讀本文件、AGENTS.md、docs/STYLE_GUIDE.md，再讀相關數據與程式。
+更新：2026-10-17。這份文件由使用者明確要求建立，供新的 ChatGPT 對話接手；分工仍以最新版 AGENTS.md 為準。請先讀本文件、AGENTS.md、docs/STYLE_GUIDE.md，再讀相關數據與程式。
+
+## 本次更新：v0.22
+
+- 指定17張圖集／收成圖改用 `-half.png`，Token與金錢改用256×256的v02。原圖完整保留；manifest來源座標與alignment來源中心／shell／手掌同步除2，作物scale乘2。顯示畫布、bodyCenter／bodyHeight／bob、destinationRect全部保留。
+- 素材試驗室v22頂部有當機循環及手動載入的新舊並排檢查；對照資料為 assets/manifest-reference-v21.json、alignment-reference-v21.json，遊戲不載入。
+- 新增 animationClips.stuck／robotPoses[16]／alignment.stuck；1120ms四格循環、雙臂垂下、紅眼、像素煙，紅叉泡泡沿用半尺寸泡泡圖。playback.statusClips.stuck提供接點；Claude需依robot.phase接入，重置時離開stuck回idle。尚未修改遊戲當機判定或播放器。
+- 事件格式以 game/sim.js 檔頭為準，不另建立 GAME_EVENTS 文件。舊 valleyFarm／環境圖和名牌仍供試驗室或測試頁使用，保留。
 
 ## 接手第一步
 
@@ -12,14 +19,14 @@
 
 - GitHub：https://github.com/PeiCheng0413/robot-farm
 - 共同分支：`main`，Claude 也會推送。
-- 素材試驗室：https://peicheng0413.github.io/robot-farm/?v=17
+- 素材試驗室：https://peicheng0413.github.io/robot-farm/?v=22#asset-review
 - 交接建立前 HEAD：`4aca552e11e4c70e39408042b509b82ffe809d36`。
-- 試驗室 UI／app／manifest fetch 快取參數為 v17；manifest 根 `version` 仍是 `0.13`，不要為了對齊 UI 版號擅自改既有欄位意義。
+- 試驗室 UI／app／manifest fetch 快取參數為 v22；manifest 根 `version` 仍是 `0.13`，不要為了對齊 UI 版號擅自改既有欄位意義。
 
 ## 分工與使用者偏好
 
 - ChatGPT：`assets/`、`assets/manifest.json`、`alignment.js`、`index.html`、`app.js`、`style.css`、`docs/STYLE_GUIDE.md`、`docs/prompts-*.json`。
-- Claude：`game.html`、`game/`、`vendor/`、`CLAUDE.md`、`.claude/`、`docs/BACKLOG.md`、`docs/GAME_EVENTS.md`。另有 `play.html` 是遊戲頁，也不要改。
+- Claude：`game.html`、`game/`、`vendor/`、`CLAUDE.md`、`.claude/`、`docs/BACKLOG.md`。另有 `play.html` 是遊戲頁，也不要改。
 - 生長、成熟度、經濟、庫存、商店、擴地、存檔、積木、遊戲內動畫播放器與互動全部由 Claude 負責。
 - 唯一共用接點：manifest 與 alignment。Claude 不讀 app.js；播放順序、每格毫秒、循環、物件顯隱、錨點、轉向、基準點、圖層順序都要寫成數據。先改數據，再讓 app.js 依數據播放。
 - 可直接新增欄位；改既有欄位結構／資料形狀、既有素材檔名／讀取路徑、刪除或改意義，先問使用者。
@@ -111,4 +118,4 @@ manifest `valleyFarm.assets.farmhouse`：sourceRect `[140,78,1340,856]`、局部
 
 ## 可以貼給新對話的開場
 
-> 請接手浮葉農場。先 git pull --ff-only，再讀 AGENTS.md、chatgpt handoff.md 與 docs/STYLE_GUIDE.md。遵守 ChatGPT／Claude 分工；素材、試驗室與動畫數據由你負責，遊戲本體不要改。已完成至素材試驗室 v0.17。讀完後等待我的下一項素材需求，不要重做已完成工作。
+> 請接手浮葉農場。先 git pull --ff-only，再讀 AGENTS.md、chatgpt handoff.md 與 docs/STYLE_GUIDE.md。遵守 ChatGPT／Claude 分工；素材、試驗室與動畫數據由你負責，遊戲本體不要改。已完成至素材試驗室 v0.22。讀完後等待我的下一項素材需求，不要重做已完成工作。

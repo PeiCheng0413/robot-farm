@@ -1,6 +1,6 @@
 
 (async function(){
-  const response=await fetch('assets/manifest.json?v=21');
+  const response=await fetch('assets/manifest.json?v=22');
   if(!response.ok)throw new Error('素材數據讀取失敗：'+response.status);
   const manifest=await response.json(),rendering=manifest.rendering,clips=manifest.animationClips;
   const $=s=>document.querySelector(s),alignment=spriteAlignment;
@@ -30,7 +30,7 @@
   function imageSource(file){
     if(images.has(file))return images.get(file);
     const image=new Image();images.set(file,image);
-    image.onload=()=>{robotViews.forEach(drawRobot);plantViews.forEach(drawPlant);itemViews.forEach(drawItem);soilViews.forEach(drawSoil);effectViews.forEach((view,canvas)=>drawEffect(canvas,view));updateEffects();thoughtViews.forEach((index,canvas)=>drawThought(canvas,index));updateThought(true);mainAssetViews.forEach((item,canvas)=>drawMainAsset(canvas,item));drawValley();drawAngledScene();drawFarmWorld();angledSamples.forEach((asset,canvas)=>drawAngledSample(canvas,asset));boundaryViews.forEach((sample,canvas)=>drawBoundarySample(canvas,sample));};
+    image.onload=()=>{robotViews.forEach(drawRobot);plantViews.forEach(drawPlant);itemViews.forEach(drawItem);soilViews.forEach(drawSoil);effectViews.forEach((view,canvas)=>drawEffect(canvas,view));updateEffects();thoughtViews.forEach((index,canvas)=>drawThought(canvas,index));updateThought(true);mainAssetViews.forEach((item,canvas)=>drawMainAsset(canvas,item));drawValley();drawAngledScene();drawFarmWorld();drawAssetComparison();drawStuckPreview();angledSamples.forEach((asset,canvas)=>drawAngledSample(canvas,asset));boundaryViews.forEach((sample,canvas)=>drawBoundarySample(canvas,sample));};
     image.onerror=()=>{$('#status').textContent='素材載入失敗，請重新整理頁面。';};
     image.src='assets/'+file+'?v='+encodeURIComponent(manifest.version);
     return image;
@@ -290,7 +290,7 @@
   $('#pause').onclick=()=>{paused=!paused;pauseLabel();};
 
   const catalog=[];
-  [['idle','原版待命'],['sow','播種'],['water','澆水'],['harvest','空手採收'],['scan','範圍掃描'],[manifest.playback.decisionClips.thinking,'判斷燈號']].forEach(([key,label])=>{
+  [['idle','原版待命'],['sow','播種'],['water','澆水'],['harvest','空手採收'],['scan','範圍掃描'],['stuck','當機循環'],[manifest.playback.decisionClips.thinking,'判斷燈號']].forEach(([key,label])=>{
     catalog.push({label,type:'robot',row:clips[key].poseRows[0]});
   });
   clips[manifest.playback.directionalClips.empty].poseRows.forEach((row,i)=>catalog.push({label:directions[i].name+'向漂浮',type:'robot',row}));
@@ -677,6 +677,84 @@
     drawFarmWorld();
   }
 
+  // Source-resolution QA. Reference images are requested only after the explicit load button.
+  let referenceBundle=null,comparisonCases=[],comparisonReady=false;
+  function referenceLookup(a,path){return path.reduce((v,k)=>v[k],a);}
+  function compareProduce(ctx,bundle,crop,x,y,size){
+    const item=bundle.manifest.produce.find(p=>p.id===crop),im=imageSource(item.file);if(!im.complete||!im.naturalWidth)return;
+    const [sw,sh]=item.sourceRect.slice(2),data=bundle.manifest.rendering.produce,k=size*data.maxContentSize/data.canvas[0]/Math.max(sw,sh),baseline=y-size*(1-data.baseline/data.canvas[0]);
+    ctx.drawImage(im,...item.sourceRect,x-sw*k/2,baseline-sh*k,sw*k,sh*k);
+  }
+  function drawComparisonCase(canvas,bundle,c){
+    const ctx=canvas.getContext('2d'),m=bundle.manifest,a=bundle.align;ctx.clearRect(0,0,256,256);ctx.imageSmoothingEnabled=false;
+    ctx.fillStyle=m.assetOptimization?.comparison.background||manifest.assetOptimization.comparison.background;ctx.fillRect(0,0,256,256);
+    ctx.strokeStyle='#f0e4bb55';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(128,10);ctx.lineTo(128,246);ctx.moveTo(10,190);ctx.lineTo(246,190);ctx.stroke();
+    if(c.kind==='robot'){
+      const pose=m.rendering.robotPoses[c.row],f=pose.frames[c.frame],im=imageSource(pose.atlas);if(!im.complete||!im.naturalWidth)return;
+      const [sx,sy,sw,sh]=f.sourceRect,[cx,cy,shell]=referenceLookup(a,f.alignmentPath),size=192,unit=size/a.canvas,k=a.bodyHeight/shell*unit,bob=f.bobIndex==null?0:a.bob[f.bobIndex],x=32+a.bodyCenter[0]*unit-(cx-sx)*k,y=24+(a.bodyCenter[1]+bob)*unit-(cy-sy)*k;
+      ctx.drawImage(im,sx,sy,sw,sh,x,y,sw*k,sh*k);
+      if(f.cargoAnchorPath){const [hx,hy]=referenceLookup(a,f.cargoAnchorPath);compareProduce(ctx,bundle,'carrot',x+(hx-sx)*k,y+(hy-sy)*k,size*m.rendering.cargo.widthRatio);}
+      return;
+    }
+    if(c.kind==='crop'){
+      const crop=m.crops.find(p=>p.id===c.crop),f=crop.frames[c.frame],im=imageSource(crop.atlas),k=150/m.rendering.plantCanvas[0]*f.scale;
+      if(im.complete&&im.naturalWidth)ctx.drawImage(im,...f.sourceRect,128-f.root[0]*k,190-f.root[1]*k,f.sourceRect[2]*k,f.sourceRect[3]*k);return;
+    }
+    if(c.kind==='soil'){
+      const b=m.pixelBoundaries,im=imageSource(m.rendering.soil.atlas);if(im.complete&&im.naturalWidth)ctx.drawImage(im,b[c.frame],b[0],b[c.frame+1]-b[c.frame],b[1]-b[0],48,65,160,160);return;
+    }
+    if(c.kind==='produce'){compareProduce(ctx,bundle,c.crop,128,190,64);return;}
+    if(c.kind==='bubble'){
+      const t=m.thoughtBubbles,f=t.frames[c.frame],im=imageSource(t.atlas),k=176/t.canvas[0],[x,y,w,h]=f.destinationRect;
+      if(im.complete&&im.naturalWidth)ctx.drawImage(im,...f.sourceRect,40+x*k,45+y*k,w*k,h*k);return;
+    }
+    if(c.kind==='wave'){
+      const e=m.effectClips.areaScanWave,f=e.frames[c.frame],im=imageSource(e.atlas),w=224*f.sizeRatio[0],h=200*f.sizeRatio[1];if(im.complete&&im.naturalWidth)ctx.drawImage(im,...f.sourceRect,128-w/2,128-h/2,w,h);return;
+    }
+    if(c.kind==='icon'){
+      const item=m.mainScreenAssets.items.find(p=>p.id===c.id),im=imageSource(item.file),[sw,sh]=item.sourceRect.slice(2),k=40/Math.max(sw,sh);if(im.complete&&im.naturalWidth)ctx.drawImage(im,...item.sourceRect,128-sw*k/2,128-sh*k/2,sw*k,sh*k);
+    }
+  }
+  function drawAssetComparison(){
+    if(!comparisonReady||!referenceBundle)return;
+    const c=comparisonCases[+$('#compare-frame').value];if(!c)return;
+    drawComparisonCase($('#compare-original'),referenceBundle,c);drawComparisonCase($('#compare-half'),{manifest,align:alignment},c);
+  }
+  function compareFileChanged(){
+    const file=$('#compare-file').value;comparisonCases=[];
+    for(const [row,p] of Object.entries(referenceBundle.manifest.rendering.robotPoses))if(p.atlas===file)p.frames.forEach((f,frame)=>comparisonCases.push({kind:'robot',row,frame,label:'姿勢 '+row+'・'+(f.label||'第 '+(frame+1)+' 格')+(f.cargoAnchorPath?'・持物錨點':'' )}));
+    for(const crop of referenceBundle.manifest.crops)if(crop.atlas===file)crop.frames.forEach((f,frame)=>comparisonCases.push({kind:'crop',crop:crop.id,frame,label:crop.name+'・'+crop.stageLabels[frame]}));
+    if(file===referenceBundle.manifest.rendering.soil.atlas)for(let frame=0;frame<4;frame++)comparisonCases.unshift({kind:'soil',frame,label:soilLabels[frame]+'土壤'});
+    for(const p of referenceBundle.manifest.produce)if(p.file===file)comparisonCases.push({kind:'produce',crop:p.id,label:referenceBundle.manifest.crops.find(c=>c.id===p.id).name+'・收成'});
+    if(file===referenceBundle.manifest.thoughtBubbles.atlas)referenceBundle.manifest.thoughtBubbles.frames.forEach((f,frame)=>comparisonCases.push({kind:'bubble',frame,label:f.label}));
+    if(file===referenceBundle.manifest.effectClips.areaScanWave.atlas)referenceBundle.manifest.effectClips.areaScanWave.frames.forEach((f,frame)=>comparisonCases.push({kind:'wave',frame,label:'掃描波紋 '+(frame+1)}));
+    for(const item of referenceBundle.manifest.mainScreenAssets.items)if(item.file===file)comparisonCases.push({kind:'icon',id:item.id,label:item.name});
+    $('#compare-frame').replaceChildren();comparisonCases.forEach((c,i)=>{const op=document.createElement('option');op.value=i;op.textContent=c.label;$('#compare-frame').append(op);});
+    const info=manifest.assetOptimization.files.find(f=>f.original===file);$('#compare-info').textContent=info.originalImageSize.join(' × ')+' → '+info.imageSize.join(' × ')+'；'+Math.round(info.beforeBytes/1024)+' → '+Math.round(info.afterBytes/1024)+' KiB。兩側使用相同顯示尺寸、落點與持物比例。';drawAssetComparison();
+  }
+  $('#compare-load').onclick=async()=>{
+    const button=$('#compare-load');button.disabled=true;button.textContent='載入舊版對照資料…';
+    try{
+      const cfg=manifest.assetOptimization.comparison,res=await Promise.all([fetch('assets/'+cfg.manifest),fetch('assets/'+cfg.alignment)]);if(res.some(r=>!r.ok))throw Error('無法讀取對照資料');
+      const [oldManifest,oldAlignment]=await Promise.all(res.map(r=>r.json()));referenceBundle={manifest:oldManifest,align:oldAlignment};comparisonReady=true;
+      manifest.assetOptimization.files.forEach(f=>{const option=document.createElement('option');option.value=f.original;option.textContent=f.original;$('#compare-file').append(option);});
+      $('#compare-file').value='robot-carry-directions-v06.png';$('#compare-controls').hidden=false;$('#compare-pair').hidden=false;button.hidden=true;compareFileChanged();
+    }catch(e){button.disabled=false;button.textContent='重試載入舊版對照';$('#compare-info').textContent=e.message;}
+  };
+  $('#compare-file').onchange=compareFileChanged;$('#compare-frame').onchange=drawAssetComparison;
+  let stuckPreviewElapsed=0,stuckPreviewActive=manifest.assetOptimization.stuckPreview.initiallyStuck;
+  function drawStuckPreview(){
+    const cfg=manifest.assetOptimization.stuckPreview,canvas=$('#stuck-preview'),ctx=canvas.getContext('2d'),name=stuckPreviewActive?cfg.clip:cfg.resetClip,clip=clips[name],elapsed=stuckPreviewElapsed,total=clip.frameDurationsMs.reduce((s,v)=>s+v,0);let t=clip.loop?elapsed%total:Math.min(elapsed,total-1),step=0;
+    while(step<clip.frameOrder.length-1&&t>=clip.frameDurationsMs[step])t-=clip.frameDurationsMs[step++];
+    const pose=rendering.robotPoses[clip.poseRows[0]],f=pose.frames[clip.frameOrder[step]],im=imageSource(pose.atlas);ctx.clearRect(0,0,...cfg.canvas);ctx.imageSmoothingEnabled=false;
+    if(im.complete&&im.naturalWidth){const [sx,sy,sw,sh]=f.sourceRect,[cx,cy,h]=lookup(f.alignmentPath),u=cfg.robotDisplaySize/alignment.canvas,k=alignment.bodyHeight/h*u,bob=f.bobIndex==null?0:alignment.bob[f.bobIndex];ctx.drawImage(im,sx,sy,sw,sh,cfg.robotBox[0]+alignment.bodyCenter[0]*u-(cx-sx)*k,cfg.robotBox[1]+(alignment.bodyCenter[1]+bob)*u-(cy-sy)*k,sw*k,sh*k);}
+    const bubble=thoughts.byClip[name];if(bubble){const frame=thoughtFrame(bubble,elapsed),b=thoughts.frames[frame],bi=imageSource(thoughts.atlas),p=thoughts.placement,k=cfg.robotDisplaySize*p.widthRatio/thoughts.canvas[0],[dx,dy,dw,dh]=b.destinationRect,x=cfg.robotBox[0]+cfg.robotDisplaySize*p.leftRatio,y=cfg.robotBox[1]+cfg.robotDisplaySize*(1-p.bottomRatio)-thoughts.canvas[1]*k;if(bi.complete&&bi.naturalWidth)ctx.drawImage(bi,...b.sourceRect,x+dx*k,y+dy*k,dw*k,dh*k);}
+    canvas.dataset.clip=name;canvas.dataset.step=step;$('#stuck-preview-status').textContent=stuckPreviewActive?'當機中・循環至重置':'已重置・恢復待命';
+  }
+  [$('#stuck-preview').width,$('#stuck-preview').height]=manifest.assetOptimization.stuckPreview.canvas;
+  $('#stuck-reset').onclick=()=>{stuckPreviewActive=!stuckPreviewActive;stuckPreviewElapsed=0;$('#stuck-reset').textContent=stuckPreviewActive?manifest.assetOptimization.stuckPreview.resetButtonLabel:manifest.assetOptimization.stuckPreview.startButtonLabel;drawStuckPreview();};
+  drawStuckPreview();
+
   function syncValleyControls(){
     document.querySelectorAll('#valley-views button').forEach(button=>{const active=button.dataset.view===valleyState.view;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
     buttons('#valley-soils',valleyState.soil);
@@ -734,7 +812,7 @@
   let previousTime=null;
   function animateMovement(time){
     const dt=previousTime===null?0:Math.min(time-previousTime,50);previousTime=time;
-    if(!paused&&!document.hidden){thoughtState.elapsedMs+=dt;updateThought();}
+    if(!paused&&!document.hidden){thoughtState.elapsedMs+=dt;updateThought();stuckPreviewElapsed+=dt;drawStuckPreview();}
     if(movement&&!paused&&!document.hidden){
       const duration=matchMedia('(prefers-reduced-motion: reduce)').matches?manifest.movement.reducedMotionStepDurationMs:manifest.movement.stepDurationMs;
       movement.elapsed+=dt;const progress=duration?Math.min(movement.elapsed/duration,1):1,from=movement.from,to=movement.to;

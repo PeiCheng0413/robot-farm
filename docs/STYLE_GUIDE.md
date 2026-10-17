@@ -318,3 +318,20 @@ valley-overhead-map-v01.png由內建image_gen生成後修正成完全俯視：�
 最終盤面校準為boardOrigin=[224,576]，每格64×64，boardRect=[224,576,768,448]，確保全部84格在純草地上。零起算x向東、y向南；PNG不畫格線、購地狀態、田塊、作物、角色或文字。地圖中的樹、農舍與路是靜態背景；遊戲必須依state.land與state.layout另外疊加。圖片本身不是碰撞／購地資料。斜角與俯視沿用同一份世界格座標，只切換投影；俯視使用屋頂圖，不把斜角農舍壓扁。
 
 試驗室新增純圖／四階段範圍、格線與開局直線田的唯讀預覽。所有圖、規劃與切換均為靜態，frameOrder=[0]、loop=false、clock=none、transitionMs=0，既有角色動畫完整保留。遊戲載圖器目前不會自動讀farmWorld或valleyScene，需要Claude接入載入器、鏡頭與滑鼠反算；不得聲稱遊戲已整合。game/、game.html、play.html、alignment.js未修改。
+
+
+## v0.22 半尺寸圖集、資源小圖示與當機動作
+
+使用者於2026-10-17轉交Claude的明確需求，授權換用新版素材路徑並調整manifest與alignment既有像素數值。17張指定機器人／作物／土壤／收成／泡泡／波紋圖以最近鄰精確縮為50%，命名保留原版號再加-half.png；舊原圖不改。奇數邊長先在右／下補一透明像素再2:1縮小，因此1774×887成887×444，但來源座標仍統一除2，保留.5等小數，不逐格取整造成漂移。舊圖不額外限色或二值化，以保留原有像素及透明度；PNG使用無損壓縮。Token／金錢另出256×256的v02.png，顯示仍32px（遊戲可用40px）。
+
+必須區分來源與顯示座標：sourceRect、pixelBoundaries、圖集列欄邊界、作物局部root、alignment的original／harvest／hover／carry.shells／carry.hands／scan／scanRadar／decision／cropRoots縮半；作物frames.scale乘2。alignment.canvas=416、bodyCenter=[208,208]、bodyHeight=124、bob、renderCanvas／renderDestination、plantCanvas／plantRoot、produce.canvas、soilVariants.canvas／destinationRect、thoughtBubbles.canvas／destinationRect及所有顯示比例完整保留。泡泡只縮sourceRect，不能把目的框也縮小。
+
+指定19張圖（含資源圖示）合計13,207,006→3,524,574 bytes；每張新圖最大412,638 bytes。依Claude目前game/render.js載圖清單，全部遊戲圖片14,984,574→5,487,295 bytes（已含新增185,153 bytes當機圖），減少63.38%；這不含程式、HTTP壓縮、網路延遲或快取，不能當實際載入秒數。所有對照與原始檔不進遊戲載圖清單。
+
+新增robot-stuck-v01-half.png，627×627；由內建image_gen生成四格後縮半、Alpha128清理。四格維持同機殼高度，雙臂垂下、雙紅眼明暗交替、右上硬邊像素煙，不含作物／工具／文字／場景。rendering.robotPoses[16]與alignment.stuck逐格校準。animationClips.stuck順序[0,1,2,3]，時長[300,260,300,260]ms、總1120ms、loop=true；不自動復原。playback.statusClips.stuck為接線名稱，lifecycle記錄robot.phase==='stuck'進入，狀態離開後停止並回idle；時間進入／重播歸零、跟隨共用暫停。objects.cargoVisible皆false、sourcePlantVisible皆true，僅呈現空手當機，不清除遊戲資料。
+
+thoughtBubbles.byClip.stuck='error'，error使用既有紅叉frame5、1000ms循環，直到片段離開。重用泡泡圖，不新增下載。素材試驗室頂部提供當機／重置示範，工作台也新增當機循環；遊戲端robot.phase分派及移除舊「！當機」標籤仍由Claude負責。其他未設計的新動作與田格狀態未製作。
+
+新增assetOptimization根欄位記錄檔案、縮放例外、下載量與對照設定。舊版資料存assets/manifest-reference-v21.json和alignment-reference-v21.json，按「載入舊版對照」才讀取；下拉可檢查所有指定19張的來源格。並排採相同目的尺寸與手掌錨點。使用實際game/render.js的createPainter驗證176組機器人影格／朝向（含持物及48組泡泡）、24作物、4土壤、6收成與12掃描步驟：繪製目的框精確相等。原圖SHA256不變，目的畫布完整保留。
+
+chatgpt handoff.md刪除已取消GAME_EVENTS文件清單，事件規格以game/sim.js檔頭為準。舊valleyFarm、環境圖與名牌保留供試驗室或game.html，未重製。game/、game.html、play.html、vendor/未修改；Claude若沿用舊alignment.js?v=13快取，接入時應更新頁面資源版本或重新驗證快取。

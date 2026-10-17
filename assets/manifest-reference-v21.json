@@ -1,0 +1,2435 @@
+{
+  "version": "0.13",
+  "width": 1254,
+  "height": 1254,
+  "pixelBoundaries": [
+    0,
+    314,
+    627,
+    941,
+    1254
+  ],
+  "rendering": {
+    "robotPoses": {
+      "0": {
+        "atlas": "robot-atlas-v01.png",
+        "frames": [
+          {
+            "sourceRect": [
+              0,
+              0,
+              327,
+              314
+            ],
+            "alignmentPath": [
+              "original",
+              0,
+              0
+            ],
+            "bobIndex": 0
+          },
+          {
+            "sourceRect": [
+              327,
+              0,
+              303,
+              314
+            ],
+            "alignmentPath": [
+              "original",
+              0,
+              1
+            ],
+            "bobIndex": 1
+          },
+          {
+            "sourceRect": [
+              630,
+              0,
+              306,
+              314
+            ],
+            "alignmentPath": [
+              "original",
+              0,
+              2
+            ],
+            "bobIndex": 2
+          },
+          {
+            "sourceRect": [
+              936,
+              0,
+              318,
+              314
+            ],
+            "alignmentPath": [
+              "original",
+              0,
+              3
+            ],
+            "bobIndex": 3
+          }
+        ]
+      },
+      "1": {
+        "atlas": "robot-atlas-v01.png",
+        "frames": [
+          {
+            "sourceRect": [
+              0,
+              314,
+              329,
+              313
+            ],
+            "alignmentPath": [
+              "original",
+              1,
+              0
+            ],
+            "bobIndex": null
+          },
+          {
+            "sourceRect": [
+              329,
+              314,
+              330,
+              313
+            ],
+            "alignmentPath": [
+              "original",
+              1,
+              1
+            ],
+            "bobIndex": null
+          },
+          {
+            "sourceRect": [
+              659,
+              314,
+              311,
+              313
+            ],
+            "alignmentPath": [
+              "original",
+              1,
+              2
+            ],
+            "bobIndex": null
+          },
+          {
+            "sourceRect": [
+              970,
+              314,
+              284,
+              313
+            ],
+            "alignmentPath": [
+              "original",
+              1,
+              3
+            ],
+            "bobIndex": null
+          }
+        ]
+      },
+      "2": {
+        "atlas": "robot-atlas-v01.png",
+        "frames": [
+          {
+            "sourceRect": [
+              0,
+              627,
+              336,
+              313
+            ],
+            "alignmentPath": [
+              "original",
+              2,
+              0
+            ],
+            "bobIndex": null
+          },
+          {
+            "sourceRect": [
+              336,
+              627,
+              324,
+              313
+            ],
+            "alignmentPath": [
+              "original",
+              2,
+              1
+            ],
+            "bobIndex": null
+          },
+          {
+            "sourceRect": [
+              660,
+              627,
+              326,
+              313
+            ],
+            "alignmentPath": [
+              "original",
+              2,
+              2
+            ],
+            "bobIndex": null
+          },
+          {
+            "sourceRect": [
+              986,
+              627,
+              268,
+              313
+            ],
+            "alignmentPath": [
+              "original",
+              2,
+              3
+            ],
+            "bobIndex": null
+          }
+        ]
+      },
+      "3": {
+        "atlas": "robot-harvest-empty-v02.png",
+        "frames": [
+          {
+            "sourceRect": [
+              0,
+              0,
+              627,
+              627
+            ],
+            "alignmentPath": [
+              "harvest",
+              0
+            ],
+            "bobIndex": null
+          },
+          {
+            "sourceRect": [
+              627,
+              0,
+              627,
+              627
+            ],
+            "alignmentPath": [
+              "harvest",
+              1
+            ],
+            "bobIndex": null
+          },
+          {
+            "sourceRect": [
+              0,
+              627,
+              627,
+              627
+            ],
+            "alignmentPath": [
+              "harvest",
+              2
+            ],
+            "bobIndex": null
+          },
+          {
+            "sourceRect": [
+              627,
+              627,
+              627,
+              627
+            ],
+            "alignmentPath": [
+              "harvest",
+              3
+            ],
+            "bobIndex": null
+          }
+        ]
+      },
+      "4": {
+        "atlas": "robot-hover-directions-v04.png",
+        "frames": [
+          {
+            "sourceRect": [
+              0,
+              0,
+              314,
+              331
+            ],
+            "alignmentPath": [
+              "hover",
+              0,
+              0
+            ],
+            "bobIndex": 0
+          },
+          {
+            "sourceRect": [
+              314,
+              0,
+              313,
+              331
+            ],
+            "alignmentPath": [
+              "hover",
+              0,
+              1
+            ],
+            "bobIndex": 1
+          },
+          {
+            "sourceRect": [
+              627,
+              0,
+              314,
+              331
+            ],
+            "alignmentPath": [
+              "hover",
+              0,
+              2
+            ],
+            "bobIndex": 2
+          },
+          {
+            "sourceRect": [
+              941,
+              0,
+              313,
+              331
+            ],
+            "alignmentPath": [
+              "hover",
+              0,
+              3
+            ],
+            "bobIndex": 3
+          }
+        ]
+      },
+      "5": {
+        "atlas": "robot-hover-directions-v04.png",
+        "frames": [
+          {
+            "sourceRect": [
+              0,
+              331,
+              314,
+              294
+            ],
+            "alignmentPath": [
+              "hover",
+              1,
+              0
+            ],
+            "bobIndex": 0
+          },
+          {
+            "sourceRect": [
+              314,
+              331,
+              313,
+              294
+            ],
+            "alignmentPath": [
+              "hover",
+              1,
+              1
+            ],
+            "bobIndex": 1
+          },
+          {
+            "sourceRect": [
+              627,
+              331,
+              314,
+              294
+            ],
+            "alignmentPath": [
+              "hover",
+              1,
+              2
+            ],
+            "bobIndex": 2
+          },
+          {
+            "sourceRect": [
+              941,
+              331,
+              313,
+              294
+            ],
+            "alignmentPath": [
+              "hover",
+              1,
+              3
+            ],
+            "bobIndex": 3
+          }
+        ]
+      },
+      "6": {
+        "atlas": "robot-hover-directions-v04.png",
+        "frames": [
+          {
+            "sourceRect": [
+              0,
+              625,
+              314,
+              285
+            ],
+            "alignmentPath": [
+              "hover",
+              2,
+              0
+            ],
+            "bobIndex": 0
+          },
+          {
+            "sourceRect": [
+              314,
+              625,
+              313,
+              285
+            ],
+            "alignmentPath": [
+              "hover",
+              2,
+              1
+            ],
+            "bobIndex": 1
+          },
+          {
+            "sourceRect": [
+              627,
+              625,
+              314,
+              285
+            ],
+            "alignmentPath": [
+              "hover",
+              2,
+              2
+            ],
+            "bobIndex": 2
+          },
+          {
+            "sourceRect": [
+              941,
+              625,
+              313,
+              285
+            ],
+            "alignmentPath": [
+              "hover",
+              2,
+              3
+            ],
+            "bobIndex": 3
+          }
+        ]
+      },
+      "7": {
+        "atlas": "robot-hover-directions-v04.png",
+        "frames": [
+          {
+            "sourceRect": [
+              0,
+              910,
+              314,
+              344
+            ],
+            "alignmentPath": [
+              "hover",
+              3,
+              0
+            ],
+            "bobIndex": 0
+          },
+          {
+            "sourceRect": [
+              314,
+              910,
+              313,
+              344
+            ],
+            "alignmentPath": [
+              "hover",
+              3,
+              1
+            ],
+            "bobIndex": 1
+          },
+          {
+            "sourceRect": [
+              627,
+              910,
+              314,
+              344
+            ],
+            "alignmentPath": [
+              "hover",
+              3,
+              2
+            ],
+            "bobIndex": 2
+          },
+          {
+            "sourceRect": [
+              941,
+              910,
+              313,
+              344
+            ],
+            "alignmentPath": [
+              "hover",
+              3,
+              3
+            ],
+            "bobIndex": 3
+          }
+        ]
+      },
+      "8": {
+        "atlas": "robot-carry-directions-v06.png",
+        "frames": [
+          {
+            "sourceRect": [
+              0,
+              0,
+              281,
+              300
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              0,
+              0
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              0,
+              0
+            ],
+            "bobIndex": 0
+          },
+          {
+            "sourceRect": [
+              281,
+              0,
+              280,
+              300
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              0,
+              1
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              0,
+              1
+            ],
+            "bobIndex": 1
+          },
+          {
+            "sourceRect": [
+              561,
+              0,
+              281,
+              300
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              0,
+              2
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              0,
+              2
+            ],
+            "bobIndex": 2
+          },
+          {
+            "sourceRect": [
+              842,
+              0,
+              280,
+              300
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              0,
+              3
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              0,
+              3
+            ],
+            "bobIndex": 3
+          }
+        ]
+      },
+      "9": {
+        "atlas": "robot-carry-directions-v06.png",
+        "frames": [
+          {
+            "sourceRect": [
+              0,
+              300,
+              281,
+              272
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              1,
+              0
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              1,
+              0
+            ],
+            "bobIndex": 0
+          },
+          {
+            "sourceRect": [
+              281,
+              300,
+              280,
+              272
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              1,
+              1
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              1,
+              1
+            ],
+            "bobIndex": 1
+          },
+          {
+            "sourceRect": [
+              561,
+              300,
+              281,
+              272
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              1,
+              2
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              1,
+              2
+            ],
+            "bobIndex": 2
+          },
+          {
+            "sourceRect": [
+              842,
+              300,
+              280,
+              272
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              1,
+              3
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              1,
+              3
+            ],
+            "bobIndex": 3
+          }
+        ]
+      },
+      "10": {
+        "atlas": "robot-carry-directions-v06.png",
+        "frames": [
+          {
+            "sourceRect": [
+              0,
+              572,
+              281,
+              267
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              2,
+              0
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              2,
+              0
+            ],
+            "bobIndex": 0
+          },
+          {
+            "sourceRect": [
+              281,
+              572,
+              280,
+              267
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              2,
+              1
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              2,
+              1
+            ],
+            "bobIndex": 1
+          },
+          {
+            "sourceRect": [
+              561,
+              572,
+              281,
+              267
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              2,
+              2
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              2,
+              2
+            ],
+            "bobIndex": 2
+          },
+          {
+            "sourceRect": [
+              842,
+              572,
+              280,
+              267
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              2,
+              3
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              2,
+              3
+            ],
+            "bobIndex": 3
+          }
+        ]
+      },
+      "11": {
+        "atlas": "robot-carry-directions-v06.png",
+        "frames": [
+          {
+            "sourceRect": [
+              0,
+              839,
+              281,
+              267
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              3,
+              0
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              3,
+              0
+            ],
+            "bobIndex": 0
+          },
+          {
+            "sourceRect": [
+              281,
+              839,
+              280,
+              267
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              3,
+              1
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              3,
+              1
+            ],
+            "bobIndex": 1
+          },
+          {
+            "sourceRect": [
+              561,
+              839,
+              281,
+              267
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              3,
+              2
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              3,
+              2
+            ],
+            "bobIndex": 2
+          },
+          {
+            "sourceRect": [
+              842,
+              839,
+              280,
+              267
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              3,
+              3
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              3,
+              3
+            ],
+            "bobIndex": 3
+          }
+        ]
+      },
+      "12": {
+        "atlas": "robot-carry-directions-v06.png",
+        "frames": [
+          {
+            "sourceRect": [
+              0,
+              1106,
+              281,
+              296
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              4,
+              0
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              4,
+              0
+            ],
+            "bobIndex": 0
+          },
+          {
+            "sourceRect": [
+              281,
+              1106,
+              280,
+              296
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              4,
+              1
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              4,
+              1
+            ],
+            "bobIndex": 1
+          },
+          {
+            "sourceRect": [
+              561,
+              1106,
+              281,
+              296
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              4,
+              2
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              4,
+              2
+            ],
+            "bobIndex": 2
+          },
+          {
+            "sourceRect": [
+              842,
+              1106,
+              280,
+              296
+            ],
+            "alignmentPath": [
+              "carry",
+              "shells",
+              4,
+              3
+            ],
+            "cargoAnchorPath": [
+              "carry",
+              "hands",
+              4,
+              3
+            ],
+            "bobIndex": 3
+          }
+        ]
+      },
+      "13": {
+        "atlas": "robot-area-scan-v01.png",
+        "frames": [
+          {
+            "sourceRect": [
+              111,
+              120,
+              442,
+              429
+            ],
+            "alignmentPath": [
+              "scan",
+              0
+            ],
+            "bobIndex": null
+          },
+          {
+            "sourceRect": [
+              719,
+              120,
+              488,
+              429
+            ],
+            "alignmentPath": [
+              "scan",
+              1
+            ],
+            "bobIndex": null
+          },
+          {
+            "sourceRect": [
+              102,
+              707,
+              575,
+              427
+            ],
+            "alignmentPath": [
+              "scan",
+              2
+            ],
+            "bobIndex": null
+          },
+          {
+            "sourceRect": [
+              717,
+              707,
+              499,
+              428
+            ],
+            "alignmentPath": [
+              "scan",
+              3
+            ],
+            "bobIndex": null
+          }
+        ]
+      },
+      "14": {
+        "atlas": "robot-area-scan-v02.png",
+        "frames": [
+          {
+            "sourceRect": [
+              59,
+              131,
+              351,
+              350
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              0
+            ],
+            "bobIndex": null,
+            "label": "天線升起"
+          },
+          {
+            "sourceRect": [
+              500,
+              156,
+              350,
+              325
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              1
+            ],
+            "bobIndex": null,
+            "label": "天線下降"
+          },
+          {
+            "sourceRect": [
+              940,
+              189,
+              349,
+              292
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              2
+            ],
+            "bobIndex": null,
+            "label": "頂蓋開啟"
+          },
+          {
+            "sourceRect": [
+              1381,
+              117,
+              349,
+              364
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              3
+            ],
+            "bobIndex": null,
+            "label": "雷達升起"
+          },
+          {
+            "sourceRect": [
+              59,
+              507,
+              351,
+              366
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              4
+            ],
+            "bobIndex": null,
+            "label": "雷達轉向"
+          },
+          {
+            "sourceRect": [
+              500,
+              507,
+              349,
+              366
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              5
+            ],
+            "bobIndex": null,
+            "label": "雷達回掃"
+          },
+          {
+            "sourceRect": [
+              940,
+              548,
+              349,
+              325
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              6
+            ],
+            "bobIndex": null,
+            "label": "雷達收回"
+          },
+          {
+            "sourceRect": [
+              1381,
+              523,
+              348,
+              350
+            ],
+            "alignmentPath": [
+              "scanRadar",
+              7
+            ],
+            "bobIndex": null,
+            "label": "天線復位"
+          }
+        ]
+      },
+      "15": {
+        "atlas": "robot-decision-v01.png",
+        "frames": [
+          {
+            "sourceRect": [
+              100,
+              82,
+              479,
+              492
+            ],
+            "alignmentPath": [
+              "decision",
+              0
+            ],
+            "bobIndex": null,
+            "label": "左紅・右綠"
+          },
+          {
+            "sourceRect": [
+              699,
+              82,
+              481,
+              492
+            ],
+            "alignmentPath": [
+              "decision",
+              1
+            ],
+            "bobIndex": null,
+            "label": "左綠・右紅"
+          },
+          {
+            "sourceRect": [
+              99,
+              683,
+              482,
+              491
+            ],
+            "alignmentPath": [
+              "decision",
+              2
+            ],
+            "bobIndex": null,
+            "label": "成立・雙綠"
+          },
+          {
+            "sourceRect": [
+              698,
+              680,
+              485,
+              494
+            ],
+            "alignmentPath": [
+              "decision",
+              3
+            ],
+            "bobIndex": null,
+            "label": "不成立・雙紅"
+          }
+        ]
+      }
+    },
+    "plantCanvas": [
+      320,
+      320
+    ],
+    "plantRoot": [
+      160,
+      285
+    ],
+    "produce": {
+      "canvas": [
+        96,
+        96
+      ],
+      "maxContentSize": 80,
+      "baseline": 88
+    },
+    "cargo": {
+      "widthRatio": 0.42,
+      "lifting": {
+        "leftRatio": 0.5,
+        "bottomRatio": 0.43
+      },
+      "fallback": {
+        "leftRatio": 0.5,
+        "bottomRatio": 0.75
+      }
+    },
+    "layerOrder": [
+      "soil",
+      "plant",
+      "robot",
+      "cargo"
+    ],
+    "layerZ": {
+      "soil": 0,
+      "plant": 1,
+      "robot": 2,
+      "cargo": 3
+    },
+    "scene": {
+      "columns": 3,
+      "rows": 2,
+      "robotOffsetX": -28,
+      "robotOffsetY": -48,
+      "robotHeightRatio": 0.72
+    },
+    "soil": {
+      "atlas": "farm-atlas-v01.png",
+      "columns": 4,
+      "labels": [
+        "乾裂",
+        "一般",
+        "濕潤",
+        "積水"
+      ]
+    },
+    "lab": {
+      "sampleCrops": [
+        "carrot",
+        "tomato",
+        "lettuce",
+        "strawberry",
+        "watermelon",
+        "cantaloupe"
+      ],
+      "initialStage": 3,
+      "initialSoil": 2,
+      "sampleCarryCrops": [
+        "strawberry",
+        "watermelon",
+        "cantaloupe",
+        "carrot"
+      ]
+    },
+    "decisionLights": {
+      "eyeSideConvention": "viewer-relative",
+      "red": "#ed6a62",
+      "green": "#91e69b",
+      "note": "Colors are generation targets. Actual eye pixels are baked into the robot-decision-v01.png frames. No extra light overlay or glow filter is needed. These clips are empty-hand front work poses; preserve cargo and use separate carry variants if the game needs loaded decision poses."
+    }
+  },
+  "crops": [
+    {
+      "id": "carrot",
+      "name": "胡蘿蔔",
+      "labValue": 1,
+      "atlas": "farm-atlas-v01.png",
+      "stageOrder": [
+        "seedling",
+        "young",
+        "growing",
+        "mature"
+      ],
+      "stageLabels": [
+        "幼苗",
+        "幼株",
+        "成長",
+        "成熟"
+      ],
+      "frames": [
+        {
+          "sourceRect": [
+            0,
+            318,
+            314,
+            309
+          ],
+          "root": [
+            168,
+            290
+          ],
+          "scale": 1
+        },
+        {
+          "sourceRect": [
+            314,
+            318,
+            313,
+            309
+          ],
+          "root": [
+            166,
+            287
+          ],
+          "scale": 1
+        },
+        {
+          "sourceRect": [
+            627,
+            318,
+            313,
+            309
+          ],
+          "root": [
+            154,
+            297
+          ],
+          "scale": 1
+        },
+        {
+          "sourceRect": [
+            940,
+            318,
+            314,
+            309
+          ],
+          "root": [
+            161,
+            297
+          ],
+          "scale": 1
+        }
+      ],
+      "produceId": "carrot"
+    },
+    {
+      "id": "tomato",
+      "name": "番茄",
+      "labValue": 2,
+      "atlas": "farm-atlas-v01.png",
+      "stageOrder": [
+        "seedling",
+        "young",
+        "growing",
+        "mature"
+      ],
+      "stageLabels": [
+        "幼苗",
+        "幼株",
+        "成長",
+        "成熟"
+      ],
+      "frames": [
+        {
+          "sourceRect": [
+            0,
+            627,
+            314,
+            313
+          ],
+          "root": [
+            165,
+            294
+          ],
+          "scale": 1
+        },
+        {
+          "sourceRect": [
+            314,
+            627,
+            313,
+            313
+          ],
+          "root": [
+            165,
+            301
+          ],
+          "scale": 1
+        },
+        {
+          "sourceRect": [
+            627,
+            627,
+            313,
+            313
+          ],
+          "root": [
+            163,
+            301
+          ],
+          "scale": 1
+        },
+        {
+          "sourceRect": [
+            940,
+            627,
+            314,
+            313
+          ],
+          "root": [
+            162,
+            301
+          ],
+          "scale": 1
+        }
+      ],
+      "produceId": "tomato"
+    },
+    {
+      "id": "lettuce",
+      "name": "萵苣",
+      "labValue": 3,
+      "atlas": "farm-atlas-v01.png",
+      "stageOrder": [
+        "seedling",
+        "young",
+        "growing",
+        "mature"
+      ],
+      "stageLabels": [
+        "幼苗",
+        "幼株",
+        "成長",
+        "成熟"
+      ],
+      "frames": [
+        {
+          "sourceRect": [
+            0,
+            940,
+            314,
+            314
+          ],
+          "root": [
+            165,
+            236
+          ],
+          "scale": 1
+        },
+        {
+          "sourceRect": [
+            314,
+            940,
+            313,
+            314
+          ],
+          "root": [
+            159,
+            248
+          ],
+          "scale": 1
+        },
+        {
+          "sourceRect": [
+            627,
+            940,
+            313,
+            314
+          ],
+          "root": [
+            157,
+            256
+          ],
+          "scale": 1
+        },
+        {
+          "sourceRect": [
+            940,
+            940,
+            314,
+            314
+          ],
+          "root": [
+            158,
+            261
+          ],
+          "scale": 1
+        }
+      ],
+      "produceId": "lettuce"
+    },
+    {
+      "id": "strawberry",
+      "name": "草莓",
+      "labValue": 4,
+      "atlas": "fruit-growth-v01.png",
+      "stageOrder": [
+        "seedling",
+        "young",
+        "growing",
+        "mature"
+      ],
+      "stageLabels": [
+        "幼苗",
+        "幼株",
+        "成長",
+        "成熟"
+      ],
+      "frames": [
+        {
+          "sourceRect": [
+            92,
+            254,
+            151,
+            93
+          ],
+          "root": [
+            75.5,
+            91
+          ],
+          "scale": 0.8042895442359249
+        },
+        {
+          "sourceRect": [
+            407,
+            171,
+            215,
+            177
+          ],
+          "root": [
+            107.5,
+            175
+          ],
+          "scale": 0.8042895442359249
+        },
+        {
+          "sourceRect": [
+            722,
+            123,
+            300,
+            232
+          ],
+          "root": [
+            150.0,
+            230
+          ],
+          "scale": 0.8042895442359249
+        },
+        {
+          "sourceRect": [
+            1091,
+            102,
+            316,
+            256
+          ],
+          "root": [
+            158.0,
+            254
+          ],
+          "scale": 0.8042895442359249
+        }
+      ],
+      "produceId": "strawberry"
+    },
+    {
+      "id": "watermelon",
+      "name": "西瓜",
+      "labValue": 5,
+      "atlas": "fruit-growth-v01.png",
+      "stageOrder": [
+        "seedling",
+        "young",
+        "growing",
+        "mature"
+      ],
+      "stageLabels": [
+        "幼苗",
+        "幼株",
+        "成長",
+        "成熟"
+      ],
+      "frames": [
+        {
+          "sourceRect": [
+            71,
+            551,
+            185,
+            111
+          ],
+          "root": [
+            92.5,
+            109
+          ],
+          "scale": 0.8042895442359249
+        },
+        {
+          "sourceRect": [
+            346,
+            457,
+            302,
+            223
+          ],
+          "root": [
+            151.0,
+            221
+          ],
+          "scale": 0.8042895442359249
+        },
+        {
+          "sourceRect": [
+            694,
+            427,
+            347,
+            253
+          ],
+          "root": [
+            173.5,
+            251
+          ],
+          "scale": 0.8042895442359249
+        },
+        {
+          "sourceRect": [
+            1061,
+            417,
+            365,
+            271
+          ],
+          "root": [
+            182.5,
+            269
+          ],
+          "scale": 0.8042895442359249
+        }
+      ],
+      "produceId": "watermelon"
+    },
+    {
+      "id": "cantaloupe",
+      "name": "哈密瓜",
+      "labValue": 6,
+      "atlas": "fruit-growth-v01.png",
+      "stageOrder": [
+        "seedling",
+        "young",
+        "growing",
+        "mature"
+      ],
+      "stageLabels": [
+        "幼苗",
+        "幼株",
+        "成長",
+        "成熟"
+      ],
+      "frames": [
+        {
+          "sourceRect": [
+            72,
+            881,
+            199,
+            113
+          ],
+          "root": [
+            99.5,
+            111
+          ],
+          "scale": 0.8042895442359249
+        },
+        {
+          "sourceRect": [
+            357,
+            784,
+            309,
+            232
+          ],
+          "root": [
+            154.5,
+            230
+          ],
+          "scale": 0.8042895442359249
+        },
+        {
+          "sourceRect": [
+            704,
+            755,
+            337,
+            261
+          ],
+          "root": [
+            168.5,
+            259
+          ],
+          "scale": 0.8042895442359249
+        },
+        {
+          "sourceRect": [
+            1061,
+            743,
+            373,
+            282
+          ],
+          "root": [
+            186.5,
+            280
+          ],
+          "scale": 0.8042895442359249
+        }
+      ],
+      "produceId": "cantaloupe"
+    }
+  ],
+  "produce": [
+    {
+      "id": "carrot",
+      "file": "produce-carrot-v01.png",
+      "width": 1254,
+      "height": 1254,
+      "sourceRect": [
+        393,
+        275,
+        632,
+        778
+      ],
+      "uses": [
+        "carry",
+        "shop"
+      ]
+    },
+    {
+      "id": "tomato",
+      "file": "produce-tomato-v01.png",
+      "width": 1254,
+      "height": 1254,
+      "sourceRect": [
+        400,
+        421,
+        454,
+        448
+      ],
+      "uses": [
+        "carry",
+        "shop"
+      ]
+    },
+    {
+      "id": "lettuce",
+      "file": "produce-lettuce-v01.png",
+      "width": 1254,
+      "height": 1254,
+      "sourceRect": [
+        268,
+        355,
+        724,
+        643
+      ],
+      "uses": [
+        "carry",
+        "shop"
+      ]
+    },
+    {
+      "id": "strawberry",
+      "file": "produce-strawberry-v01.png",
+      "width": 1254,
+      "height": 1254,
+      "sourceRect": [
+        372,
+        346,
+        512,
+        646
+      ],
+      "uses": [
+        "carry",
+        "shop"
+      ]
+    },
+    {
+      "id": "watermelon",
+      "file": "produce-watermelon-v01.png",
+      "width": 1254,
+      "height": 1254,
+      "sourceRect": [
+        295,
+        289,
+        665,
+        747
+      ],
+      "uses": [
+        "carry",
+        "shop"
+      ]
+    },
+    {
+      "id": "cantaloupe",
+      "file": "produce-cantaloupe-v01.png",
+      "width": 1254,
+      "height": 1254,
+      "sourceRect": [
+        322,
+        324,
+        611,
+        660
+      ],
+      "uses": [
+        "carry",
+        "shop"
+      ]
+    }
+  ],
+  "thoughtBubbles": {
+    "atlas": "robot-thought-bubbles-v01.png",
+    "canvas": [
+      400,
+      340
+    ],
+    "frames": [
+      {
+        "sourceRect": [
+          53,
+          93,
+          396,
+          334
+        ],
+        "destinationRect": [
+          2.0,
+          3.0,
+          396,
+          334
+        ],
+        "label": "思考・左點跳動"
+      },
+      {
+        "sourceRect": [
+          473,
+          93,
+          398,
+          334
+        ],
+        "destinationRect": [
+          1.0,
+          3.0,
+          398,
+          334
+        ],
+        "label": "思考・中點跳動"
+      },
+      {
+        "sourceRect": [
+          903,
+          93,
+          396,
+          334
+        ],
+        "destinationRect": [
+          2.0,
+          3.0,
+          396,
+          334
+        ],
+        "label": "思考・右點跳動"
+      },
+      {
+        "sourceRect": [
+          1342,
+          93,
+          397,
+          334
+        ],
+        "destinationRect": [
+          1.5,
+          3.0,
+          397,
+          334
+        ],
+        "label": "思考・三點停留"
+      },
+      {
+        "sourceRect": [
+          53,
+          498,
+          397,
+          334
+        ],
+        "destinationRect": [
+          1.5,
+          3.0,
+          397,
+          334
+        ],
+        "label": "成立・勾"
+      },
+      {
+        "sourceRect": [
+          473,
+          498,
+          398,
+          334
+        ],
+        "destinationRect": [
+          1.0,
+          3.0,
+          398,
+          334
+        ],
+        "label": "不成立・叉"
+      },
+      {
+        "sourceRect": [
+          903,
+          498,
+          396,
+          334
+        ],
+        "destinationRect": [
+          2.0,
+          3.0,
+          396,
+          334
+        ],
+        "label": "澆水壺"
+      },
+      {
+        "sourceRect": [
+          1342,
+          498,
+          398,
+          334
+        ],
+        "destinationRect": [
+          1.0,
+          3.0,
+          398,
+          334
+        ],
+        "label": "種子"
+      }
+    ],
+    "animations": {
+      "thinking": {
+        "frameOrder": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "frameDurationsMs": [
+          180,
+          180,
+          180,
+          180
+        ],
+        "loop": true
+      },
+      "true": {
+        "frameOrder": [
+          4
+        ],
+        "frameDurationsMs": [
+          1000
+        ],
+        "loop": false
+      },
+      "false": {
+        "frameOrder": [
+          5
+        ],
+        "frameDurationsMs": [
+          1000
+        ],
+        "loop": false
+      },
+      "watering": {
+        "frameOrder": [
+          6
+        ],
+        "frameDurationsMs": [
+          720
+        ],
+        "loop": true
+      },
+      "sowing": {
+        "frameOrder": [
+          7
+        ],
+        "frameDurationsMs": [
+          720
+        ],
+        "loop": true
+      }
+    },
+    "byClip": {
+      "decisionThinking": "thinking",
+      "decisionTrue": "true",
+      "decisionFalse": "false",
+      "water": "watering",
+      "sow": "sowing"
+    },
+    "placement": {
+      "relativeTo": "robotCanvas",
+      "leftRatio": 0.57,
+      "bottomRatio": 0.79,
+      "widthRatio": 0.44,
+      "layerZ": 4,
+      "followPoseBob": true,
+      "description": "Bottom-left of the bubble canvas anchored to these normalized robot-canvas coordinates. Height follows canvas aspect. Draw above robot and cargo; do not change existing rendering.layerOrder."
+    },
+    "clock": {
+      "mode": "elapsed-since-clip-entry",
+      "resetOnClipEntry": true,
+      "restartOnReplay": true,
+      "pauseWithRobot": true,
+      "onAnimationComplete": "hold-last-until-clip-exit",
+      "unmappedClip": "hidden"
+    },
+    "note": "Bubble animation has its own elapsed-time cursor within the shared render clock; do not use the eye/shell frame index for dot phases. Source art includes the cream cloud, thought puffs and pictogram. Result selection comes from external game logic. Scan, carry, harvest, movement and idle have no bubble mapping."
+  },
+  "effectClips": {
+    "areaScanWave": {
+      "atlas": "scan-wave-v01.png",
+      "canvasSpace": "fieldBounds",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "layerZ": 1.5,
+      "layerPlacement": "Above soil and plants, below robot and cargo; preserve existing rendering.layerOrder.",
+      "blendMode": "source-over",
+      "clipToFieldCells": true,
+      "frameIndexByStep": [
+        null,
+        null,
+        null,
+        null,
+        0,
+        1,
+        2,
+        3,
+        null,
+        null,
+        null,
+        null
+      ],
+      "opacityByStep": [
+        0,
+        0,
+        0,
+        0,
+        0.8,
+        0.72,
+        0.6,
+        0.35,
+        0,
+        0,
+        0,
+        0
+      ],
+      "frames": [
+        {
+          "sourceRect": [
+            179,
+            296,
+            268,
+            153
+          ],
+          "sizeRatio": [
+            0.24,
+            0.18
+          ]
+        },
+        {
+          "sourceRect": [
+            723,
+            258,
+            434,
+            228
+          ],
+          "sizeRatio": [
+            0.46,
+            0.35
+          ]
+        },
+        {
+          "sourceRect": [
+            46,
+            810,
+            536,
+            263
+          ],
+          "sizeRatio": [
+            0.72,
+            0.56
+          ]
+        },
+        {
+          "sourceRect": [
+            638,
+            792,
+            605,
+            301
+          ],
+          "sizeRatio": [
+            0.98,
+            0.8
+          ]
+        }
+      ],
+      "sampling": "sourceRect in atlas pixels. Center each frame at anchor within fieldBounds; sizeRatio is width/height relative to fieldBounds. frameIndexByStep and opacityByStep follow the owning animation clip playback steps, not sprite indices. Clip to union of actual field cell rectangles for irregular fields. Null frame is hidden.",
+      "reducedMotion": "Respect the shared paused/reduced-motion playback setting; do not run an independent effect timer."
+    }
+  },
+  "mainScreenAssets": {
+    "version": "v01",
+    "coordinateRules": {
+      "file": "Relative to assets/; existing paths unchanged.",
+      "sourceRect": "[x,y,width,height] in full PNG source pixels.",
+      "textRect": "[x,y,width,height] relative to sourceRect top-left, in unscaled source pixels. Apply the same scale/translation as the sign image.",
+      "groundAnchor": "[x,y] relative to sourceRect top-left in source pixels; stake tip insertion reference.",
+      "repeat": "unitSize and step are SOURCE pixel dimensions. Repeat sourceRect without its surrounding atlas padding; use recommendedDisplaySize for logical display tile dimensions. Never repeat the entire PNG for greenhouse or floor.",
+      "recommendedDisplaySize": "[width,height] logical CSS/game pixels at 1x. Icons use contain; signs preserve source aspect when fitting this box.",
+      "alpha": "RGBA originals; transparent exterior and tile grout. Do not flatten over a background when exporting."
+    },
+    "items": [
+      {
+        "id": "greenhouseWindow",
+        "name": "溫室窗框玻璃",
+        "file": "greenhouse-strip-v01.png",
+        "imageSize": [
+          2172,
+          724
+        ],
+        "sourceRect": [
+          768,
+          112,
+          640,
+          500
+        ],
+        "repeat": {
+          "x": true,
+          "y": false,
+          "unitSize": [
+            640,
+            500
+          ],
+          "step": [
+            640,
+            500
+          ],
+          "join": "mid-mullion",
+          "edgeMeanDifferenceRGBA": 0.71,
+          "verification": "Visually continuous mid-mullion join; generated pixel colors retain minor sub-level variation, not a byte-identical periodic texture."
+        },
+        "recommendedDisplaySize": [
+          160,
+          125
+        ],
+        "previewCanvas": [
+          640,
+          125
+        ],
+        "layer": "environment-window",
+        "animated": false
+      },
+      {
+        "id": "stoneFloor",
+        "name": "石板地磚",
+        "file": "stone-floor-tile-v01.png",
+        "imageSize": [
+          1254,
+          1254
+        ],
+        "sourceRect": [
+          112,
+          120,
+          1030,
+          1030
+        ],
+        "repeat": {
+          "x": true,
+          "y": true,
+          "unitSize": [
+            1030,
+            1030
+          ],
+          "step": [
+            1030,
+            1030
+          ],
+          "join": "transparent-grout",
+          "verification": "All four source-unit edge alpha values are zero. Repeat over a chosen grout/floor color; retain transparent grout gaps."
+        },
+        "recommendedDisplaySize": [
+          64,
+          64
+        ],
+        "previewCanvas": [
+          384,
+          256
+        ],
+        "layer": "environment-floor",
+        "animated": false
+      },
+      {
+        "id": "plotSign-beginner",
+        "name": "新手田地名牌",
+        "typeId": "beginner",
+        "label": "新手",
+        "typeColor": "#d7a44b",
+        "file": "plot-signs-v01.png",
+        "imageSize": [
+          1254,
+          1254
+        ],
+        "sourceRect": [
+          51,
+          87,
+          576,
+          503
+        ],
+        "repeat": {
+          "x": false,
+          "y": false,
+          "unitSize": null
+        },
+        "textRect": [
+          99,
+          163,
+          380,
+          110
+        ],
+        "textStyle": {
+          "color": "#263f3c",
+          "align": "center",
+          "verticalAlign": "middle",
+          "maxFontSize": 72,
+          "fontSizeSpace": "sourceRect-local-pixels"
+        },
+        "groundAnchor": [
+          288.0,
+          495
+        ],
+        "recommendedDisplaySize": [
+          160,
+          140
+        ],
+        "layer": "plot-label",
+        "animated": false
+      },
+      {
+        "id": "plotSign-intermediate",
+        "name": "進階田地名牌",
+        "typeId": "intermediate",
+        "label": "進階",
+        "typeColor": "#75bdd0",
+        "file": "plot-signs-v01.png",
+        "imageSize": [
+          1254,
+          1254
+        ],
+        "sourceRect": [
+          625,
+          87,
+          579,
+          503
+        ],
+        "repeat": {
+          "x": false,
+          "y": false,
+          "unitSize": null
+        },
+        "textRect": [
+          99,
+          163,
+          380,
+          110
+        ],
+        "textStyle": {
+          "color": "#263f3c",
+          "align": "center",
+          "verticalAlign": "middle",
+          "maxFontSize": 72,
+          "fontSizeSpace": "sourceRect-local-pixels"
+        },
+        "groundAnchor": [
+          289.5,
+          495
+        ],
+        "recommendedDisplaySize": [
+          160,
+          140
+        ],
+        "layer": "plot-label",
+        "animated": false
+      },
+      {
+        "id": "plotSign-advanced",
+        "name": "高級田地名牌",
+        "typeId": "advanced",
+        "label": "高級",
+        "typeColor": "#8fc7a3",
+        "file": "plot-signs-v01.png",
+        "imageSize": [
+          1254,
+          1254
+        ],
+        "sourceRect": [
+          51,
+          674,
+          578,
+          503
+        ],
+        "repeat": {
+          "x": false,
+          "y": false,
+          "unitSize": null
+        },
+        "textRect": [
+          99,
+          163,
+          380,
+          110
+        ],
+        "textStyle": {
+          "color": "#263f3c",
+          "align": "center",
+          "verticalAlign": "middle",
+          "maxFontSize": 72,
+          "fontSizeSpace": "sourceRect-local-pixels"
+        },
+        "groundAnchor": [
+          289.0,
+          495
+        ],
+        "recommendedDisplaySize": [
+          160,
+          140
+        ],
+        "layer": "plot-label",
+        "animated": false
+      },
+      {
+        "id": "plotSign-expert",
+        "name": "專家田地名牌",
+        "typeId": "expert",
+        "label": "專家",
+        "typeColor": "#c65f48",
+        "file": "plot-signs-v01.png",
+        "imageSize": [
+          1254,
+          1254
+        ],
+        "sourceRect": [
+          625,
+          674,
+          579,
+          503
+        ],
+        "repeat": {
+          "x": false,
+          "y": false,
+          "unitSize": null
+        },
+        "textRect": [
+          99,
+          163,
+          380,
+          110
+        ],
+        "textStyle": {
+          "color": "#263f3c",
+          "align": "center",
+          "verticalAlign": "middle",
+          "maxFontSize": 72,
+          "fontSizeSpace": "sourceRect-local-pixels"
+        },
+        "groundAnchor": [
+          289.5,
+          495
+        ],
+        "recommendedDisplaySize": [
+          160,
+          140
+        ],
+        "layer": "plot-label",
+        "animated": false
+      },
+      {
+        "id": "token",
+        "name": "Token 圖示",
+        "file": "token-icon-v01.png",
+        "imageSize": [
+          1254,
+          1254
+        ],
+        "sourceRect": [
+          258,
+          264,
+          738,
+          746
+        ],
+        "repeat": {
+          "x": false,
+          "y": false,
+          "unitSize": null
+        },
+        "recommendedDisplaySize": [
+          32,
+          32
+        ],
+        "fit": "contain",
+        "layer": "hud-icon",
+        "animated": false
+      },
+      {
+        "id": "money",
+        "name": "金錢圖示",
+        "file": "money-icon-v01.png",
+        "imageSize": [
+          1254,
+          1254
+        ],
+        "sourceRect": [
+          218,
+          223,
+          818,
+          798
+        ],
+        "repeat": {
+          "x": false,
+          "y": false,
+          "unitSize": null
+        },
+        "recommendedDisplaySize": [
+          32,
+          32
+        ],
+        "fit": "contain",
+        "layer": "hud-icon",
+        "animated": false
+      }
+    ],
+    "lab": {
+      "signTextPreviewDefault": false,
+      "groutColor": "#35665b"
+    },
+    "note": "Static art only; no new animation, growth, sensing, economic, token-cost or currency logic. Existing manifest fields including root version remain unchanged."
+  }
+}
