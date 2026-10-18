@@ -84,14 +84,42 @@ function miniMap(lesson) {
 // 過關 QR code（class-pass 協定，vendor/classpass）：一張 QR 裝所有已過關的關卡，老師用 class-pass app 掃描。
 // 分數是星等（滿分 3）；完成時間是拿到最好星等的那一次，舊進度沒記時間的用現在。
 const PASS_GAME = 'robot-farm-practice';
-$('#show-pass').onclick = () => {
-  if (!progress) return askStudent();
+function showPass() {
   const now = Math.floor(Date.now() / 1000);
   const levels = LESSONS.filter(l => progress.levels[l.id]?.stars > 0)
     .map(l => ({ level: l.id, title: l.title, score: progress.levels[l.id].stars, max: 3, time: progress.levels[l.id].time || now }));
   if (levels.length) window.ClassPass.show({ game: PASS_GAME, levels }).catch(() => {});
   else window.ClassPass.showPassed(PASS_GAME);
-};
+}
+$('#show-pass').onclick = () => progress ? showPass() : askStudent();
+
+// ---------- 背景計時（不顯示給學生）----------
+// 第一次點進任何一關開始計時，只在練習頁開著而且是目前畫面時累加（關掉、切到別的分頁就暫停）。
+// 四關都第一次過關的那一刻定格成 progress.timing.doneMs，之後再玩不會變。
+// 用時要等 class-pass 協定加上「用時」欄位後才放進 QR code（見 docs/BACKLOG.md）。
+const TICK_MS = 1000, SAVE_EVERY = 5;
+let lastTick = performance.now(), ticks = 0;
+function startTiming() {
+  if (!progress.timing) { progress.timing = { ms: 0, doneMs: null }; saveProgress(); }
+}
+setInterval(() => {
+  const now = performance.now(), dt = Math.min(now - lastTick, 3 * TICK_MS);   // 電腦睡眠醒來不會一次加一大段
+  lastTick = now;
+  const t = progress?.timing;
+  if (!t || t.doneMs != null || document.visibilityState !== 'visible') return;
+  t.ms += dt;
+  if (++ticks % SAVE_EVERY === 0) saveProgress();
+}, TICK_MS);
+document.addEventListener('visibilitychange', () => { lastTick = performance.now(); if (progress?.timing) saveProgress(); });
+
+// 剛好在這次完成最後一關：定格用時，回傳 true。
+function finishAll() {
+  const t = progress.timing;
+  if (!t || t.doneMs != null || !LESSONS.every(l => progress.levels[l.id]?.stars > 0)) return false;
+  t.doneMs = Math.round(t.ms);
+  saveProgress();
+  return true;
+}
 
 $('#lesson-list').onclick = e => {
   const b = e.target.closest('[data-index]');
@@ -139,6 +167,7 @@ function open(index) {
   plot = lessonPlot(lesson);
   $('#home').hidden = true;
   $('#lesson').hidden = false;
+  startTiming();
   ensureWorkspace();
   workspace.updateToolbox({ kind: 'flyoutToolbox', contents: lesson.tools.map(type => ({ kind: 'block', type })) });
   Blockly.Events.disable();   // 載入存好的積木不算「改過」
@@ -247,6 +276,8 @@ function finishCheck() {
   if (got > best) { Object.assign(record(lesson.id), { stars: got, time: Math.floor(Date.now() / 1000) }); saveProgress(); }
   say(`完成了！跑了 ${sb.actions} 個動作。`, 'done');
   showCheck({ title: `完成！${stars(got)}` + (got > best && best ? '（新紀錄）' : ''), items: [], tips: [...how, ...tips], ok: true, next: current < LESSONS.length - 1 });
+  // 四關第一次全部完成：稍等一下讓學生看到這關的結果，再自動跳出過關 QR code。
+  if (!best && finishAll()) setTimeout(showPass, 1500);   // 只在「這關第一次過」時檢查，已經全破的再玩不會重算
 }
 
 function showCheck(result) {
