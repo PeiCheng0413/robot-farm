@@ -54,6 +54,17 @@ function miniMap(lesson) {
   return `<span class="mini-map" style="--cols:${width}" aria-hidden="true">${cells.join('')}</span>`;
 }
 
+// 過關 QR code（class-pass 協定，vendor/classpass）：一張 QR 裝所有已過關的關卡，老師用 class-pass app 掃描。
+// 分數是星等（滿分 3）；完成時間是拿到最好星等的那一次，舊進度沒記時間的用現在。
+const PASS_GAME = 'robot-farm-practice';
+$('#show-pass').onclick = () => {
+  const now = Math.floor(Date.now() / 1000);
+  const levels = LESSONS.filter(l => progress.levels[l.id]?.stars > 0)
+    .map(l => ({ level: l.id, title: l.title, score: progress.levels[l.id].stars, max: 3, time: progress.levels[l.id].time || now }));
+  if (levels.length) window.ClassPass.show({ game: PASS_GAME, levels }).catch(() => {});
+  else window.ClassPass.showPassed(PASS_GAME);
+};
+
 $('#lesson-list').onclick = e => { const b = e.target.closest('[data-index]'); if (b) open(+b.dataset.index); };
 $('#reset-progress').onclick = () => {
   if (!confirm('確定要清除這台電腦上所有關卡的星星與積木嗎？清除後不能復原。')) return;
@@ -194,7 +205,7 @@ function finishCheck() {
   if (got === 1) how.push(`想要 ★★：試著用「重複」把積木減到 ${two} 塊以內`);
   if (got === 2) how.push(n <= three ? '想要 ★★★：不要撞牆、不要白做' : `想要 ★★★：再減到 ${three} 塊以內，而且不撞牆、不白做`);
   const best = record(lesson.id).stars;
-  if (got > best) { record(lesson.id).stars = got; saveProgress(); }
+  if (got > best) { Object.assign(record(lesson.id), { stars: got, time: Math.floor(Date.now() / 1000) }); saveProgress(); }
   say(`完成了！跑了 ${sb.actions} 個動作。`, 'done');
   showCheck({ title: `完成！${stars(got)}` + (got > best && best ? '（新紀錄）' : ''), items: [], tips: [...how, ...tips], ok: true, next: current < LESSONS.length - 1 });
 }
