@@ -1,5 +1,7 @@
 // 上課練習頁（practice.html）：一關一塊固定的田，學生用積木寫程式完成目標。
 // 跟農場完全獨立：不扣 Token、不賺錢、不讀寫農場存檔；進度與每關的積木存在這台瀏覽器。
+// 進度依班級座號（classpass.js 讓學生輸入）分開存：換了班級座號就是另一位同學，要從頭玩，
+// 免得拿別人玩出來的星星用自己的座號出示給老師掃。
 // 關卡內容在 lessons.js；動作規則、直譯器、積木、田的特寫與農場共用。
 
 import { ACTION_LIMIT, CONTROL_LIMIT } from './config.js';
@@ -23,21 +25,46 @@ const lessonName = i => `關卡${NUMBERS[i] || i + 1}`;
 
 // ---------- 進度 ----------
 
-function loadProgress() {
-  try { const p = JSON.parse(localStorage.getItem(SAVE_KEY)); if (p?.version === 1) return p; } catch (e) { /* 讀不到就從頭開始 */ }
-  return { version: 1, levels: {} };
+// 存檔：{ version: 2, students: { "班級|座號": { levels: { 關卡id: { stars, time, workspace } } } } }
+// 第 1 版沒有分學生，不知道是誰玩的，所以不沿用。
+function loadAll() {
+  try { const p = JSON.parse(localStorage.getItem(SAVE_KEY)); if (p?.version === 2) return p; } catch (e) { /* 讀不到就從頭開始 */ }
+  return { version: 2, students: {} };
 }
-let progress = loadProgress();
+let all = loadAll();
+let who = null, progress = null;   // 目前的學生（{ cls, no }）與他的進度；還沒輸入班級座號時是 null
 const record = id => progress.levels[id] || (progress.levels[id] = { stars: 0, workspace: null });
 function saveProgress() {
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(progress)); } catch (e) { /* 私密視窗存不了，照常練習 */ }
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(all)); } catch (e) { /* 私密視窗存不了，照常練習 */ }
 }
+
+// 班級座號可能在 classpass 的對話框裡被改掉，所以定時對一下；換人就切換進度並回到關卡列表。
+const keyOf = s => s ? s.cls + '|' + s.no : null;
+function syncStudent() {
+  const s = window.ClassPass.getStudent();
+  if (keyOf(s) === keyOf(who)) return;
+  who = s;
+  progress = s ? (all.students[keyOf(s)] ||= { levels: {} }) : null;
+  if (lesson) close();
+  renderWho();
+  renderList();
+}
+const askStudent = () => window.ClassPass.editStudent().then(syncStudent);
+
+function renderWho() {
+  $('#student').innerHTML = who
+    ? `目前是 <b>${escapeHtml(who.cls)} 班 ${escapeHtml(who.no)} 號</b>`
+    : '<b>請先輸入班級和座號，才能開始練習。</b>';
+  $('#change-student').textContent = who ? '換人／修改班級座號' : '輸入班級座號';
+  $('#change-student').className = who ? '' : 'primary';
+}
+const escapeHtml = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 // ---------- 關卡列表 ----------
 
 function renderList() {
   $('#lesson-list').innerHTML = LESSONS.map((lesson, i) => {
-    const got = progress.levels[lesson.id]?.stars || 0;
+    const got = progress?.levels[lesson.id]?.stars || 0;
     return `<li><button class="lesson-card${got ? ' cleared' : ''}" data-index="${i}">
       <span class="lesson-number">${lessonName(i)}</span>
       <span class="lesson-title">${lesson.title}</span>
@@ -58,6 +85,7 @@ function miniMap(lesson) {
 // 分數是星等（滿分 3）；完成時間是拿到最好星等的那一次，舊進度沒記時間的用現在。
 const PASS_GAME = 'robot-farm-practice';
 $('#show-pass').onclick = () => {
+  if (!progress) return askStudent();
   const now = Math.floor(Date.now() / 1000);
   const levels = LESSONS.filter(l => progress.levels[l.id]?.stars > 0)
     .map(l => ({ level: l.id, title: l.title, score: progress.levels[l.id].stars, max: 3, time: progress.levels[l.id].time || now }));
@@ -65,12 +93,22 @@ $('#show-pass').onclick = () => {
   else window.ClassPass.showPassed(PASS_GAME);
 };
 
-$('#lesson-list').onclick = e => { const b = e.target.closest('[data-index]'); if (b) open(+b.dataset.index); };
+$('#lesson-list').onclick = e => {
+  const b = e.target.closest('[data-index]');
+  if (!b) return;
+  if (progress) open(+b.dataset.index);
+  else askStudent().then(() => progress && open(+b.dataset.index));
+};
+$('#change-student').onclick = () => {
+  if (who && !confirm('換了班級座號就是另一位同學，要從第一關重新玩。確定要換嗎？')) return;
+  askStudent();
+};
 $('#reset-progress').onclick = () => {
-  if (!confirm('確定要清除這台電腦上所有關卡的星星與積木嗎？清除後不能復原。')) return;
-  progress = { version: 1, levels: {} };
+  if (!confirm('確定要清除這台電腦上所有同學的星星與積木嗎？清除後不能復原。')) return;
+  all = { version: 2, students: {} };
   saveProgress();
-  renderList();
+  who = undefined;   // 強制重新同步
+  syncStudent();
 };
 
 // ---------- 練習畫面 ----------
@@ -109,6 +147,7 @@ function open(index) {
     Blockly.serialization.workspaces.load(record(lesson.id).workspace || DEFAULT_WORKSPACES.main, workspace);
   } finally { Blockly.Events.enable(); }
   $('#lesson-title').textContent = `${lessonName(index)}｜${lesson.title}`;
+  $('#lesson-who').textContent = `${who.cls} 班 ${who.no} 號`;
   $('#lesson-goal').textContent = lesson.goal;
   $('#lesson-hint').hidden = true;
   $('#lesson-hint').textContent = '💡 ' + lesson.hint;
@@ -340,11 +379,13 @@ async function start() {
     return;
   }
   $('#loading').hidden = true;
-  renderList();
+  syncStudent();
+  setInterval(syncStudent, 1000);
   // 網址 #lesson=3 直接打開第三關，方便老師把連結貼給全班。
   const n = +(/lesson=(\d+)/.exec(location.hash)?.[1] || 0);
-  if (n >= 1 && n <= LESSONS.length) open(n - 1);
-  else $('#home').hidden = false;
+  $('#home').hidden = false;
+  if (!progress) askStudent().then(() => progress && n >= 1 && n <= LESSONS.length && open(n - 1));
+  else if (n >= 1 && n <= LESSONS.length) open(n - 1);
 }
 
 start();
