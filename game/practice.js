@@ -81,14 +81,17 @@ function miniMap(lesson) {
   return `<span class="mini-map" style="--cols:${width}" aria-hidden="true">${cells.join('')}</span>`;
 }
 
-// 過關 QR code（class-pass 協定，vendor/classpass）：一張 QR 裝所有已過關的關卡，老師用 class-pass app 掃描。
+// 過關 QR code（class-pass 協定 CP2，vendor/classpass）：一張 QR 裝所有已過關的關卡，老師用 class-pass app 掃描。
 // 分數是星等（滿分 3）；完成時間是拿到最好星等的那一次，舊進度沒記時間的用現在。
 const PASS_GAME = 'robot-farm-practice';
 function showPass() {
   const now = Math.floor(Date.now() / 1000);
   const levels = LESSONS.filter(l => progress.levels[l.id]?.stars > 0)
     .map(l => ({ level: l.id, title: l.title, score: progress.levels[l.id].stars, max: 3, time: progress.levels[l.id].time || now }));
-  if (levels.length) window.ClassPass.show({ game: PASS_GAME, levels }).catch(() => {});
+  // 用時（秒）只在四關全部完成後才帶；classpass 只把它放進 QR code，不會顯示給學生。
+  const done = progress.timing?.doneMs;
+  const opts = { game: PASS_GAME, levels, ...(done != null && { elapsed: done / 1000 }) };
+  if (levels.length) window.ClassPass.show(opts).catch(() => {});
   else window.ClassPass.showPassed(PASS_GAME);
 }
 $('#show-pass').onclick = () => progress ? showPass() : askStudent();
@@ -96,7 +99,7 @@ $('#show-pass').onclick = () => progress ? showPass() : askStudent();
 // ---------- 背景計時（不顯示給學生）----------
 // 第一次點進任何一關開始計時，只在練習頁開著而且是目前畫面時累加（關掉、切到別的分頁就暫停）。
 // 四關都第一次過關的那一刻定格成 progress.timing.doneMs，之後再玩不會變。
-// 用時要等 class-pass 協定加上「用時」欄位後才放進 QR code（見 docs/BACKLOG.md）。
+// 用時以 CP2 的 elapsed 放進過關 QR code（showPass）。
 const TICK_MS = 1000, SAVE_EVERY = 5;
 let lastTick = performance.now(), ticks = 0;
 function startTiming() {

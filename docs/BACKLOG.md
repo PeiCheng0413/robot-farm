@@ -53,8 +53,8 @@
 - 進度依班級座號分開存（10-18）：換了班級座號就是另一位同學，要從第一關重玩，免得用別人玩出來的星星出示 QR code。沒輸入班級座號不能開始。舊版（不分學生）的進度不沿用。
 - 關卡寫成數據表 `game/lessons.js`（田的樣子用字元地圖、出發點、目標、這關的積木箱、星等門檻、老師參考解）。
 - 做完目標就過關（一星）；二星、三星看積木數，三星還要沒撞牆、沒白做。關卡全部開放，網址 `#lesson=3` 直接開第三關。
-- 過關 QR code（10-18）：選關畫面「出示過關 QR code」，用 class-pass 協定 CP1（`vendor/classpass/`，來源 repo `PeiCheng0413/class-pass`）把已過關各關的星等（滿分 3）放進一張簽章 QR，老師用 class-pass app 掃描。遊戲代號 `robot-farm-practice`，關卡代號用 `lessons.js` 的 `id`；班級座號由 classpass.js 讓學生輸入。
-- 背景計時（10-18）：第一次點進任一關開始，只在練習頁開著且是目前畫面時累加，四關第一次全部過關時定格（`progress.timing.doneMs`，毫秒），同時自動跳出過關 QR code。畫面上不顯示用時。
+- 過關 QR code（10-18）：選關畫面「出示過關 QR code」，用 class-pass 協定 CP2（`vendor/classpass/`，來源 repo `PeiCheng0413/class-pass`）把已過關各關的星等（滿分 3）放進一張簽章 QR，老師用 class-pass app 掃描。遊戲代號 `robot-farm-practice`，關卡代號用 `lessons.js` 的 `id`；班級座號由 classpass.js 讓學生輸入。
+- 背景計時（10-18）：第一次點進任一關開始，只在練習頁開著且是目前畫面時累加，四關第一次全部過關時定格（`progress.timing.doneMs`，毫秒），同時自動跳出過關 QR code。畫面上不顯示用時；四關全破後的 QR 以 CP2 `elapsed`（秒）帶上用時，app 同一學生留最短的。
 - 第一組四關（10-18 使用者調整）：一排幼苗 → 先播種再澆水 → 看一看再澆水（「如果 腳下土壤乾裂」，練判斷）→ 繞一圈（重複包重複）。每關只給需要的積木。原本的「轉個彎」「來回兩排」取消。
 
 **分工與技術**
@@ -84,7 +84,6 @@
 - [ ] 新動作：跨越障礙、除草、除蟲、施肥
 - [ ] 排列加成（例如同種相鄰增產）
 - [ ] 手機版實測（盤面縮放、拖曳與捲動）
-- [ ] 用時放進 QR code：等 class-pass 協定加上「用時」欄位（使用者選了升級協定、app 加用時欄），再把 `timing.doneMs` 傳給 classpass.js 並更新 `vendor/classpass/`
 - [ ] 練習頁：更多主題（如果、當…重複、函式）；試跑的迴圈與 editor.js 重複，主題變多時考慮抽成共用模組
 
 ## 待向 ChatGPT 提出的素材需求

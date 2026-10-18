@@ -7,7 +7,7 @@
  *   ClassPass.show({ game: 'robot-farm-practice', levels: [
  *     { level: 'check-dry', title: '澆水', score: 3, max: 3 },
  *     { level: 'harvest', title: '收成', score: 4, max: 5 },
- *   ]});
+ *   ], elapsed: 754 });                          // elapsed：用時（秒，可省略），只放進 QR code
  *   // 或每過一關呼叫一次，各關會自動累積在同一張 QR code 裡
  *   ClassPass.show({ game: 'robot-farm-practice', level: 'check-dry', title: '澆水', score: 3, max: 3 });
  *   ClassPass.showPassed('robot-farm-practice');   // 再叫出這個遊戲的 QR code
@@ -20,11 +20,15 @@
 (function () {
   'use strict';
 
-  var VERSION = 'CP1';
+  var VERSION = 'CP2';
   var KEY = '7wtYq6EDHQJxEa6gbWgOLRac-2bzsmJv';
   var STUDENT_KEY = 'classpass.student';
   var PASSES_KEY = 'classpass.passes';
+  var EXTRAS_KEY = 'classpass.extras';
   var CODE_RE = /^[A-Za-z0-9-]{1,40}$/;
+  var EXTRA_KEY_RE = /^[a-z0-9-]{1,20}$/;
+  var EXTRA_VALUE_RE = /^[A-Za-z0-9.-]{1,40}$/;
+  var EXTRAS_MAX = 10;
   var CLASS_MAX = 20;
   var TITLE_MAX = 10;
   var LEVELS_MAX = 30;
@@ -122,7 +126,8 @@
   // 組出 QR code 內容。
   //   game: 遊戲代號；s: { cls, no }；
   //   levels: [{ level, title, score, max, time }, ...]
-  function build(game, s, levels) {
+  //   extras: 附加資料 { key: value }，可省略
+  function build(game, s, levels, extras) {
     try {
       if (!CODE_RE.test(game)) throw new Error('遊戲代號只能用英數字與 -：' + game);
       var cls = cleanText(s.cls, CLASS_MAX);
@@ -137,7 +142,15 @@
         var title = cleanText(r.title, TITLE_MAX) || r.level.slice(0, TITLE_MAX);
         return [r.level, title, r.score, r.max, r.time].join('~');
       }).join(';');
-      var body = [VERSION, game, cls, no, list].join('|') + '|';
+      var keys = Object.keys(extras || {});
+      if (keys.length > EXTRAS_MAX) throw new Error('附加資料不可超過 ' + EXTRAS_MAX + ' 項');
+      var ext = keys.map(function (k) {
+        var v = String(extras[k]);
+        if (!EXTRA_KEY_RE.test(k)) throw new Error('附加資料的 key 只能用小寫英數字與 -：' + k);
+        if (!EXTRA_VALUE_RE.test(v)) throw new Error('附加資料的值只能用英數字、. 與 -：' + v);
+        return k + '=' + v;
+      }).join(',');
+      var body = [VERSION, game, cls, no, list, ext].join('|') + '|';
     } catch (err) {
       return Promise.reject(err);
     }
@@ -168,13 +181,31 @@
     var mine = all[studentId(s)] = all[studentId(s)] || {};
     var levels = mine[game] = mine[game] || {};
     var old = levels[rec.level];
-    if (!old || old.max !== rec.max || rec.score > old.score) {
+    if (!old || old.max !== rec.max || rec.score > old.score ||
+        (rec.score === old.score && rec.time < old.time)) {
       levels[rec.level] = rec;
     } else if (rec.title) {
       old.title = rec.title;
     }
     save(PASSES_KEY, all);
     return old;
+  }
+
+  // 附加資料（遊戲層級）。localStorage 結構：{ "班級|座號": { 遊戲代號: { key: value } } }
+  function getExtras(game, s) {
+    return ((load(EXTRAS_KEY, {})[studentId(s)] || {})[game]) || {};
+  }
+
+  // 合併附加資料：elapsed 留最小的，其他 key 以新的為準（PROTOCOL.md「附加資料」）
+  function recordExtras(game, s, extras) {
+    var all = load(EXTRAS_KEY, {});
+    var mine = all[studentId(s)] = all[studentId(s)] || {};
+    var cur = mine[game] = mine[game] || {};
+    Object.keys(extras).forEach(function (k) {
+      if (k === 'elapsed' && cur.elapsed != null && Number(cur.elapsed) <= Number(extras.elapsed)) return;
+      cur[k] = extras[k];
+    });
+    save(EXTRAS_KEY, all);
   }
 
   // ---------- QR code ----------
@@ -350,7 +381,8 @@
         };
         return null;
       }
-      return build(game, s, levels).then(function (text) {
+      // 附加資料只放進 QR code，不顯示在對話框
+      return build(game, s, levels, getExtras(game, s)).then(function (text) {
         var rows = levels.map(function (r) {
           return '<li' + ((opts.highlight || []).indexOf(r.level) >= 0 ? ' class="cp-new"' : '') + '><span>' +
             esc(r.title || r.level) + '</span>' + scoreText(r.score, r.max) + '</li>';
@@ -391,13 +423,21 @@
   //   最後一次交出多關：show({ game, levels: [{ level, title, score, max, time? }, ...] })
   //   每過一關呼叫一次：show({ game, level, title, score, max })
   // time 是 Unix 秒，省略就用現在時間。
+  // elapsed：完成整個遊戲的用時（秒，可省略；小數四捨五入）。只放進 QR code，不會顯示給學生看；
+  //   同一個學生同一個遊戲留最小的。
   // 回傳 Promise，內容是 QR code 文字；學生取消輸入資料時 reject。
   function show(opts) {
     var game = String(opts.game);
     var batch = Array.isArray(opts.levels);
     var now = Math.floor(Date.now() / 1000);
     var recs;
+    var extras = {};
     try {
+      if (opts.elapsed != null) {
+        var elapsed = Math.round(Number(opts.elapsed));
+        if (!Number.isSafeInteger(elapsed) || elapsed < 0) throw new Error('elapsed 要是 0 以上的秒數：' + opts.elapsed);
+        extras.elapsed = String(elapsed);
+      }
       if (!CODE_RE.test(game)) throw new Error('遊戲代號只能用英數字與 -：' + game);
       recs = (batch ? opts.levels : [opts]).map(function (o) {
         var rec = {
@@ -422,6 +462,7 @@
       return Promise.reject(err);
     }
     return ensureStudent().then(function (s) {
+      recordExtras(game, s, extras);
       // 這次比之前差、QR 裡沿用舊成績的關卡
       var kept = recs.filter(function (rec) {
         var old = record(game, s, rec);
