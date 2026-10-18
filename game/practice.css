@@ -1,0 +1,38 @@
+/* 上課練習頁（practice.html）。練習畫面沿用 editor.css 的 .editor／.runner 版面。 */
+.practice-loading { position: fixed; inset: 0; display: grid; place-items: center; background: var(--ink); color: var(--paper); font-size: 1.3rem; font-weight: 700; }
+.practice-loading[hidden], .home[hidden] { display: none; }
+
+/* 關卡列表 */
+.home { max-width: 1100px; margin: 0 auto; padding: 24px 16px 40px; }
+.home-head h1 { margin: 0 0 4px; font-size: 2rem; color: var(--ink); }
+.home-head p { margin: 0 0 20px; font-size: 1.1rem; }
+.lesson-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+.lesson-card {
+  width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px;
+  border: 3px solid var(--ink); border-radius: 12px; background: var(--paper); text-align: center;
+}
+.lesson-card.cleared { background: #e3f4e5; }
+.lesson-number { font-size: 1rem; color: var(--panel); }
+.lesson-title { font-size: 1.35rem; font-weight: 800; color: var(--text); }
+.lesson-stars { font-size: 1.6rem; letter-spacing: 2px; color: #b07a12; }
+.mini-map { display: grid; grid-template-columns: repeat(var(--cols), 18px); gap: 3px; padding: 6px 0; }
+.mini-map i { width: 18px; height: 18px; border-radius: 3px; }
+.mini-map .mini-d { background: #c6a376; box-shadow: inset 0 0 0 2px #7d5a35; }
+.mini-map .mini-w { background: #77513b; }
+.mini-map .mini-o { background: #e2cfa5; box-shadow: inset 0 0 0 2px #a38457; }
+.mini-map .mini-r { background: #8fc7a3; }
+.home-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 28px; color: var(--muted); }
+
+/* 練習畫面：目標說明列 */
+.lesson-brief { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 10px 16px; background: var(--cream); border-bottom: 2px solid var(--shell-dark); }
+.lesson-goal { margin: 0; font-size: 1.25rem; font-weight: 800; }
+.lesson-stars-rule { margin: 0; grid-column: 1; color: var(--muted); }
+.lesson-hint { margin: 4px 0 0; grid-column: 1; padding: 8px 12px; border-radius: 8px; background: #fff6d8; border: 2px solid var(--brass); font-weight: 700; }
+.lesson-hint[hidden] { display: none; }
+.lesson-tools { grid-column: 2; grid-row: 1 / span 3; display: flex; flex-direction: column; gap: 6px; align-self: start; }
+.runner-check button { margin-top: 10px; width: 100%; min-height: 52px; font-size: 1.15rem; }
+
+@media (max-width: 700px) {
+  .lesson-brief { grid-template-columns: 1fr; }
+  .lesson-tools { grid-column: 1; grid-row: auto; flex-direction: row; }
+}

@@ -20,7 +20,7 @@ pull 失敗就停下來回報使用者，不要強制覆蓋。
 
 - `game.html`、`game/`：遊戲本體，包含遊戲內的角色動畫播放
 - `vendor/`：第三方函式庫（Blockly）
-- `play.html`（遊戲主畫面）、`CLAUDE.md`、`.claude/`、`docs/BACKLOG.md`
+- `play.html`（遊戲主畫面）、`practice.html`（上課練習）、`CLAUDE.md`、`.claude/`、`docs/BACKLOG.md`
 
 ## 兩邊唯一的接點：manifest.json 與 alignment.js
 

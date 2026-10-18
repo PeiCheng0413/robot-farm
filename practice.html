@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>浮葉農場｜程式練習</title>
+<link rel="stylesheet" href="game/base.css">
+<link rel="stylesheet" href="game/editor.css">
+<link rel="stylesheet" href="game/practice.css">
+</head>
+<body>
+<div id="loading" class="practice-loading"><p id="loading-text">正在載入素材…</p></div>
+
+<main id="home" class="home" hidden>
+  <header class="home-head">
+    <h1>浮葉農場｜程式練習</h1>
+    <p>重複結構：用「重複」積木，讓機器人用最少的積木做完田裡的工作。</p>
+  </header>
+  <ol id="lesson-list" class="lesson-list"></ol>
+  <footer class="home-foot">
+    <span>進度只存在這台電腦的瀏覽器裡。</span>
+    <button id="reset-progress" class="quiet">清除這台電腦的練習進度</button>
+  </footer>
+</main>
+
+<div id="lesson" class="editor" hidden>
+  <div class="editor-bar">
+    <button id="back-home">← 關卡列表</button>
+    <h2 id="lesson-title"></h2>
+    <span id="block-count" class="count"></span>
+    <button id="prev-lesson">上一關</button>
+    <button id="next-lesson">下一關</button>
+  </div>
+  <div class="lesson-brief">
+    <p id="lesson-goal" class="lesson-goal"></p>
+    <p id="lesson-stars-rule" class="lesson-stars-rule"></p>
+    <p id="lesson-hint" class="lesson-hint" hidden></p>
+    <div class="lesson-tools">
+      <button id="show-hint">💡 看提示</button>
+      <button id="clear-blocks" class="quiet">清空積木</button>
+    </div>
+  </div>
+  <div class="editor-body">
+    <div id="blockly"></div>
+    <section class="runner" aria-label="試跑">
+      <canvas id="runner-view" aria-label="這一關的田，機器人照程式動作"></canvas>
+      <p id="runner-status" class="runner-status" aria-live="polite"></p>
+      <div id="runner-check" class="runner-check" aria-live="polite" hidden></div>
+      <div class="runner-controls">
+        <button id="run-toggle" class="primary">▶ 執行</button>
+        <button id="run-step">下一步 ⏭</button>
+        <button id="run-reset">⟲ 重來</button>
+      </div>
+      <div class="runner-options">
+        <span class="option-label">速度</span><div id="run-speed" class="buttons"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="vendor/blockly/blockly_compressed.js"></script>
+<script src="vendor/blockly/blocks_compressed.js"></script>
+<script src="vendor/blockly/msg/zh-hant.js"></script>
+<script src="alignment.js"></script>
+<script type="module" src="game/practice.js"></script>
+</body>
+</html>

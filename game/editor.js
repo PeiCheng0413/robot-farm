@@ -27,8 +27,8 @@ const SCENARIOS = {
 };
 const DEFAULT_SCENARIO = { main: 'mixed', sow: 'empty', harvest: 'mature', water: 'dry' };
 
-// 過關檢查：跑完後整塊田應該達成什麼。每種腳本只檢查自己負責的事；專家田的一份腳本全部都要顧。
-const GOALS = {
+// 過關檢查：跑完後整塊田應該達成什麼。每種腳本只檢查自己負責的事；專家田的一份腳本全部都要顧。練習頁也用這份。
+export const GOALS = {
   empty:  { test: c => !c.crop,                                   text: n => `還有 ${n} 格空地沒種到` },
   mature: { test: c => c.crop && c.growth >= 1,                   text: n => `還有 ${n} 格成熟作物沒採收` },
   dry:    { test: c => c.crop && c.growth < 1 && c.moisture === 0, text: n => `還有 ${n} 格乾裂沒澆到` },

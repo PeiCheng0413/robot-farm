@@ -16,8 +16,8 @@ const ROBOT_SCALE = 1.4;   // 機器人 416 畫布的邊長＝格子邊長 × �
 const ROBOT_LIFT = 0.32;   // 機身中心比格子中心高幾格
 
 // onProgress(已完成, 總數)：給載入畫面顯示進度。
-// scene 為 true（主畫面）：載入山谷場景、俯瞰地圖與圍欄，不載名牌；false（測試畫面）反過來。
-export async function loadAssets(onProgress, { scene = false } = {}) {
+// scene 為 true（主畫面）：載入山谷場景、俯瞰地圖與圍欄，不載名牌；false（測試畫面）反過來。signs：要不要名牌。
+export async function loadAssets(onProgress, { scene = false, signs = !scene } = {}) {
   const response = await fetch('assets/manifest.json', { cache: 'no-cache' });
   if (!response.ok) throw new Error('素材數據讀取失敗：' + response.status);
   const manifest = await response.json();
@@ -31,7 +31,7 @@ export async function loadAssets(onProgress, { scene = false } = {}) {
   // 主畫面素材只取資源圖示與名牌（溫室窗框、石板地是舊版外觀，不再下載）；斜角主畫面不畫名牌（10-17）。
   // 第一版山谷（valleyFarm）的大圖已不使用，manifest 裡的規格保留給 ChatGPT 的試驗室。
   for (const item of manifest.mainScreenAssets?.items || []) {
-    if (item.layer.startsWith('environment') || scene && item.layer === 'plot-label') continue;
+    if (item.layer.startsWith('environment') || !signs && item.layer === 'plot-label') continue;
     files.add(item.file);
   }
   if (scene) {
