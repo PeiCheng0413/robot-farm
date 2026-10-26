@@ -14,14 +14,13 @@
 <main id="home" class="home" hidden>
   <header class="home-head">
     <h1>浮葉農場｜程式練習</h1>
-    <p>重複與判斷：用「重複」和「如果」積木，讓機器人用最少的積木做完田裡的工作。</p>
+    <p>用積木寫程式，讓機器人用最少的積木做完田裡的工作。每個單元做完會跳出過關 QR code，請老師掃描。</p>
     <div class="student-bar">
       <span id="student"></span>
       <button id="change-student">換人／修改班級座號</button>
     </div>
-    <button id="show-pass" class="primary pass-button">📱 出示過關 QR code 給老師掃描</button>
   </header>
-  <ol id="lesson-list" class="lesson-list"></ol>
+  <div id="units"></div>
   <footer class="home-foot">
     <span>進度依班級座號分開，只存在這台電腦的瀏覽器裡。</span>
     <button id="reset-progress" class="quiet">清除這台電腦所有同學的練習進度</button>
@@ -40,6 +39,7 @@
   <div class="lesson-brief">
     <p id="lesson-goal" class="lesson-goal"></p>
     <p id="lesson-stars-rule" class="lesson-stars-rule"></p>
+    <p id="lesson-fact" class="lesson-fact" hidden></p>
     <p id="lesson-hint" class="lesson-hint" hidden></p>
     <div class="lesson-tools">
       <button id="show-hint">💡 看提示</button>

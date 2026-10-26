@@ -56,6 +56,9 @@
 - 過關 QR code（10-18）：選關畫面「出示過關 QR code」，用 class-pass 協定 CP2（`vendor/classpass/`，來源 repo `PeiCheng0413/class-pass`）把已過關各關的星等（滿分 3）放進一張簽章 QR，老師用 class-pass app 掃描。遊戲代號 `robot-farm-practice`，關卡代號用 `lessons.js` 的 `id`；班級座號由 classpass.js 讓學生輸入。
 - 背景計時（10-18）：第一次點進任一關開始，只在練習頁開著且是目前畫面時累加，四關第一次全部過關時定格（`progress.timing.doneMs`，毫秒），同時自動跳出過關 QR code。畫面上不顯示用時；四關全破後的 QR 以 CP2 `elapsed`（秒）帶上用時，app 同一學生留最短的。
 - 第一組四關（10-18 使用者調整）：一排幼苗 → 先播種再澆水 → 看一看再澆水（「如果 腳下土壤乾裂」，練判斷）→ 繞一圈（重複包重複）。每關只給需要的積木。原本的「轉個彎」「來回兩排」取消。
+- 第二單元「且與或」三關（10-26）：西瓜要控水（且＋不是，附控水小知識）→ 播種前先澆水（或）→ 找到成熟的西瓜（當…重複＋且）。「且」那關兩層「如果」也算對（積木數一樣），上課再比較。
+- 兩個單元同一頁，各自計時、各自出示 QR：第一單元遊戲代號 `robot-farm-practice`，第二單元 `robot-farm-practice-2`（class-pass 一個遊戲只有一個用時）。
+- 關卡可以有 `variants`（其他幾塊田）：畫面那塊做到後，程式在其他田也要做到才算過關，擋掉寫死步數的寫法；星等只看畫面那塊。
 
 **分工與技術**
 - 素材、素材試驗室、動畫數據歸 ChatGPT；遊戲本體歸 Claude；唯一接點是 `manifest.json` 與 `alignment.js`（見 `AGENTS.md`）。
@@ -67,7 +70,7 @@
 - `interpreter.js` 逐步直譯器 ／ `blocks.js` Blockly 積木與編譯 ／ `session.js` 存檔
 - `render.js` 素材載入、繪圖元件、測試畫面盤面、田特寫 ／ `scene.js` 主畫面斜角與俯瞰
 - `editor.js` 腳本編輯畫面 ／ `play.js` 主畫面 ／ `main.js` 機制測試畫面
-- `practice.js` 上課練習頁 ／ `lessons.js` 練習關卡數據
+- `practice.js` 上課練習頁 ／ `lessons.js` 練習單元與關卡數據
 
 ## 明確不做
 

@@ -11,7 +11,7 @@ import { createRun, step, evaluate, describeCondition, usesPlotSense } from './i
 import { loadAssets, createPlotView } from './render.js';
 import { defineBlocks, createTheme, DEFAULT_WORKSPACES, compile, countBlocks, CompileError } from './blocks.js';
 import { GOALS } from './editor.js';
-import { LESSONS, lessonPlot, lessonCells } from './lessons.js';
+import { UNITS, LESSONS, EXTRA_GOALS, lessonPlot, lessonCells } from './lessons.js';
 
 const Blockly = window.Blockly;
 const $ = s => document.querySelector(s);
@@ -21,30 +21,35 @@ const NUMBERS = ['一', '二', '三', '四', '五', '六', '七', '八', '九', 
 const SPEEDS = [[0.5, '慢'], [1, '中'], [2.5, '快']];
 const THINK_MS = 650, RESULT_MS = 750, PAUSE_MS = 450;
 const stars = n => '★'.repeat(n) + '☆'.repeat(3 - n);
-const lessonName = i => `關卡${NUMBERS[i] || i + 1}`;
+const ALL_GOALS = { ...GOALS, ...EXTRA_GOALS };
+const unitOf = lesson => UNITS.find(u => u.id === lesson.unit);
+const lessonsOf = unit => LESSONS.filter(l => l.unit === unit.id);
+// 關卡編號在單元內從一開始數；網址 #lesson=N 用的是全部關卡的順序。
+const lessonName = i => { const l = LESSONS[i], n = lessonsOf(unitOf(l)).indexOf(l); return `關卡${NUMBERS[n] || n + 1}`; };
 
 // ---------- 進度 ----------
 
-// 存檔：{ version: 2, students: { "班級|座號": { levels: { 關卡id: { stars, time, workspace } } } } }
+// 存檔：{ version: 2, students: { "班級|座號": { levels: { 關卡id: { stars, time, workspace } }, timings: { 單元id: { ms, doneMs } } } } }
 // 第 1 版沒有分學生，不知道是誰玩的，所以不沿用。
 function loadAll() {
   try { const p = JSON.parse(localStorage.getItem(SAVE_KEY)); if (p?.version === 2) return p; } catch (e) { /* 讀不到就從頭開始 */ }
   return { version: 2, students: {} };
 }
 let all = loadAll();
-let who = null, progress = null;   // 目前的學生（{ cls, no }）與他的進度；還沒輸入班級座號時是 null
+let who, progress = null;   // 目前的學生（{ cls, no }）與他的進度；還沒輸入班級座號時是 null（who 一開始是 undefined，第一次同步一定會畫畫面）
 const record = id => progress.levels[id] || (progress.levels[id] = { stars: 0, workspace: null });
 function saveProgress() {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(all)); } catch (e) { /* 私密視窗存不了，照常練習 */ }
 }
 
 // 班級座號可能在 classpass 的對話框裡被改掉，所以定時對一下；換人就切換進度並回到關卡列表。
-const keyOf = s => s ? s.cls + '|' + s.no : null;
+const keyOf = s => s === undefined ? undefined : s ? s.cls + '|' + s.no : null;
 function syncStudent() {
   const s = window.ClassPass.getStudent();
   if (keyOf(s) === keyOf(who)) return;
   who = s;
   progress = s ? (all.students[keyOf(s)] ||= { levels: {} }) : null;
+  if (progress?.timing) { (progress.timings ||= {}).loops ||= progress.timing; delete progress.timing; }   // 只有一個單元時的舊格式
   if (lesson) close();
   renderWho();
   renderList();
@@ -63,15 +68,21 @@ const escapeHtml = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<':
 // ---------- 關卡列表 ----------
 
 function renderList() {
-  $('#lesson-list').innerHTML = LESSONS.map((lesson, i) => {
-    const got = progress?.levels[lesson.id]?.stars || 0;
-    return `<li><button class="lesson-card${got ? ' cleared' : ''}" data-index="${i}">
-      <span class="lesson-number">${lessonName(i)}</span>
-      <span class="lesson-title">${lesson.title}</span>
-      ${miniMap(lesson)}
-      <span class="lesson-stars" aria-label="${got} 顆星">${stars(got)}</span>
-    </button></li>`;
-  }).join('');
+  $('#units').innerHTML = UNITS.map(unit => `<section class="unit">
+    <div class="unit-head">
+      <div><h2>${unit.title}</h2><p>${unit.intro}</p></div>
+      <button class="primary pass-button" data-pass="${unit.id}">📱 出示這個單元的過關 QR code</button>
+    </div>
+    <ol class="lesson-list">${lessonsOf(unit).map(lesson => {
+      const i = LESSONS.indexOf(lesson), got = progress?.levels[lesson.id]?.stars || 0;
+      return `<li><button class="lesson-card${got ? ' cleared' : ''}" data-index="${i}">
+        <span class="lesson-number">${lessonName(i)}</span>
+        <span class="lesson-title">${lesson.title}</span>
+        ${miniMap(lesson)}
+        <span class="lesson-stars" aria-label="${got} 顆星">${stars(got)}</span>
+      </button></li>`;
+    }).join('')}</ol>
+  </section>`).join('');
 }
 
 // 卡片上的小地圖：一格一個方塊，乾裂、濕潤、空地顏色不同。
@@ -81,50 +92,52 @@ function miniMap(lesson) {
   return `<span class="mini-map" style="--cols:${width}" aria-hidden="true">${cells.join('')}</span>`;
 }
 
-// 過關 QR code（class-pass 協定 CP2，vendor/classpass）：一張 QR 裝所有已過關的關卡，老師用 class-pass app 掃描。
+// 過關 QR code（class-pass 協定 CP2，vendor/classpass）：一個單元一張 QR，裝這個單元已過關的關卡。
+// 每個單元是 class-pass 裡的一個「遊戲」（unit.game），所以用時也是一個單元一份。
 // 分數是星等（滿分 3）；完成時間是拿到最好星等的那一次，舊進度沒記時間的用現在。
-const PASS_GAME = 'robot-farm-practice';
-function showPass() {
+function showPass(unit) {
   const now = Math.floor(Date.now() / 1000);
-  const levels = LESSONS.filter(l => progress.levels[l.id]?.stars > 0)
+  const levels = lessonsOf(unit).filter(l => progress.levels[l.id]?.stars > 0)
     .map(l => ({ level: l.id, title: l.title, score: progress.levels[l.id].stars, max: 3, time: progress.levels[l.id].time || now }));
-  // 用時（秒）只在四關全部完成後才帶；classpass 只把它放進 QR code，不會顯示給學生。
-  const done = progress.timing?.doneMs;
-  const opts = { game: PASS_GAME, levels, ...(done != null && { elapsed: done / 1000 }) };
+  // 用時（秒）只在這個單元全部完成後才帶；classpass 只把它放進 QR code，不會顯示給學生。
+  const done = progress.timings?.[unit.id]?.doneMs;
+  const opts = { game: unit.game, levels, ...(done != null && { elapsed: done / 1000 }) };
   if (levels.length) window.ClassPass.show(opts).catch(() => {});
-  else window.ClassPass.showPassed(PASS_GAME);
+  else window.ClassPass.showPassed(unit.game);
 }
-$('#show-pass').onclick = () => progress ? showPass() : askStudent();
 
 // ---------- 背景計時（不顯示給學生）----------
-// 第一次點進任何一關開始計時，只在練習頁開著而且是目前畫面時累加（關掉、切到別的分頁就暫停）。
-// 四關都第一次過關的那一刻定格成 progress.timing.doneMs，之後再玩不會變。
+// 每個單元各自計時：第一次點進這個單元的任何一關開始，只在練習頁開著而且是目前畫面時累加（關掉、切到別的分頁就暫停）。
+// 單元裡每一關都第一次過關的那一刻定格成 progress.timings[單元].doneMs，之後再玩不會變。
 // 用時以 CP2 的 elapsed 放進過關 QR code（showPass）。
 const TICK_MS = 1000, SAVE_EVERY = 5;
 let lastTick = performance.now(), ticks = 0;
-function startTiming() {
-  if (!progress.timing) { progress.timing = { ms: 0, doneMs: null }; saveProgress(); }
+function startTiming(unit) {
+  const timings = progress.timings ||= {};
+  if (!timings[unit.id]) { timings[unit.id] = { ms: 0, doneMs: null }; saveProgress(); }
 }
 setInterval(() => {
   const now = performance.now(), dt = Math.min(now - lastTick, 3 * TICK_MS);   // 電腦睡眠醒來不會一次加一大段
   lastTick = now;
-  const t = progress?.timing;
-  if (!t || t.doneMs != null || document.visibilityState !== 'visible') return;
-  t.ms += dt;
+  const running = Object.values(progress?.timings || {}).filter(t => t.doneMs == null);
+  if (!running.length || document.visibilityState !== 'visible') return;
+  for (const t of running) t.ms += dt;
   if (++ticks % SAVE_EVERY === 0) saveProgress();
 }, TICK_MS);
-document.addEventListener('visibilitychange', () => { lastTick = performance.now(); if (progress?.timing) saveProgress(); });
+document.addEventListener('visibilitychange', () => { lastTick = performance.now(); if (progress?.timings) saveProgress(); });
 
 // 剛好在這次完成最後一關：定格用時，回傳 true。
-function finishAll() {
-  const t = progress.timing;
-  if (!t || t.doneMs != null || !LESSONS.every(l => progress.levels[l.id]?.stars > 0)) return false;
+function finishUnit(unit) {
+  const t = progress.timings?.[unit.id];
+  if (!t || t.doneMs != null || !lessonsOf(unit).every(l => progress.levels[l.id]?.stars > 0)) return false;
   t.doneMs = Math.round(t.ms);
   saveProgress();
   return true;
 }
 
-$('#lesson-list').onclick = e => {
+$('#units').onclick = e => {
+  const pass = e.target.closest('[data-pass]');
+  if (pass) return progress ? showPass(UNITS.find(u => u.id === pass.dataset.pass)) : askStudent();
   const b = e.target.closest('[data-index]');
   if (!b) return;
   if (progress) open(+b.dataset.index);
@@ -170,7 +183,7 @@ function open(index) {
   plot = lessonPlot(lesson);
   $('#home').hidden = true;
   $('#lesson').hidden = false;
-  startTiming();
+  startTiming(unitOf(lesson));
   ensureWorkspace();
   workspace.updateToolbox({ kind: 'flyoutToolbox', contents: lesson.tools.map(type => ({ kind: 'block', type })) });
   Blockly.Events.disable();   // 載入存好的積木不算「改過」
@@ -178,14 +191,16 @@ function open(index) {
     workspace.clear();
     Blockly.serialization.workspaces.load(record(lesson.id).workspace || DEFAULT_WORKSPACES.main, workspace);
   } finally { Blockly.Events.enable(); }
-  $('#lesson-title').textContent = `${lessonName(index)}｜${lesson.title}`;
+  $('#lesson-title').textContent = `${unitOf(lesson).title.split('｜')[0]}・${lessonName(index)}｜${lesson.title}`;
   $('#lesson-who').textContent = `${who.cls} 班 ${who.no} 號`;
   $('#lesson-goal').textContent = lesson.goal;
   $('#lesson-hint').hidden = true;
   $('#lesson-hint').textContent = '💡 ' + lesson.hint;
+  $('#lesson-fact').hidden = !lesson.fact;
+  $('#lesson-fact').textContent = lesson.fact || '';
   $('#lesson-stars-rule').textContent = `★ 完成目標　★★ 用 ${lesson.stars[0]} 塊積木以內　★★★ 用 ${lesson.stars[1]} 塊以內，而且沒撞牆、沒白做`;
-  $('#prev-lesson').disabled = index === 0;
-  $('#next-lesson').disabled = index === LESSONS.length - 1;
+  $('#prev-lesson').disabled = !sameUnit(index - 1);
+  $('#next-lesson').disabled = !sameUnit(index + 1);
   updateCount();
   view = createPlotView($('#runner-view'), plot, assets, 0);
   resetSandbox();
@@ -196,6 +211,9 @@ function open(index) {
   raf = requestAnimationFrame(tick);
   location.hash = 'lesson=' + (index + 1);
 }
+
+// 上一關／下一關只在同一個單元裡走。
+const sameUnit = i => LESSONS[i]?.unit === lesson?.unit;
 
 function close() {
   cancelAnimationFrame(raf);
@@ -218,7 +236,7 @@ const highlight = id => workspace.highlightBlock(id || null);
 
 function resetSandbox(message) {
   sandbox = {
-    ps: { crop: 'lettuce', cells: lessonCells(lesson) },
+    ps: { crop: lesson.crop || 'lettuce', cells: lessonCells(lesson) },
     robot: { plot: plot.id, x: plot.entry.x, y: plot.entry.y, heading: plot.entry.heading },
     actions: 0, steps: 0, controls: 0, bumps: 0, wasted: 0, marks: [],
     run: null, act: null, clock: sandbox?.clock || 0, status: 'ready', pending: false,
@@ -253,15 +271,50 @@ function crash(reason) {
   showCheck({ title: '沒有完成：程式當機了', items: [CRASH_REASONS[reason]], ok: false });
 }
 
-function finishCheck() {
-  const sb = sandbox, problems = [], marks = [];
+// 檢查一塊田跑完後的目標，回傳 { problems, marks }。
+function checkGoals(cells, plotCells) {
+  const problems = [], marks = [];
   for (const goal of lesson.goals) {
-    const bad = plot.cells.filter(([x, y]) => GOALS[goal].test(sb.ps.cells[cellKey(x, y)]));
+    const bad = plotCells.filter(([x, y]) => ALL_GOALS[goal].test(cells[cellKey(x, y)]));
     if (!bad.length) continue;
-    problems.push(GOALS[goal].text(bad.length));
+    problems.push(ALL_GOALS[goal].text(bad.length));
     for (const [x, y] of bad) marks.push({ x, y });
   }
+  return { problems, marks };
+}
+
+// 在另一塊田（lesson.variants）上不播動畫、直接把程式跑完，回傳沒做到的事；全部做到回傳空陣列。
+function runVariant(map) {
+  const vplot = lessonPlot(lesson, map), ps = { crop: lesson.crop || 'lettuce', cells: lessonCells(lesson, map) };
+  const robot = { x: vplot.entry.x, y: vplot.entry.y, heading: vplot.entry.heading };
+  const run = createRun(compile(workspace));
+  let actions = 0, controls = 0;
+  for (;;) {
+    const e = step(run, cond => evaluate(cond, leaf => senseLeaf(Infinity, robot, ps, leaf)));
+    if (e.type === 'done') break;
+    if (e.type === 'error') return [CRASH_REASONS[e.error]];
+    if (e.type !== 'action') { if (++controls > CONTROL_LIMIT) return [CRASH_REASONS.runaway]; continue; }
+    if (++actions > ACTION_LIMIT) return [CRASH_REASONS.tooLong];
+    controls = 0;
+    applyAction(ps, robot, planAction(ps, robot, e.op));
+  }
+  return checkGoals(ps.cells, vplot.cells).problems;
+}
+
+function finishCheck() {
+  const sb = sandbox, { problems, marks } = checkGoals(sb.ps.cells, plot.cells);
   sb.marks = marks;
+  // 畫面上這塊田做到了，再換幾塊田試：程式要「看了再決定」，不能把步數寫死。
+  if (!problems.length && lesson.variants) {
+    const failed = lesson.variants.map((map, i) => ({ i, bad: runVariant(map) })).filter(v => v.bad.length);
+    if (failed.length) {
+      say('這塊田做到了，但換一塊田就不行。', 'warn');
+      showCheck({ title: '還沒完成：換一塊田試試看', ok: false,
+        items: failed.map(v => `第 ${v.i + 1} 塊田（${describeVariant(lesson.variants[v.i])}）：${v.bad.join('、')}`),
+        tips: ['成熟的西瓜每次位置都不一樣。不要數步數，要讓機器人邊走邊看。'] });
+      return;
+    }
+  }
   const tips = [];
   if (sb.bumps) tips.push(`撞到邊界 ${sb.bumps} 次`);
   if (sb.wasted) tips.push(`白做 ${sb.wasted} 次（那一格不需要）`);
@@ -273,14 +326,22 @@ function finishCheck() {
   const [two, three] = lesson.stars, n = sb.blocks;
   const got = n <= three && !sb.bumps && !sb.wasted ? 3 : n <= two ? 2 : 1;
   const how = [`這次用了 ${n} 塊積木`];
-  if (got === 1) how.push(`想要 ★★：試著用「重複」把積木減到 ${two} 塊以內`);
+  if (got === 1) how.push(`想要 ★★：把積木減到 ${two} 塊以內`);
   if (got === 2) how.push(n <= three ? '想要 ★★★：不要撞牆、不要白做' : `想要 ★★★：再減到 ${three} 塊以內，而且不撞牆、不白做`);
   const best = record(lesson.id).stars;
   if (got > best) { Object.assign(record(lesson.id), { stars: got, time: Math.floor(Date.now() / 1000) }); saveProgress(); }
   say(`完成了！跑了 ${sb.actions} 個動作。`, 'done');
-  showCheck({ title: `完成！${stars(got)}` + (got > best && best ? '（新紀錄）' : ''), items: [], tips: [...how, ...tips], ok: true, next: current < LESSONS.length - 1 });
-  // 四關第一次全部完成：稍等一下讓學生看到這關的結果，再自動跳出過關 QR code。
-  if (!best && finishAll()) setTimeout(showPass, 1500);   // 只在「這關第一次過」時檢查，已經全破的再玩不會重算
+  if (lesson.variants) tips.unshift(`另外 ${lesson.variants.length} 塊不一樣的田也都做到了`);
+  showCheck({ title: `完成！${stars(got)}` + (got > best && best ? '（新紀錄）' : ''), items: [], tips: [...how, ...tips], ok: true, next: sameUnit(current + 1) });
+  // 單元裡每一關第一次全部完成：稍等一下讓學生看到這關的結果，再自動跳出這個單元的過關 QR code。
+  const unit = unitOf(lesson);
+  if (!best && finishUnit(unit)) setTimeout(() => showPass(unit), 1500);   // 只在「這關第一次過」時檢查，已經全破的再玩不會重算
+}
+
+// 換一塊田時，用一句話說明這塊田長什麼樣子（目前只有「找到成熟的」這種題目會用到）。
+function describeVariant(map) {
+  const row = map.join(''), at = row.indexOf('r');
+  return at < 0 ? '一顆成熟的都沒有' : `成熟的在第 ${at + 1} 格`;
 }
 
 function showCheck(result) {
