@@ -108,7 +108,7 @@ manifest `valleyFarm.assets.farmhouse`：sourceRect `[140,78,1340,856]`、局部
 7. 提交前再 pull --ff-only 避免 Claude 已推新版本。只 add 自己的檔案，不能 git add . 把 Claude 工作一起帶進提交。
 8. 若推送部署，等待 GitHub Pages 對應 SHA 的 run 成功再宣告線上已更新；必要時比對線上檔案 hash。既有 workflow 是 Pages 自動部署，repo 沒有自訂 .github/workflows 目錄。
 
-本機可以 `python3 -m http.server 8765 --bind 127.0.0.1` 測試；前對話曾啟動一個此埠服務，先確認再另開。瀏覽器工具的舊 tab／JS 變數不保證跨對話存在，需重新取得工具文件與 tab。不必為接手而開新 worktree 或子代理。
+本機可以 `python3 -m http.server 8765` 測試；前對話曾啟動一個此埠服務，先確認再另開。瀏覽器工具的舊 tab／JS 變數不保證跨對話存在，需重新取得工具文件與 tab。不必為接手而開新 worktree 或子代理。
 
 ## 為什麼換對話
 
