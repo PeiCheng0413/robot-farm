@@ -1,4 +1,5 @@
-// 上課練習頁（practice.html）：一關一塊固定的田，學生用積木寫程式完成目標。
+// 上課練習頁（practice.html 第一單元、practice2.html 第二單元）：一關一塊固定的田，學生用積木寫程式完成目標。
+// 一頁一個單元，由 <body data-unit="…"> 指定；兩頁共用這份程式、同一份進度存檔與班級座號。
 // 跟農場完全獨立：不扣 Token、不賺錢、不讀寫農場存檔；進度與每關的積木存在這台瀏覽器。
 // 進度依班級座號（classpass.js 讓學生輸入）分開存：換了班級座號就是另一位同學，要從頭玩，
 // 免得拿別人玩出來的星星用自己的座號出示給老師掃。
@@ -11,7 +12,12 @@ import { createRun, step, evaluate, describeCondition, usesPlotSense } from './i
 import { loadAssets, createPlotView } from './render.js';
 import { defineBlocks, createTheme, DEFAULT_WORKSPACES, compile, countBlocks, findStart, CompileError } from './blocks.js';
 import { GOALS } from './editor.js';
-import { UNITS, LESSONS, EXTRA_GOALS, lessonPlot, lessonCells } from './lessons.js';
+import { UNITS as ALL_UNITS, LESSONS as ALL_LESSONS, EXTRA_GOALS, lessonPlot, lessonCells } from './lessons.js';
+
+// 這一頁的單元與關卡；網址 #lesson=N 是這一頁的第 N 關。
+const PAGE_UNIT = document.body.dataset.unit || ALL_UNITS[0].id;
+const UNITS = ALL_UNITS.filter(u => u.id === PAGE_UNIT);
+const LESSONS = ALL_LESSONS.filter(l => l.unit === PAGE_UNIT);
 
 const Blockly = window.Blockly;
 const $ = s => document.querySelector(s);
@@ -24,7 +30,7 @@ const stars = n => '★'.repeat(n) + '☆'.repeat(3 - n);
 const ALL_GOALS = { ...GOALS, ...EXTRA_GOALS };
 const unitOf = lesson => UNITS.find(u => u.id === lesson.unit);
 const lessonsOf = unit => LESSONS.filter(l => l.unit === unit.id);
-// 關卡編號在單元內從一開始數；網址 #lesson=N 用的是全部關卡的順序。
+// 關卡編號在單元內從一開始數。
 const lessonName = i => { const l = LESSONS[i], n = lessonsOf(unitOf(l)).indexOf(l); return `關卡${NUMBERS[n] || n + 1}`; };
 
 // ---------- 進度 ----------
