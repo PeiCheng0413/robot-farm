@@ -9,7 +9,7 @@ import { cellKey } from './plots.js';
 import { planAction, applyAction, senseLeaf, CRASH_REASONS } from './sim.js';
 import { createRun, step, evaluate, describeCondition, usesPlotSense } from './interpreter.js';
 import { loadAssets, createPlotView } from './render.js';
-import { defineBlocks, createTheme, DEFAULT_WORKSPACES, compile, countBlocks, CompileError } from './blocks.js';
+import { defineBlocks, createTheme, DEFAULT_WORKSPACES, compile, countBlocks, findStart, CompileError } from './blocks.js';
 import { GOALS } from './editor.js';
 import { UNITS, LESSONS, EXTRA_GOALS, lessonPlot, lessonCells } from './lessons.js';
 
@@ -301,9 +301,23 @@ function runVariant(map) {
   return checkGoals(ps.cells, vplot.cells).problems;
 }
 
+// 這關規定要用、但程式裡（接在「開始」下面的）沒有用到的積木，回傳它們的名稱。
+const BLOCK_NAMES = { rf_and: '且', rf_or: '或', rf_not: '不是', rf_if: '如果', rf_while: '當…就重複', rf_repeat: '重複' };
+function missingBlocks() {
+  const used = new Set((findStart(workspace)?.getDescendants(false) || []).filter(b => b.isEnabled()).map(b => b.type));
+  return (lesson.require || []).filter(t => !used.has(t)).map(t => BLOCK_NAMES[t] || t);
+}
+
 function finishCheck() {
   const sb = sandbox, { problems, marks } = checkGoals(sb.ps.cells, plot.cells);
   sb.marks = marks;
+  const missing = missingBlocks();
+  if (!problems.length && missing.length) {
+    say('田裡的工作做到了，但這關規定要用的積木沒有用到。', 'warn');
+    showCheck({ title: `還沒完成：這關一定要用「${missing.join('」「')}」積木`, ok: false, items: [],
+      tips: ['兩層「如果」也能做到，但這關要練習用「且」把兩個條件接在同一個「如果」裡。'] });
+    return;
+  }
   // 畫面上這塊田做到了，再換幾塊田試：程式要「看了再決定」，不能把步數寫死。
   if (!problems.length && lesson.variants) {
     const failed = lesson.variants.map((map, i) => ({ i, bad: runVariant(map) })).filter(v => v.bad.length);
