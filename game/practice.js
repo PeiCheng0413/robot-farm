@@ -308,7 +308,7 @@ function runVariant(map) {
 }
 
 // 這關規定要用、但程式裡（接在「開始」下面的）沒有用到的積木，回傳它們的名稱。
-const BLOCK_NAMES = { rf_and: '且', rf_or: '或', rf_not: '不是', rf_if: '如果', rf_while: '當…就重複', rf_repeat: '重複' };
+const BLOCK_NAMES = { rf_and: '且', rf_or: '或', rf_not: '不成立', rf_if: '如果', rf_while: '當…就重複', rf_until: '重複直到', rf_repeat: '重複' };
 function missingBlocks() {
   const used = new Set((findStart(workspace)?.getDescendants(false) || []).filter(b => b.isEnabled()).map(b => b.type));
   return (lesson.require || []).filter(t => !used.has(t)).map(t => BLOCK_NAMES[t] || t);
@@ -402,8 +402,8 @@ function advance() {
       if (++sb.controls > CONTROL_LIMIT) return crash('runaway');
       const scan = usesPlotSense(e.cond);
       const think = scan ? view.painter.clipLength('scan') : THINK_MS;
-      const kind = workspace.getBlockById(e.id)?.type === 'rf_while' ? '當' : '如果';
-      sb.act = { kind: 'decide', scan, value: e.value, start, mid: start + think, end: start + think + RESULT_MS, text: `${kind}「${describeCondition(e.cond)}」` };
+      const type = workspace.getBlockById(e.id)?.type, kind = { rf_while: '當', rf_until: '重複直到' }[type] || '如果';
+      sb.act = { kind: 'decide', scan, value: e.value, start, mid: start + think, end: start + think + RESULT_MS, text: `${kind}「${describeCondition(e.cond)}」`, until: type === 'rf_until' };
       say(`第 ${sb.steps} 步｜判斷 ${sb.act.text}…`);
       return;
     }
@@ -444,7 +444,7 @@ function tick(now) {
   sb.clock += dt * (sb.act ? speed : 1);
   if (sb.act?.kind === 'decide' && !sb.act.revealed && sb.clock >= sb.act.mid) {
     sb.act.revealed = true;
-    say(`第 ${sb.steps} 步｜判斷 ${sb.act.text} → ${sb.act.value ? '成立 ✔' : '不成立 ✘'}`, sb.act.value ? 'yes' : 'no');
+    say(`第 ${sb.steps} 步｜判斷 ${sb.act.text} → ${sb.act.value ? '成立 ✔' : '不成立 ✘'}${sb.act.until ? (sb.act.value ? '，停止重複' : '，繼續重複') : ''}`, sb.act.value ? 'yes' : 'no');
   }
   if (sb.act && sb.clock >= sb.act.end) finishAct();
   if (!sb.act && sb.status === 'ready' && (mode === 'running' || sb.pending)) { sb.pending = false; advance(); }

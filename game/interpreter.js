@@ -34,9 +34,9 @@ export function step(run, sense) {
         frame.i = 0;
         return { type: 'loop', id: frame.id, iteration: frame.times - frame.left + 1, times: frame.times };
       }
-      if (frame.loop === 'while') {
-        const value = sense(frame.cond);
-        if (value) frame.i = 0; else run.stack.pop();
+      if (frame.loop === 'while' || frame.loop === 'until') {
+        const value = sense(frame.cond), again = frame.loop === 'while' ? value : !value;
+        if (again) frame.i = 0; else run.stack.pop();
         return { type: 'cond', id: frame.id, cond: frame.cond, value };
       }
       if (frame.call) run.depth--;
@@ -60,6 +60,12 @@ export function step(run, sense) {
         // 空的「當…重複」不會前進，交給 CONTROL_LIMIT 判定當機。
         const value = sense(s.cond);
         if (value) run.stack.push({ body: s.body, i: 0, loop: 'while', id: s.id, cond: s.cond });
+        return { type: 'cond', id: s.id, cond: s.cond, value };
+      }
+      case 'until': {
+        // 「重複直到」：先看條件，成立就不做；不成立就做一輪再看。空的迴圈一樣交給 CONTROL_LIMIT。
+        const value = sense(s.cond);
+        if (!value) run.stack.push({ body: s.body, i: 0, loop: 'until', id: s.id, cond: s.cond });
         return { type: 'cond', id: s.id, cond: s.cond, value };
       }
       case 'if': {
@@ -88,7 +94,7 @@ export function nextAction(run, sense) {
   return { error: 'runaway' };
 }
 
-// 包一層，讓 sense 支援「不是」「且」「或」。
+// 包一層，讓 sense 支援「不成立」「且」「或」。
 export function evaluate(cond, senseLeaf) {
   if (cond.not) return !evaluate(cond.not, senseLeaf);
   if (cond.all) return cond.all.every(c => evaluate(c, senseLeaf));
@@ -100,7 +106,7 @@ export function evaluate(cond, senseLeaf) {
 const WHAT = { mature: '已成熟', empty: '是空地', dry: '土壤乾裂' };
 const PLOT_WHAT = { mature: '有成熟作物', empty: '有空地', dry: '有乾裂土壤' };
 export function describeCondition(cond) {
-  if (cond.not) return '不是（' + describeCondition(cond.not) + '）';
+  if (cond.not) return cond.not.sense ? describeCondition(cond.not) + ' 不成立' : '（' + describeCondition(cond.not) + '）不成立';
   if (cond.all) return cond.all.map(describeCondition).join(' 且 ');
   if (cond.any) return cond.any.map(describeCondition).join(' 或 ');
   switch (cond.sense) {

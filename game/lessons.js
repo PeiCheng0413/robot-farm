@@ -17,7 +17,7 @@
 
 export const UNITS = [
   { id: 'loops', title: '第一單元｜重複與判斷', intro: '用「重複」和「如果」積木，讓機器人用最少的積木做完田裡的工作。', game: 'robot-farm-practice' },
-  { id: 'logic', title: '第二單元｜且與或', intro: '一個條件不夠用的時候，用「且」「或」「不是」把條件組合起來。', game: 'robot-farm-practice-2' },
+  { id: 'logic', title: '第二單元｜且與或', intro: '一個條件不夠用的時候，用「且」「或」「不成立」把條件組合起來。', game: 'robot-farm-practice-2' },
 ];
 
 export const LESSONS = [
@@ -81,7 +81,7 @@ export const LESSONS = [
     id: 'melon-dry',
     title: '西瓜要控水',
     goal: '乾裂的西瓜幼苗要澆水；已經成熟的西瓜就算土乾了也不要澆！這關一定要用「且」積木。',
-    hint: '要同時符合兩件事才澆水：「土壤乾裂」而且「不是已成熟」。用「且」把兩個條件接起來，「不是」可以把條件反過來。',
+    hint: '要同時符合兩件事才澆水：「土壤乾裂」而且「已成熟 不成立」。用「且」把兩個條件接起來，「不成立」可以把條件反過來。',
     fact: '🍉 小知識：西瓜快成熟的最後一兩個星期，農夫會減少澆水，叫做「控水」。這時候水太多，西瓜會變得不甜，果皮還可能裂開。',
     crop: 'watermelon',
     map: ['dDwdDdwD'],
@@ -90,7 +90,7 @@ export const LESSONS = [
     tools: ['rf_move', 'rf_water', 'rf_repeat', 'rf_if', 'rf_cell', 'rf_and', 'rf_not'],
     require: ['rf_and'],
     stars: [10, 8],
-    solution: '重複 7 次〔如果 腳下土壤乾裂 且 不是 腳下已成熟 就 澆水；前進〕（最後一格是成熟的，不用看）。兩層「如果」也做得到，但這關規定要用「且」',
+    solution: '重複 7 次〔如果 腳下土壤乾裂 且（腳下已成熟 不成立）就 澆水；前進〕（最後一格是成熟的，不用看）。兩層「如果」也做得到，但這關規定要用「且」',
   },
   {
     unit: 'logic',
@@ -110,15 +110,15 @@ export const LESSONS = [
     id: 'find-ripe',
     title: '找到成熟的西瓜',
     goal: '一路往前走，遇到第一顆成熟的西瓜就停下來採收。成熟的西瓜每次位置都不一樣，也可能一顆都沒有！',
-    hint: '機器人不知道西瓜在哪裡，所以不能數步數。用「當…就重複」一直往前走：「前方可以走」而且「不是已成熟」才繼續走，停下來以後再採收。',
+    hint: '機器人不知道西瓜在哪裡，所以不能數步數。用「重複直到」一直往前走，直到「腳下已成熟」或「前方可以走 不成立」（沒路了）才停，停下來以後再採收。',
     crop: 'watermelon',
     map: ['wwwwrww'],
     variants: [['rwwwwww'], ['wwwwwwr'], ['wwwwwww']],
     entry: { x: 0, y: 0, heading: 'east' },
     goals: ['mature'],
-    tools: ['rf_move', 'rf_harvest', 'rf_while', 'rf_cell', 'rf_front', 'rf_and', 'rf_not'],
+    tools: ['rf_move', 'rf_harvest', 'rf_until', 'rf_cell', 'rf_front', 'rf_or', 'rf_not'],
     stars: [9, 7],
-    solution: '當 前方可以走 且 不是 腳下已成熟 就重複〔前進〕；採收',
+    solution: '重複直到（腳下已成熟 或（前方可以走 不成立））〔前進〕；採收',
   },
 ];
 

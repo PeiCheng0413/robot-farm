@@ -234,8 +234,8 @@ export function createEditor({ assets, getState, onSave, onStars }) {
         if (++sb.controls > CONTROL_LIMIT) return crash('runaway');
         const scan = usesPlotSense(e.cond);
         const think = scan ? view.painter.clipLength('scan') : THINK_MS;
-        const kind = workspace.getBlockById(e.id)?.type === 'rf_while' ? '當' : '如果';
-        sb.act = { kind: 'decide', scan, value: e.value, start, mid: start + think, end: start + think + RESULT_MS, text: `${kind}「${describeCondition(e.cond)}」` };
+        const type = workspace.getBlockById(e.id)?.type, kind = { rf_while: '當', rf_until: '重複直到' }[type] || '如果';
+        sb.act = { kind: 'decide', scan, value: e.value, start, mid: start + think, end: start + think + RESULT_MS, text: `${kind}「${describeCondition(e.cond)}」`, until: type === 'rf_until' };
         say(`第 ${sb.steps} 步｜判斷 ${sb.act.text}${scan ? '：掃描整塊田…' : '…'}`);
         return;
       }
@@ -277,7 +277,7 @@ export function createEditor({ assets, getState, onSave, onStars }) {
     sb.clock += dt * (sb.act ? speed : 1);
     if (sb.act?.kind === 'decide' && !sb.act.revealed && sb.clock >= sb.act.mid) {
       sb.act.revealed = true;
-      say(`第 ${sb.steps} 步｜判斷 ${sb.act.text} → ${sb.act.value ? '成立 ✔' : '不成立 ✘'}`, sb.act.value ? 'yes' : 'no');
+      say(`第 ${sb.steps} 步｜判斷 ${sb.act.text} → ${sb.act.value ? '成立 ✔' : '不成立 ✘'}${sb.act.until ? (sb.act.value ? '，停止重複' : '，繼續重複') : ''}`, sb.act.value ? 'yes' : 'no');
     }
     if (sb.act && sb.clock >= sb.act.end) finishAct();
     if (!sb.act && sb.status === 'ready' && (mode === 'running' || sb.pending)) { sb.pending = false; advance(); }
