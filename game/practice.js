@@ -10,7 +10,7 @@ import { cellKey } from './plots.js';
 import { planAction, applyAction, senseLeaf, CRASH_REASONS } from './sim.js';
 import { createRun, step, evaluate, describeCondition, usesPlotSense } from './interpreter.js';
 import { loadAssets, createPlotView } from './render.js';
-import { defineBlocks, createTheme, DEFAULT_WORKSPACES, compile, countBlocks, findStart, CompileError } from './blocks.js';
+import { defineBlocks, createTheme, DEFAULT_WORKSPACES, compile, countBlocks, findStart, CompileError, migrateWorkspace } from './blocks.js';
 import { GOALS } from './editor.js';
 import { UNITS as ALL_UNITS, LESSONS as ALL_LESSONS, EXTRA_GOALS, lessonPlot, lessonCells } from './lessons.js';
 
@@ -195,7 +195,7 @@ function open(index) {
   Blockly.Events.disable();   // 載入存好的積木不算「改過」
   try {
     workspace.clear();
-    Blockly.serialization.workspaces.load(record(lesson.id).workspace || DEFAULT_WORKSPACES.main, workspace);
+    Blockly.serialization.workspaces.load(migrateWorkspace(record(lesson.id).workspace) || DEFAULT_WORKSPACES.main, workspace);
   } finally { Blockly.Events.enable(); }
   $('#lesson-title').textContent = `${unitOf(lesson).title.split('｜')[0]}・${lessonName(index)}｜${lesson.title}`;
   $('#lesson-who').textContent = `${who.cls} 班 ${who.no} 號`;
@@ -308,7 +308,7 @@ function runVariant(map) {
 }
 
 // 這關規定要用、但程式裡（接在「開始」下面的）沒有用到的積木，回傳它們的名稱。
-const BLOCK_NAMES = { rf_and: '且', rf_or: '或', rf_not: '不成立', rf_if: '如果', rf_while: '當…就重複', rf_until: '重複直到', rf_repeat: '重複' };
+const BLOCK_NAMES = { rf_and: '且', rf_or: '或', rf_not: '不成立', rf_if: '如果', rf_until: '重複直到', rf_repeat: '重複' };
 function missingBlocks() {
   const used = new Set((findStart(workspace)?.getDescendants(false) || []).filter(b => b.isEnabled()).map(b => b.type));
   return (lesson.require || []).filter(t => !used.has(t)).map(t => BLOCK_NAMES[t] || t);
@@ -402,7 +402,7 @@ function advance() {
       if (++sb.controls > CONTROL_LIMIT) return crash('runaway');
       const scan = usesPlotSense(e.cond);
       const think = scan ? view.painter.clipLength('scan') : THINK_MS;
-      const type = workspace.getBlockById(e.id)?.type, kind = { rf_while: '當', rf_until: '重複直到' }[type] || '如果';
+      const type = workspace.getBlockById(e.id)?.type, kind = type === 'rf_until' ? '重複直到' : '如果';
       sb.act = { kind: 'decide', scan, value: e.value, start, mid: start + think, end: start + think + RESULT_MS, text: `${kind}「${describeCondition(e.cond)}」`, until: type === 'rf_until' };
       say(`第 ${sb.steps} 步｜判斷 ${sb.act.text}…`);
       return;

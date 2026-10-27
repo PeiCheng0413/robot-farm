@@ -1,7 +1,8 @@
 // 逐步直譯器：只認編譯後的指令樹（見 blocks.js 的 compile），完全不碰 Blockly。
 //
 // 指令：{op:'move'|'turnLeft'|'turnRight'|'sow'|'water'|'harvest'|'leave'}  {op:'call', name}
-//       {op:'repeat', times, body}  {op:'while', cond, body}  {op:'if', cond, then, else}
+//       {op:'repeat', times, body}  {op:'until', cond, body}（重複直到）  {op:'if', cond, then, else}
+//       舊存檔裡的 {op:'while'} 由 migrateProgram 換成 until。
 // 條件：{sense:'cell', what:'mature'|'empty'|'dry'}  {sense:'front'}
 //       {sense:'plot', what:'mature'|'empty'|'dry'}  {sense:'tokenLess', value}
 //       {not:條件}  {all:[條件, 條件]}（且）  {any:[條件, 條件]}（或）
@@ -14,6 +15,18 @@ import { CONTROL_LIMIT, CALL_DEPTH } from './config.js';
 
 // 程式可以是指令陣列（舊格式），或 { body, functions }（含函式）。
 export const programBody = program => Array.isArray(program) ? program : program.body;
+
+// 舊存檔的編譯結果：「當 X 就重複」（op 'while'）換成「重複直到（X 不成立）」。回傳新的程式，不改動原本那份。
+export function migrateProgram(program) {
+  const fix = list => list.map(s => {
+    const n = { ...s };
+    if (n.op === 'while') Object.assign(n, { op: 'until', cond: { not: n.cond, id: n.cond.id } });
+    for (const k of ['body', 'then', 'else']) if (n[k]) n[k] = fix(n[k]);
+    return n;
+  });
+  if (Array.isArray(program)) return fix(program);
+  return { ...program, body: fix(program.body), functions: Object.fromEntries(Object.entries(program.functions || {}).map(([k, v]) => [k, fix(v)])) };
+}
 
 export function createRun(program) {
   return { stack: [{ body: programBody(program), i: 0 }], functions: Array.isArray(program) ? {} : program.functions, depth: 0 };
@@ -34,9 +47,9 @@ export function step(run, sense) {
         frame.i = 0;
         return { type: 'loop', id: frame.id, iteration: frame.times - frame.left + 1, times: frame.times };
       }
-      if (frame.loop === 'while' || frame.loop === 'until') {
-        const value = sense(frame.cond), again = frame.loop === 'while' ? value : !value;
-        if (again) frame.i = 0; else run.stack.pop();
+      if (frame.loop === 'until') {
+        const value = sense(frame.cond);
+        if (!value) frame.i = 0; else run.stack.pop();
         return { type: 'cond', id: frame.id, cond: frame.cond, value };
       }
       if (frame.call) run.depth--;
@@ -56,12 +69,6 @@ export function step(run, sense) {
       case 'repeat':
         if (s.times > 0 && s.body.length) run.stack.push({ body: s.body, i: 0, loop: 'repeat', id: s.id, times: s.times, left: s.times });
         return { type: 'loop', id: s.id, iteration: 1, times: s.times };
-      case 'while': {
-        // 空的「當…重複」不會前進，交給 CONTROL_LIMIT 判定當機。
-        const value = sense(s.cond);
-        if (value) run.stack.push({ body: s.body, i: 0, loop: 'while', id: s.id, cond: s.cond });
-        return { type: 'cond', id: s.id, cond: s.cond, value };
-      }
       case 'until': {
         // 「重複直到」：先看條件，成立就不做；不成立就做一輪再看。空的迴圈一樣交給 CONTROL_LIMIT。
         const value = sense(s.cond);

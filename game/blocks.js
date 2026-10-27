@@ -30,12 +30,7 @@ const BLOCKS = [
     previousStatement: null, nextStatement: null, colour: COLOURS.flow, tooltip: '把裡面的積木重複執行指定次數',
   },
   {
-    type: 'rf_while', message0: '當 %1 就重複', args0: [{ type: 'input_value', name: 'COND', check: 'Boolean' }],
-    message1: '%1', args1: [{ type: 'input_statement', name: 'DO' }],
-    previousStatement: null, nextStatement: null, colour: COLOURS.flow, tooltip: '條件成立就一直重複裡面的積木',
-  },
-  {
-    // 跟 Scratch 一樣的「重複直到」：條件成立就停，不成立就繼續。舊腳本用的「當…就重複」保留，但不放進積木箱。
+    // 跟 Scratch 一樣的「重複直到」：條件成立就停，不成立就繼續。（10-27 拿掉 Scratch 沒有的「當…就重複」，舊存檔見 migrateWorkspace）
     type: 'rf_until', message0: '重複直到 %1', args0: [{ type: 'input_value', name: 'COND', check: 'Boolean' }],
     message1: '%1', args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: null, nextStatement: null, colour: COLOURS.flow, tooltip: '一直重複裡面的積木，直到條件成立才停（一開始就成立的話一次都不做）',
@@ -126,6 +121,24 @@ export const DEFAULT_WORKSPACES = {
   main: startWith(null),
 };
 
+// ---------- 舊存檔 ----------
+
+// 舊的「當〈X〉就重複」（rf_while）換成意思一樣的「重複直到〈〈X〉不成立〉」。積木已經拿掉，不轉換的話舊存檔載入會失敗。
+// 回傳新的 Blockly 存檔（不改動傳進來的那份）；沒有舊積木時原樣回傳。
+export function migrateWorkspace(json) {
+  if (!json || !JSON.stringify(json).includes('"rf_while"')) return json;
+  const walk = v => {
+    if (Array.isArray(v)) return v.map(walk);
+    if (!v || typeof v !== 'object') return v;
+    const out = Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x)]));
+    if (out.type !== 'rf_while') return out;
+    const { COND, ...rest } = out.inputs || {};
+    const inputs = COND?.block ? { ...rest, COND: { block: { type: 'rf_not', inputs: { COND: { block: COND.block } } } } } : rest;
+    return { ...out, type: 'rf_until', inputs };
+  };
+  return walk(json);
+}
+
 // ---------- 編譯 ----------
 
 export class CompileError extends Error {}
@@ -184,7 +197,6 @@ function compileStatement(b) {
     case 'rf_harvest': return { op: 'harvest' };
     case 'rf_leave': return { op: 'leave' };
     case 'rf_repeat': return { op: 'repeat', times: Number(b.getFieldValue('TIMES')), body: inner('DO') };
-    case 'rf_while': return { op: 'while', cond: compileCondition(b, 'COND'), body: inner('DO') };
     case 'rf_until': return { op: 'until', cond: compileCondition(b, 'COND'), body: inner('DO') };
     case 'rf_if': return { op: 'if', cond: compileCondition(b, 'COND'), then: inner('DO'), else: [] };
     case 'rf_if_else': return { op: 'if', cond: compileCondition(b, 'COND'), then: inner('DO'), else: inner('ELSE') };
@@ -193,7 +205,7 @@ function compileStatement(b) {
   }
 }
 
-const SLOT_NAMES = { rf_not: '不成立', rf_while: '當…就重複', rf_until: '重複直到', rf_and: '且', rf_or: '或' };
+const SLOT_NAMES = { rf_not: '不成立', rf_until: '重複直到', rf_and: '且', rf_or: '或' };
 
 function compileCondition(parent, input) {
   const b = parent.getInputTargetBlock(input);

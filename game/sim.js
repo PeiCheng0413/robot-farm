@@ -14,7 +14,7 @@ import {
   START_PLOTS, SHAPE_PRICE, PLOT_TYPES, SELL_REFUND, START_LAND, landPrice,
 } from './config.js';
 import { PLOTS, plotById, cellKey, stagesOf, canPlace, syncPlots, makePlot, BOARD } from './plots.js';
-import { createRun, nextAction, evaluate, programBody } from './interpreter.js';
+import { createRun, nextAction, evaluate, programBody, migrateProgram } from './interpreter.js';
 
 // 朝向順序與左右轉方向和 manifest.movement 一致：右轉 +1、左轉 -1。
 export const HEADINGS = ['south', 'west', 'north', 'east'];
@@ -105,6 +105,8 @@ export function restore(json) {
   const state = { ...saved, robots: saved.robots.map(r => ({ ...r, act: null, run: null, freeAt: saved.time, phase: r.phase === 'stuck' ? 'stuck' : 'idle' })) };
   sync(state);
   for (const plot of PLOTS) state.levels[levelKey(plot.shape, plot.type)] ||= newLevel(plot);
+  // 「當…就重複」拿掉了（10-27）：舊的編譯結果換成「重複直到」，Blockly 存檔在打開編輯器時由 migrateWorkspace 轉換。
+  for (const level of Object.values(state.levels)) for (const stage of Object.keys(level.programs)) level.programs[stage] = migrateProgram(level.programs[stage]);
   // 存檔的排列有任何一塊放不下，那塊先收回倉庫。
   const land = landSet(state), check = {};
   for (const [id, place] of Object.entries(state.layout)) {

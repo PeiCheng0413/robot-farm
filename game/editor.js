@@ -7,7 +7,7 @@ import { plotById, cellKey } from './plots.js';
 import { planAction, applyAction, senseLeaf, capacityOf, levelOf, plotsOfLevel, levelKey, CRASH_REASONS } from './sim.js';
 import { createRun, step, evaluate, describeCondition, usesPlotSense } from './interpreter.js';
 import { createPlotView } from './render.js';
-import { TOOLBOX, createTheme, registerFunctionCategory, DEFAULT_WORKSPACES, compile, countBlocks, CompileError } from './blocks.js';
+import { TOOLBOX, createTheme, registerFunctionCategory, DEFAULT_WORKSPACES, compile, countBlocks, CompileError, migrateWorkspace } from './blocks.js';
 
 const Blockly = window.Blockly;
 const $ = s => document.querySelector(s);
@@ -234,7 +234,7 @@ export function createEditor({ assets, getState, onSave, onStars }) {
         if (++sb.controls > CONTROL_LIMIT) return crash('runaway');
         const scan = usesPlotSense(e.cond);
         const think = scan ? view.painter.clipLength('scan') : THINK_MS;
-        const type = workspace.getBlockById(e.id)?.type, kind = { rf_while: '當', rf_until: '重複直到' }[type] || '如果';
+        const type = workspace.getBlockById(e.id)?.type, kind = type === 'rf_until' ? '重複直到' : '如果';
         sb.act = { kind: 'decide', scan, value: e.value, start, mid: start + think, end: start + think + RESULT_MS, text: `${kind}「${describeCondition(e.cond)}」`, until: type === 'rf_until' };
         say(`第 ${sb.steps} 步｜判斷 ${sb.act.text}${scan ? '：掃描整塊田…' : '…'}`);
         return;
@@ -331,7 +331,7 @@ export function createEditor({ assets, getState, onSave, onStars }) {
     ensureWorkspace();
     editing = null;
     workspace.clear();
-    Blockly.serialization.workspaces.load(levelOf(getState(), plotId).workspaces[stage] || DEFAULT_WORKSPACES.main, workspace);
+    Blockly.serialization.workspaces.load(migrateWorkspace(levelOf(getState(), plotId).workspaces[stage]) || DEFAULT_WORKSPACES.main, workspace);
     editing = { plot: plotId, stage };
     dirty = false;
     const shared = plotsOfLevel(getState(), levelKey(plot.shape, plot.type)).length;
