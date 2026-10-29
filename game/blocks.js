@@ -4,7 +4,8 @@
 const Blockly = window.Blockly;
 
 // 色系取自 docs/STYLE_GUIDE.md 色票，提高明度讓白字清楚。
-const COLOURS = { move: '#3f7f70', farm: '#b0702f', flow: '#5b6fa8', sense: '#7a5a9c', start: '#35665b', func: '#9c4f6b' };
+const COLOURS = { move: '#3f7f70', farm: '#b0702f', flow: '#5b6fa8', sense: '#7a5a9c', start: '#35665b', func: '#9c4f6b',
+  variable: '#d9730d', list: '#c2410c' };   // 變數、清單：跟 Scratch 一樣用橘色系（加深一點讓白字清楚）
 
 const action = (type, text, colour, tooltip) => ({
   type, message0: text, previousStatement: null, nextStatement: null, colour, tooltip,
@@ -46,6 +47,28 @@ const BLOCKS = [
     message2: '否則 %1', args2: [{ type: 'input_statement', name: 'ELSE' }],
     previousStatement: null, nextStatement: null, colour: COLOURS.flow, tooltip: '條件成立執行上面，不成立執行下面',
   },
+  // ---------- 變數與清單（練習頁第三單元）----------
+  // 數字格是 Blockly 內建的 math_number 影子積木（工具箱帶預設值），不算進積木數。
+  {
+    type: 'rf_repeat_times', message0: '重複 %1 次', args0: [{ type: 'input_value', name: 'TIMES', check: 'Number' }],
+    message1: '%1', args1: [{ type: 'input_statement', name: 'DO' }],
+    previousStatement: null, nextStatement: null, colour: COLOURS.flow, tooltip: '把裡面的積木重複執行指定次數；次數可以放變數或清單的項目',
+  },
+  {
+    type: 'rf_var_set', message0: '變數 %1 設為 %2', args0: [{ type: 'field_variable', name: 'VAR', variable: 'i' }, { type: 'input_value', name: 'VALUE', check: 'Number' }],
+    previousStatement: null, nextStatement: null, colour: COLOURS.variable, tooltip: '把變數設成這個數字',
+  },
+  {
+    type: 'rf_var_change', message0: '變數 %1 改變 %2', args0: [{ type: 'field_variable', name: 'VAR', variable: 'i' }, { type: 'input_value', name: 'VALUE', check: 'Number' }],
+    previousStatement: null, nextStatement: null, colour: COLOURS.variable, tooltip: '把變數加上這個數字（放負數就是減）',
+  },
+  { type: 'rf_var_get', message0: '%1', args0: [{ type: 'field_variable', name: 'VAR', variable: 'i' }], output: 'Number', colour: COLOURS.variable, tooltip: '變數現在的值' },
+  {
+    type: 'rf_list_add', message0: '加入 %1 到清單', args0: [{ type: 'input_value', name: 'VALUE', check: 'Number' }],
+    previousStatement: null, nextStatement: null, colour: COLOURS.list, tooltip: '把這個數字放到清單的最後面',
+  },
+  { type: 'rf_list_item', message0: '清單的第 %1 項', args0: [{ type: 'input_value', name: 'INDEX', check: 'Number' }], output: 'Number', colour: COLOURS.list, tooltip: '清單裡第幾個數字（從 1 開始數）', inputsInline: true },
+  { type: 'rf_list_length', message0: '清單的長度', output: 'Number', colour: COLOURS.list, tooltip: '清單裡有幾項' },
   condition('rf_cell', '腳下 %1', [{ type: 'field_dropdown', name: 'WHAT', options: WHAT }], '檢查機器人腳下這一格'),
   condition('rf_front', '前方可以走', [], '前面一格是不是這塊田的一部分'),
   condition('rf_plot', '這塊田 %1', [{ type: 'field_dropdown', name: 'WHAT', options: PLOT_WHAT }], '檢查整塊田只要有一格符合'),
@@ -149,11 +172,12 @@ export function findStart(workspace) {
 
 const functionDefs = workspace => workspace.getTopBlocks(false).filter(b => b.type === 'procedures_defnoreturn');
 
-// 算會被執行的積木：接在「開始」下面的，加上每個函式定義（定義積木本身也算 1 塊）。
+// 算會被執行的積木：接在「開始」下面的，加上每個函式定義（定義積木本身也算 1 塊）。數字格（影子積木）不算。
+const solid = block => block.getDescendants(false).filter(b => !b.isShadow()).length;
 export function countBlocks(workspace) {
   const start = findStart(workspace);
-  const body = start ? start.getDescendants(false).length - 1 : 0;
-  return functionDefs(workspace).reduce((n, def) => n + def.getDescendants(false).length, body);
+  const body = start ? solid(start) - 1 : 0;
+  return functionDefs(workspace).reduce((n, def) => n + solid(def), body);
 }
 
 // 編譯結果：{ body: 主程式, functions: { 函式名稱: 指令陣列 } }
@@ -198,6 +222,10 @@ function compileStatement(b) {
     case 'rf_leave': return { op: 'leave' };
     case 'rf_repeat': return { op: 'repeat', times: Number(b.getFieldValue('TIMES')), body: inner('DO') };
     case 'rf_until': return { op: 'until', cond: compileCondition(b, 'COND'), body: inner('DO') };
+    case 'rf_repeat_times': return { op: 'repeat', times: compileValue(b, 'TIMES'), body: inner('DO') };
+    case 'rf_var_set': return { op: 'set', var: varName(b), value: compileValue(b, 'VALUE') };
+    case 'rf_var_change': return { op: 'change', var: varName(b), value: compileValue(b, 'VALUE') };
+    case 'rf_list_add': return { op: 'listAdd', value: compileValue(b, 'VALUE') };
     case 'rf_if': return { op: 'if', cond: compileCondition(b, 'COND'), then: inner('DO'), else: [] };
     case 'rf_if_else': return { op: 'if', cond: compileCondition(b, 'COND'), then: inner('DO'), else: inner('ELSE') };
     case 'procedures_callnoreturn': return { op: 'call', name: b.getProcedureCall() };
@@ -206,6 +234,21 @@ function compileStatement(b) {
 }
 
 const SLOT_NAMES = { rf_not: '不成立', rf_until: '重複直到', rf_and: '且', rf_or: '或' };
+
+const varName = b => b.getField('VAR').getText();
+
+// 數字、變數、清單的項目與長度（interpreter.js 的「值」）。
+function compileValue(parent, input) {
+  const b = parent.getInputTargetBlock(input);
+  if (!b) { parent.select?.(); throw new CompileError('有積木的數字格是空的'); }
+  switch (b.type) {
+    case 'math_number': return { num: Number(b.getFieldValue('NUM')) || 0 };
+    case 'rf_var_get': return { var: varName(b) };
+    case 'rf_list_item': return { item: compileValue(b, 'INDEX') };
+    case 'rf_list_length': return { length: true };
+    default: throw new CompileError('這裡要放數字：' + b.type);
+  }
+}
 
 function compileCondition(parent, input) {
   const b = parent.getInputTargetBlock(input);

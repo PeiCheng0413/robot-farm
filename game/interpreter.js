@@ -3,6 +3,10 @@
 // 指令：{op:'move'|'turnLeft'|'turnRight'|'sow'|'water'|'harvest'|'leave'}  {op:'call', name}
 //       {op:'repeat', times, body}  {op:'until', cond, body}（重複直到）  {op:'if', cond, then, else}
 //       舊存檔裡的 {op:'while'} 由 migrateProgram 換成 until。
+//       變數與清單（練習頁第三單元）：{op:'set'|'change', var, value}  {op:'listAdd', value}
+//       repeat 的 times 可以是數字，也可以是下面的「值」。
+// 值：{num}  {var:名稱}  {item:值}（清單的第幾項，從 1 開始）  {length:true}（清單的長度）
+//     清單只有一份，由 createRun 的 env.list 給初始內容；超出範圍的項目當成 0（Scratch 是空白）。
 // 條件：{sense:'cell', what:'mature'|'empty'|'dry'}  {sense:'front'}
 //       {sense:'plot', what:'mature'|'empty'|'dry'}  {sense:'tokenLess', value}
 //       {not:條件}  {all:[條件, 條件]}（且）  {any:[條件, 條件]}（或）
@@ -28,8 +32,34 @@ export function migrateProgram(program) {
   return { ...program, body: fix(program.body), functions: Object.fromEntries(Object.entries(program.functions || {}).map(([k, v]) => [k, fix(v)])) };
 }
 
-export function createRun(program) {
-  return { stack: [{ body: programBody(program), i: 0 }], functions: Array.isArray(program) ? {} : program.functions, depth: 0 };
+// env.list：清單的初始內容（複製一份，不改動傳進來的陣列）。
+export function createRun(program, env = {}) {
+  return { stack: [{ body: programBody(program), i: 0 }], functions: Array.isArray(program) ? {} : program.functions, depth: 0,
+    vars: {}, list: [...(env.list || [])], read: null };
+}
+
+// 算出一個「值」。讀到清單的第幾項時記在 run.read，畫面用來亮起那一項。
+export function valueOf(run, v) {
+  if (typeof v === 'number') return v;
+  if ('num' in v) return Number(v.num) || 0;
+  if ('var' in v) return run.vars[v.var] ?? 0;
+  if ('item' in v) {
+    const index = Math.round(valueOf(run, v.item));
+    run.read = index;
+    return run.list[index - 1] ?? 0;
+  }
+  if (v.length) return run.list.length;
+  return 0;
+}
+
+// 值寫成人看得懂的文字，給逐步執行的狀態列用。
+export function describeValue(v) {
+  if (typeof v === 'number') return String(v);
+  if ('num' in v) return String(v.num);
+  if ('var' in v) return v.var;
+  if ('item' in v) return `清單的第 ${describeValue(v.item)} 項`;
+  if (v.length) return '清單的長度';
+  return '？';
 }
 
 // 回傳其中一種：
@@ -37,6 +67,7 @@ export function createRun(program) {
 //   {type:'cond', id, cond, value}              如果／當…重複 判斷了一次條件
 //   {type:'loop', id, iteration, times}         重複 N 次 進入第幾圈
 //   {type:'call', id, name}                     呼叫函式
+//   {type:'data', id, text}                     變數或清單改變了（text 是給人看的說明）
 //   {type:'done', left?, id?}                   腳本結束；left 表示是「離開這塊田」
 //   {type:'error', error:'missing'|'deep'}
 export function step(run, sense) {
@@ -66,9 +97,22 @@ export function step(run, sense) {
         if (fn.length) { run.depth++; run.stack.push({ body: fn, i: 0, call: true }); }
         return { type: 'call', id: s.id, name: s.name };
       }
-      case 'repeat':
-        if (s.times > 0 && s.body.length) run.stack.push({ body: s.body, i: 0, loop: 'repeat', id: s.id, times: s.times, left: s.times });
-        return { type: 'loop', id: s.id, iteration: 1, times: s.times };
+      case 'repeat': {
+        // 次數是「值」時（例如清單的第 i 項），在進入迴圈時算一次，跟 Scratch 一樣。
+        const times = Math.max(0, Math.floor(valueOf(run, s.times)));
+        if (times > 0 && s.body.length) run.stack.push({ body: s.body, i: 0, loop: 'repeat', id: s.id, times, left: times });
+        return { type: 'loop', id: s.id, iteration: 1, times, from: typeof s.times === 'object' ? describeValue(s.times) : null };
+      }
+      case 'set': case 'change': {
+        const value = valueOf(run, s.value);
+        run.vars[s.var] = s.op === 'set' ? value : (run.vars[s.var] ?? 0) + value;
+        return { type: 'data', id: s.id, text: s.op === 'set' ? `變數 ${s.var} 設為 ${value}` : `變數 ${s.var} 改變 ${value}，現在是 ${run.vars[s.var]}` };
+      }
+      case 'listAdd': {
+        const value = valueOf(run, s.value);
+        run.list.push(value);
+        return { type: 'data', id: s.id, text: `把 ${value} 加入清單（第 ${run.list.length} 項）`, added: run.list.length };
+      }
       case 'until': {
         // 「重複直到」：先看條件，成立就不做；不成立就做一輪再看。空的迴圈一樣交給 CONTROL_LIMIT。
         const value = sense(s.cond);

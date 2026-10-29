@@ -49,3 +49,21 @@
   .lesson-brief { grid-template-columns: 1fr; }
   .lesson-tools { grid-column: 1; grid-row: auto; flex-direction: row; }
 }
+
+/* 第三單元：跟 Scratch 一樣的變數框與清單框 */
+.monitors { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-start; }
+.monitors[hidden] { display: none; }
+.var-monitors { display: flex; flex-direction: column; gap: 6px; }
+.var-monitor { display: inline-flex; align-items: center; gap: 8px; padding: 4px 6px 4px 10px; border: 2px solid #c9c2ae; border-radius: 6px; background: #fff; font-weight: 700; }
+.var-monitor b { min-width: 2.2em; padding: 1px 8px; border-radius: 6px; background: #d9730d; color: #fff; text-align: center; font-variant-numeric: tabular-nums; }
+.var-empty { color: var(--muted); font-size: .95rem; }
+.list-monitor { min-width: 150px; border: 2px solid #c9c2ae; border-radius: 6px; background: #fff; overflow: hidden; }
+.list-name { padding: 3px 10px; background: #ece8dc; font-weight: 700; text-align: center; }
+.list-items { list-style: none; margin: 0; padding: 4px 6px; max-height: 260px; overflow: auto; }
+.list-items li { display: flex; align-items: center; gap: 6px; margin: 3px 0; }
+.list-index { min-width: 1.6em; text-align: right; color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; }
+.list-value { flex: 1; padding: 1px 8px; border-radius: 4px; background: #c2410c; color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; }
+.list-items li.read .list-value { outline: 3px solid #1d4ed8; outline-offset: 1px; }
+.list-items li.added .list-value { background: #ea580c; outline: 3px solid #15803d; outline-offset: 1px; }
+.list-empty { color: var(--muted); justify-content: center; }
+.list-length { padding: 3px 10px; border-top: 1px solid #ece8dc; color: var(--muted); font-size: .95rem; text-align: center; }

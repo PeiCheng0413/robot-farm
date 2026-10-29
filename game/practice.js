@@ -191,7 +191,7 @@ function open(index) {
   $('#lesson').hidden = false;
   startTiming(unitOf(lesson));
   ensureWorkspace();
-  workspace.updateToolbox({ kind: 'flyoutToolbox', contents: lesson.tools.map(type => ({ kind: 'block', type })) });
+  workspace.updateToolbox({ kind: 'flyoutToolbox', contents: lesson.tools.map(toolEntry) });
   Blockly.Events.disable();   // 載入存好的積木不算「改過」
   try {
     workspace.clear();
@@ -240,12 +240,45 @@ function updateCount() {
 
 const highlight = id => workspace.highlightBlock(id || null);
 
+// 積木箱裡要帶數字格的積木：數字格是 math_number 影子積木，跟 Scratch 的白色圓框一樣可以直接打數字，也可以蓋上變數。
+const NUMBER_SLOTS = { rf_repeat_times: { TIMES: 3 }, rf_var_set: { VALUE: 1 }, rf_var_change: { VALUE: 1 }, rf_list_add: { VALUE: 1 }, rf_list_item: { INDEX: 1 } };
+function toolEntry(type) {
+  const slots = NUMBER_SLOTS[type];
+  if (!slots) return { kind: 'block', type };
+  return { kind: 'block', type, inputs: Object.fromEntries(Object.entries(slots).map(([name, n]) => [name, { shadow: { type: 'math_number', fields: { NUM: n } } }])) };
+}
+
+// 換一塊田（lesson.variants 的一項）：可以只換田、只換清單，或兩個都換。
+const variantMap = v => Array.isArray(v) ? v : v.map || lesson.map;
+const variantList = v => (!Array.isArray(v) && v.list) || lesson.list || [];
+
+// ---------- 清單框與變數框（跟 Scratch 的監看框一樣，只有有清單的關卡才顯示）----------
+
+let lastMonitor = '';
+function renderMonitors() {
+  const el = $('#monitors');
+  if (!el) return;
+  el.hidden = !lesson.list;
+  if (!lesson.list) return;
+  const run = sandbox.run, items = run ? run.list : lesson.list, vars = run ? run.vars : {};
+  const read = run?.read, added = sandbox.added;
+  const html = `<div class="var-monitors">${Object.keys(vars).length
+      ? Object.entries(vars).map(([k, v]) => `<span class="var-monitor"><span>${escapeHtml(k)}</span><b>${v}</b></span>`).join('')
+      : '<span class="var-empty">變數還沒有設定</span>'}</div>
+    <div class="list-monitor">
+      <div class="list-name">${escapeHtml(lesson.listName || '清單')}</div>
+      <ol class="list-items">${items.length ? items.map((v, i) => `<li class="${i + 1 === read ? 'read' : ''}${i + 1 === added ? ' added' : ''}"><span class="list-index">${i + 1}</span><span class="list-value">${v}</span></li>`).join('')
+        : '<li class="list-empty">（空的）</li>'}</ol>
+      <div class="list-length">長度 ${items.length}</div>
+    </div>`;
+  if (html !== lastMonitor) { el.innerHTML = html; lastMonitor = html; }
+}
 function resetSandbox(message) {
   sandbox = {
     ps: { crop: lesson.crop || 'lettuce', cells: lessonCells(lesson) },
     robot: { plot: plot.id, x: plot.entry.x, y: plot.entry.y, heading: plot.entry.heading },
     actions: 0, steps: 0, controls: 0, bumps: 0, wasted: 0, marks: [],
-    run: null, act: null, clock: sandbox?.clock || 0, status: 'ready', pending: false,
+    run: null, act: null, clock: sandbox?.clock || 0, status: 'ready', pending: false, added: null,
   };
   mode = 'paused';
   showCheck(null);
@@ -257,7 +290,7 @@ function resetSandbox(message) {
 function ensureRun() {
   if (sandbox.run) return true;
   try {
-    sandbox.run = createRun(compile(workspace));
+    sandbox.run = createRun(compile(workspace), { list: lesson.list });
     sandbox.blocks = countBlocks(workspace);
     return true;
   } catch (e) {
@@ -277,9 +310,25 @@ function crash(reason) {
   showCheck({ title: '沒有完成：程式當機了', items: [CRASH_REASONS[reason]], ok: false });
 }
 
-// 檢查一塊田跑完後的目標，回傳 { problems, marks }。
-function checkGoals(cells, plotCells) {
+// 跟清單有關的過關檢查。ctx：{ cells, plotCells, map, list（這次的初始清單）, result（跑完後的清單）}
+const LIST_GOALS = {
+  // 清單要剛好是乾裂格子的位置（第一列從左數，從 1 開始）。
+  dryPositions(ctx) {
+    const want = [...ctx.map[0]].flatMap((ch, x) => ch === 'd' ? [x + 1] : []);
+    const same = want.length === ctx.result.length && want.every((v, i) => v === ctx.result[i]);
+    return same ? [] : [`清單應該是「${want.join('、')}」，你的清單是「${ctx.result.join('、') || '空的'}」`];
+  },
+  // 第 k 格的水分要剛好是清單第 k 項（一開始是乾裂的 0）。
+  waterByList(ctx) {
+    const bad = ctx.list.map((n, k) => ({ k, n, got: ctx.cells[cellKey(k, 0)].moisture })).filter(c => c.got !== c.n);
+    return bad.map(c => `第 ${c.k + 1} 格要澆 ${c.n} 次，你澆了 ${c.got} 次`);
+  },
+};
+
+// 檢查一塊田跑完後的目標，回傳 { problems, marks }。ctx 給清單檢查用（見 LIST_GOALS）。
+function checkGoals(cells, plotCells, ctx = {}) {
   const problems = [], marks = [];
+  if (lesson.listGoal) problems.push(...LIST_GOALS[lesson.listGoal]({ cells, plotCells, ...ctx }));
   for (const goal of lesson.goals) {
     const bad = plotCells.filter(([x, y]) => ALL_GOALS[goal].test(cells[cellKey(x, y)]));
     if (!bad.length) continue;
@@ -290,10 +339,11 @@ function checkGoals(cells, plotCells) {
 }
 
 // 在另一塊田（lesson.variants）上不播動畫、直接把程式跑完，回傳沒做到的事；全部做到回傳空陣列。
-function runVariant(map) {
+function runVariant(v) {
+  const map = variantMap(v), list = variantList(v);
   const vplot = lessonPlot(lesson, map), ps = { crop: lesson.crop || 'lettuce', cells: lessonCells(lesson, map) };
   const robot = { x: vplot.entry.x, y: vplot.entry.y, heading: vplot.entry.heading };
-  const run = createRun(compile(workspace));
+  const run = createRun(compile(workspace), { list });
   let actions = 0, controls = 0;
   for (;;) {
     const e = step(run, cond => evaluate(cond, leaf => senseLeaf(Infinity, robot, ps, leaf)));
@@ -304,7 +354,7 @@ function runVariant(map) {
     controls = 0;
     applyAction(ps, robot, planAction(ps, robot, e.op));
   }
-  return checkGoals(ps.cells, vplot.cells).problems;
+  return checkGoals(ps.cells, vplot.cells, { map, list, result: run.list }).problems;
 }
 
 // 這關規定要用、但程式裡（接在「開始」下面的）沒有用到的積木，回傳它們的名稱。
@@ -315,7 +365,7 @@ function missingBlocks() {
 }
 
 function finishCheck() {
-  const sb = sandbox, { problems, marks } = checkGoals(sb.ps.cells, plot.cells);
+  const sb = sandbox, { problems, marks } = checkGoals(sb.ps.cells, plot.cells, { map: lesson.map, list: lesson.list || [], result: sb.run.list });
   sb.marks = marks;
   const missing = missingBlocks();
   if (!problems.length && missing.length) {
@@ -326,12 +376,12 @@ function finishCheck() {
   }
   // 畫面上這塊田做到了，再換幾塊田試：程式要「看了再決定」，不能把步數寫死。
   if (!problems.length && lesson.variants) {
-    const failed = lesson.variants.map((map, i) => ({ i, bad: runVariant(map) })).filter(v => v.bad.length);
+    const failed = lesson.variants.map((v, i) => ({ i, bad: runVariant(v) })).filter(v => v.bad.length);
     if (failed.length) {
       say('這塊田做到了，但換一塊田就不行。', 'warn');
       showCheck({ title: '還沒完成：換一塊田試試看', ok: false,
         items: failed.map(v => `第 ${v.i + 1} 塊田（${describeVariant(lesson.variants[v.i])}）：${v.bad.join('、')}`),
-        tips: ['成熟的西瓜每次位置都不一樣。不要數步數，要讓機器人邊走邊看。'] });
+        tips: [lesson.variantTip || '換一塊田就不一樣了。不要把數字寫死，要讓程式自己看。'] });
       return;
     }
   }
@@ -358,10 +408,13 @@ function finishCheck() {
   if (!best && finishUnit(unit)) setTimeout(() => showPass(unit), 1500);   // 只在「這關第一次過」時檢查，已經全破的再玩不會重算
 }
 
-// 換一塊田時，用一句話說明這塊田長什麼樣子（目前只有「找到成熟的」這種題目會用到）。
-function describeVariant(map) {
-  const row = map.join(''), at = row.indexOf('r');
-  return at < 0 ? '一顆成熟的都沒有' : `成熟的在第 ${at + 1} 格`;
+// 換一塊田時，用一句話說明這塊田長什麼樣子。
+function describeVariant(v) {
+  if (!Array.isArray(v) && v.list) return `清單是「${v.list.join('、')}」`;
+  const row = variantMap(v).join('');
+  if (lesson.goals.includes('mature')) { const at = row.indexOf('r'); return at < 0 ? '一顆成熟的都沒有' : `成熟的在第 ${at + 1} 格`; }
+  const dry = [...row].flatMap((ch, i) => ch === 'd' ? [i + 1] : []);
+  return `乾裂的在第 ${dry.join('、')} 格`;
 }
 
 function showCheck(result) {
@@ -382,6 +435,7 @@ function advance() {
   const sb = sandbox;
   if (!ensureRun()) return;
   const sense = cond => evaluate(cond, leaf => senseLeaf(Infinity, sb.robot, sb.ps, leaf));
+  if (sb.run) sb.run.read = null;   // 清單框只亮這一步讀到的那一項
   const e = step(sb.run, sense);
   sb.steps++;
   if (e.id) highlight(e.id);
@@ -410,7 +464,14 @@ function advance() {
     case 'loop':
       if (++sb.controls > CONTROL_LIMIT) return crash('runaway');
       sb.act = { kind: 'pause', start, end: start + PAUSE_MS };
-      say(`第 ${sb.steps} 步｜重複：第 ${e.iteration} / ${e.times} 次`);
+      say(e.iteration === 1 && e.from ? `第 ${sb.steps} 步｜重複（${e.from} = ${e.times}）次${e.times ? '：第 1 次' : '：0 次，跳過'}`
+        : `第 ${sb.steps} 步｜重複：第 ${e.iteration} / ${e.times} 次`);
+      return;
+    case 'data':
+      if (++sb.controls > CONTROL_LIMIT) return crash('runaway');
+      sb.act = { kind: 'pause', start, end: start + PAUSE_MS };
+      sb.added = e.added || null;
+      say(`第 ${sb.steps} 步｜${e.text}`);
       return;
     case 'call':
       if (++sb.controls > CONTROL_LIMIT) return crash('runaway');
@@ -449,6 +510,7 @@ function tick(now) {
   if (sb.act && sb.clock >= sb.act.end) finishAct();
   if (!sb.act && sb.status === 'ready' && (mode === 'running' || sb.pending)) { sb.pending = false; advance(); }
   view.draw({ ps: sb.ps, robot: sb.robot, act: sb.act, time: sb.clock, marks: sb.marks });
+  renderMonitors();
   if ((sb.status !== 'ready') !== $('#run-toggle').disabled) renderControls();
   raf = requestAnimationFrame(tick);
 }

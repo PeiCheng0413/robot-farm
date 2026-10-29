@@ -13,7 +13,7 @@ ChatGPT 那側的分工說明在 `AGENTS.md`，兩份內容要保持一致。遊
 **Claude 的範圍**
 - `game.html`、`game/`：直譯器、模擬、經濟、存檔、遊戲畫面與遊戲內動畫播放
 - `vendor/`：Blockly（固定版本，放進 repo，不走 CDN）
-- `play.html`（遊戲主畫面）、`practice.html`、`practice2.html`（上課練習）、`docs/BACKLOG.md`
+- `play.html`（遊戲主畫面）、`practice.html`、`practice2.html`、`practice_array.html`（上課練習）、`docs/BACKLOG.md`
 
 **ChatGPT 的範圍**
 - `assets/`、`manifest.json`、`alignment.js`
